@@ -1,0 +1,87 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Mes Cours - FocusKid{% endblock %}
+
+{% block body %}
+
+<!-- Page Header -->
+<div class="container-fluid bg-primary py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 text-white animated slideInDown">📚 Mes Cours</h1>
+                <p class="text-white fs-5">Découvre tous tes cours et commence à apprendre !</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Liste des cours -->
+<div class="container-xxl py-5">
+    <div class="container">
+
+        {% if cours is empty %}
+        <div class="text-center py-5">
+            <i class="fa fa-book fa-5x text-primary mb-4"></i>
+            <h3>Aucun cours disponible pour le moment.</h3>
+        </div>
+        {% else %}
+
+        <div class="row g-4">
+            {% for cour in cours %}
+            <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="{{ (loop.index0 % 3) * 0.2 + 0.1 }}s">
+                <div class="classes-item">
+                    <div class="bg-light rounded p-4 mt-2">
+
+                        <!-- Badge niveau -->
+                        {% if cour.niveau %}
+                        <span class="badge bg-primary rounded-pill px-3 py-2 mb-3">
+                            {{ cour.niveau }}
+                        </span>
+                        {% endif %}
+
+                        <!-- Titre -->
+                        <h3 class="mb-3">{{ cour.titre }}</h3>
+
+                        <!-- Description -->
+                        {% if cour.description %}
+                        <p class="text-muted mb-3">
+                            {{ cour.description|length > 100 ? cour.description|slice(0, 100) ~ '...' : cour.description }}
+                        </p>
+                        {% endif %}
+
+                        <!-- Formateur -->
+                        {% if cour.formateur %}
+                        <div class="d-flex align-items-center mb-3">
+                            <img class="rounded-circle flex-shrink-0"
+                                 src="{{ asset('base-front/img/user.jpg') }}"
+                                 alt="" style="width: 40px; height: 40px;">
+                            <div class="ms-3">
+                                <h6 class="text-primary mb-0">{{ cour.formateur }}</h6>
+                                <small>Formateur</small>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Nombre de leçons -->
+                        <div class="d-flex align-items-center mb-4">
+                            <i class="fa fa-book-open text-primary me-2"></i>
+                            <span>{{ cour.lecons|length }} leçon(s)</span>
+                        </div>
+
+                        <!-- Bouton -->
+                        <a href="{{ path('app_enfant_lecons', {'id_cours': cour.idCours}) }}"
+                           class="btn btn-primary rounded-pill py-2 px-4 w-100">
+                            📖 Voir les leçons <i class="fa fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
