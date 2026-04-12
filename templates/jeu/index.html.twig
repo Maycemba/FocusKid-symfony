@@ -1,6 +1,11 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
 {% block title %}Jeu index{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/css/jeu.css') }}">
+{% endblock %}
 
 {% block body %}
     <h1>Jeu index</h1>
@@ -23,8 +28,8 @@
                 <td>{{ jeu.type }}</td>
                 <td>{{ jeu.niveau }}</td>
                 <td>
-                    <a href="{{ path('app_jeu_show', {'id': jeu.id}) }}">show</a>
-                    <a href="{{ path('app_jeu_edit', {'id': jeu.id}) }}">edit</a>
+                    <a href="{{ path('app_jeu_show', {'id': jeu.id}) }}" class="btn btn-info btn-sm">show</a>
+                    <a href="{{ path('app_jeu_edit', {'id': jeu.id}) }}" class="btn btn-warning btn-sm">edit</a>
                 </td>
             </tr>
         {% else %}
@@ -35,5 +40,5 @@
         </tbody>
     </table>
 
-    <a href="{{ path('app_jeu_new') }}">Create new</a>
+    <a href="{{ path('app_jeu_new') }}" class="btn btn-primary">Create new</a>
 {% endblock %}
