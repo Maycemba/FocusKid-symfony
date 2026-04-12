@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ReponseUserQuiz{% endblock %}
+
+{% block body %}
+    <h1>ReponseUserQuiz</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id_rep_user</th>
+                <td>{{ reponse_user_quiz.idRepUser }}</td>
+            </tr>
+            <tr>
+                <th>Est_correcte</th>
+                <td>{{ reponse_user_quiz.estCorrecte ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Temps_reponse</th>
+                <td>{{ reponse_user_quiz.tempsReponse }}</td>
+            </tr>
+            <tr>
+                <th>Date_reponse</th>
+                <td>{{ reponse_user_quiz.dateReponse ? reponse_user_quiz.dateReponse|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_reponse_user_quiz_index') }}">back to list</a>
+
+    <a href="{{ path('app_reponse_user_quiz_edit', {'id_rep_user': reponse_user_quiz.id_rep_user}) }}">edit</a>
+
+    {{ include('reponse_user_quiz/_delete_form.html.twig') }}
+{% endblock %}

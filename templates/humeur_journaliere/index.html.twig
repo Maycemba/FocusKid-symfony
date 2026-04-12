@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HumeurJournaliere index{% endblock %}
+
+{% block body %}
+    <h1>HumeurJournaliere index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>DateHeure</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for humeur_journaliere in humeur_journalieres %}
+            <tr>
+                <td>{{ humeur_journaliere.id }}</td>
+                <td>{{ humeur_journaliere.dateHeure ? humeur_journaliere.dateHeure|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_humeur_journaliere_show', {'id': humeur_journaliere.id}) }}">show</a>
+                    <a href="{{ path('app_humeur_journaliere_edit', {'id': humeur_journaliere.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_humeur_journaliere_new') }}">Create new</a>
+{% endblock %}

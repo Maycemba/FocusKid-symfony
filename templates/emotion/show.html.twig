@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Emotion{% endblock %}
+
+{% block body %}
+    <h1>Emotion</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ emotion.id }}</td>
+            </tr>
+            <tr>
+                <th>Nom</th>
+                <td>{{ emotion.nom }}</td>
+            </tr>
+            <tr>
+                <th>Photo</th>
+                <td>{{ emotion.photo }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_emotion_index') }}">back to list</a>
+
+    <a href="{{ path('app_emotion_edit', {'id': emotion.id}) }}">edit</a>
+
+    {{ include('emotion/_delete_form.html.twig') }}
+{% endblock %}

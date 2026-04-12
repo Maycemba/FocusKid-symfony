@@ -1,0 +1,41 @@
+{{ form_start(form) }}
+    {{ form_errors(form) }}
+
+    <div class="education-form-grid">
+        <div class="education-form-row">
+            {{ form_label(form.titre) }}
+            {{ form_widget(form.titre) }}
+            {{ form_errors(form.titre) }}
+        </div>
+
+        <div class="education-form-row">
+            {{ form_label(form.niveau) }}
+            {{ form_widget(form.niveau) }}
+            {{ form_errors(form.niveau) }}
+        </div>
+
+        <div class="education-form-row">
+            {{ form_label(form.description) }}
+            {{ form_widget(form.description) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        <div class="education-form-row">
+            {{ form_label(form.formateur) }}
+            {{ form_widget(form.formateur) }}
+            {{ form_errors(form.formateur) }}
+        </div>
+
+        <div class="education-form-row">
+            {{ form_label(form.statut) }}
+            {{ form_widget(form.statut) }}
+            {{ form_errors(form.statut) }}
+        </div>
+    </div>
+
+    {{ form_rest(form) }}
+
+    <div class="education-form-actions">
+        <button class="education-btn-primary" type="submit">{{ button_label|default('Enregistrer le cours') }}</button>
+    </div>
+{{ form_end(form) }}

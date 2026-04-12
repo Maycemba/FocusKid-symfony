@@ -1,0 +1,37 @@
+{% extends 'base-back.html.twig' %}
+
+{% block title %}Lecon index{% endblock %}
+
+{% block body %}
+    <h1>Lecon index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id_lecon</th>
+                <th>Titre_lecon</th>
+                <th>Contenu</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for lecon in lecons %}
+            <tr>
+                <td>{{ lecon.idLecon }}</td>
+                <td>{{ lecon.titreLecon }}</td>
+                <td>{{ lecon.contenu }}</td>
+                <td>
+                    <a href="{{ path('app_lecon_show', {'id_lecon': lecon.id_lecon}) }}">show</a>
+                    <a href="{{ path('app_lecon_edit', {'id_lecon': lecon.id_lecon}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_lecon_new') }}">Create new</a>
+{% endblock %}

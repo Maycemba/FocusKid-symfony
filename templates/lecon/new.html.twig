@@ -1,0 +1,30 @@
+{% extends 'base-back.html.twig' %}
+
+{% block title %}New Lecon{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/css/education-forms.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="education-page">
+        <div class="education-form-shell">
+            <div class="education-form-card">
+                <span class="education-form-eyebrow">Gestion pedagogique</span>
+                <h1 class="education-form-title">Creer une lecon</h1>
+                <p class="education-form-subtitle">Renseignez le contenu de la lecon et associez-la au bon cours.</p>
+
+                {% if cour %}
+                    <p class="education-course-note">Cette lecon sera ajoutee au cours : <strong>{{ cour.titre }}</strong></p>
+                {% endif %}
+
+                {{ include('lecon/_form.html.twig') }}
+
+                <div class="education-form-actions">
+                    <a class="education-btn-secondary" href="{{ path('app_lecon_index') }}">Retour a la liste</a>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

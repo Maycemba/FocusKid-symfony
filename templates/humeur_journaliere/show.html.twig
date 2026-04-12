@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HumeurJournaliere{% endblock %}
+
+{% block body %}
+    <h1>HumeurJournaliere</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ humeur_journaliere.id }}</td>
+            </tr>
+            <tr>
+                <th>DateHeure</th>
+                <td>{{ humeur_journaliere.dateHeure ? humeur_journaliere.dateHeure|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_humeur_journaliere_index') }}">back to list</a>
+
+    <a href="{{ path('app_humeur_journaliere_edit', {'id': humeur_journaliere.id}) }}">edit</a>
+
+    {{ include('humeur_journaliere/_delete_form.html.twig') }}
+{% endblock %}

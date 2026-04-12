@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ReponseExercice index{% endblock %}
+
+{% block body %}
+    <h1>ReponseExercice index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Exercice_id</th>
+                <th>Enfant_id</th>
+                <th>Score</th>
+                <th>Temps_passe</th>
+                <th>Reponses</th>
+                <th>Reussite</th>
+                <th>Date_passage</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for reponse_exercice in reponse_exercices %}
+            <tr>
+                <td>{{ reponse_exercice.id }}</td>
+                <td>{{ reponse_exercice.exerciceId }}</td>
+                <td>{{ reponse_exercice.enfantId }}</td>
+                <td>{{ reponse_exercice.score }}</td>
+                <td>{{ reponse_exercice.tempsPasse }}</td>
+                <td>{{ reponse_exercice.reponses }}</td>
+                <td>{{ reponse_exercice.reussite ? 'Yes' : 'No' }}</td>
+                <td>{{ reponse_exercice.datePassage ? reponse_exercice.datePassage|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_reponse_exercice_show', {'id': reponse_exercice.id}) }}">show</a>
+                    <a href="{{ path('app_reponse_exercice_edit', {'id': reponse_exercice.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="9">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_reponse_exercice_new') }}">Create new</a>
+{% endblock %}

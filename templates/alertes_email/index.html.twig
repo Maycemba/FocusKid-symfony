@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}AlertesEmail index{% endblock %}
+
+{% block body %}
+    <h1>AlertesEmail index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Enfant_id</th>
+                <th>Type_alerte</th>
+                <th>Date_envoi</th>
+                <th>Email_envoye</th>
+                <th>Session_ids</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for alertes_email in alertes_emails %}
+            <tr>
+                <td>{{ alertes_email.id }}</td>
+                <td>{{ alertes_email.enfantId }}</td>
+                <td>{{ alertes_email.typeAlerte }}</td>
+                <td>{{ alertes_email.dateEnvoi ? alertes_email.dateEnvoi|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ alertes_email.emailEnvoye }}</td>
+                <td>{{ alertes_email.sessionIds }}</td>
+                <td>
+                    <a href="{{ path('app_alertes_email_show', {'id': alertes_email.id}) }}">show</a>
+                    <a href="{{ path('app_alertes_email_edit', {'id': alertes_email.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_alertes_email_new') }}">Create new</a>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CorrectionQuiz index{% endblock %}
+
+{% block body %}
+    <h1>CorrectionQuiz index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id_correction</th>
+                <th>Contenu</th>
+                <th>Est_correcte</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for correction_quiz in correction_quizzes %}
+            <tr>
+                <td>{{ correction_quiz.idCorrection }}</td>
+                <td>{{ correction_quiz.contenu }}</td>
+                <td>{{ correction_quiz.estCorrecte ? 'Yes' : 'No' }}</td>
+                <td>
+                    <a href="{{ path('app_correction_quiz_show', {'id_correction': correction_quiz.id_correction}) }}">show</a>
+                    <a href="{{ path('app_correction_quiz_edit', {'id_correction': correction_quiz.id_correction}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_correction_quiz_new') }}">Create new</a>
+{% endblock %}

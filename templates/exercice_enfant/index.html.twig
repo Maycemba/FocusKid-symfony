@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ExerciceEnfant index{% endblock %}
+
+{% block body %}
+    <h1>ExerciceEnfant index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Exercice_id</th>
+                <th>Enfant_id</th>
+                <th>Date_attribution</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for exercice_enfant in exercice_enfants %}
+            <tr>
+                <td>{{ exercice_enfant.id }}</td>
+                <td>{{ exercice_enfant.exerciceId }}</td>
+                <td>{{ exercice_enfant.enfantId }}</td>
+                <td>{{ exercice_enfant.dateAttribution ? exercice_enfant.dateAttribution|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_exercice_enfant_show', {'id': exercice_enfant.id}) }}">show</a>
+                    <a href="{{ path('app_exercice_enfant_edit', {'id': exercice_enfant.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_exercice_enfant_new') }}">Create new</a>
+{% endblock %}
