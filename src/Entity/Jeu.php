@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\JeuRepository;
 
@@ -29,6 +30,8 @@ class Jeu
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank(message: "Le titre ne peut pas être vide.")]
+    #[Assert\Length(max: 255, maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $titre = null;
 
     public function getTitre(): ?string
@@ -43,6 +46,7 @@ class Jeu
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank(message: "Le type ne peut pas être vide.")]
     private ?string $type = null;
 
     public function getType(): ?string
@@ -57,6 +61,7 @@ class Jeu
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank(message: "Le niveau ne peut pas être vide.")]
     private ?string $niveau = null;
 
     public function getNiveau(): ?string
