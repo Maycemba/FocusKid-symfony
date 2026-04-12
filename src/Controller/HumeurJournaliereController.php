@@ -33,6 +33,7 @@ final class HumeurJournaliereController extends AbstractController
             $entityManager->persist($humeurJournaliere);
             $entityManager->flush();
 
+            $this->addFlash('success', 'Humeur journalière enregistrée avec succès !');
             return $this->redirectToRoute('app_humeur_journaliere_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -59,6 +60,7 @@ final class HumeurJournaliereController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
+            $this->addFlash('success', 'Humeur journalière modifiée avec succès !');
             return $this->redirectToRoute('app_humeur_journaliere_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -74,6 +76,7 @@ final class HumeurJournaliereController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$humeurJournaliere->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($humeurJournaliere);
             $entityManager->flush();
+            $this->addFlash('success', 'Humeur journalière supprimée avec succès !');
         }
 
         return $this->redirectToRoute('app_humeur_journaliere_index', [], Response::HTTP_SEE_OTHER);

@@ -6,7 +6,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
 use App\Repository\EmotionRepository;
 
 #[ORM\Entity(repositoryClass: EmotionRepository::class)]
@@ -17,6 +16,24 @@ class Emotion
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $nom = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $photo = null;
+
+    #[ORM\OneToMany(targetEntity: HumeurJournaliere::class, mappedBy: 'emotion')]
+    private Collection $humeurJournalieres;
+
+    #[ORM\OneToMany(targetEntity: Scenario::class, mappedBy: 'emotion')]
+    private Collection $scenarios;
+
+    public function __construct()
+    {
+        $this->humeurJournalieres = new ArrayCollection();
+        $this->scenarios = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -29,9 +46,6 @@ class Emotion
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $nom = null;
-
     public function getNom(): ?string
     {
         return $this->nom;
@@ -43,26 +57,45 @@ class Emotion
         return $this;
     }
 
-    #[ORM\Column(type: 'blob', nullable: true)]
-    private ?string $photo = null;
-
     public function getPhoto(): ?string
     {
         return $this->photo;
     }
 
-    public function setPhoto(?string $photo): self
+    public function setPhoto($photo): self
     {
+        if ($photo === null) {
+            $this->photo = null;
+            return $this;
+        }
+
+        // Si c'est un objet UploadedFile de Symfony
+        if (is_object($photo) && method_exists($photo, 'getPathname')) {
+            $photo = file_get_contents($photo->getPathname());
+        }
+        
+        // Si c'est un chemin de fichier
+        if (is_string($photo) && file_exists($photo)) {
+            $photo = file_get_contents($photo);
+        }
+        
+        // Si c'est une ressource (flux)
+        if (is_resource($photo)) {
+            $photo = stream_get_contents($photo);
+        }
+        
+        // Si c'est une chaîne binaire, convertir en base64
+        if (is_string($photo) && !empty($photo)) {
+            // Vérifier si ce n'est pas déjà du base64
+            if (!preg_match('/^[A-Za-z0-9+\/=]+$/', $photo) || strlen($photo) % 4 != 0) {
+                $photo = base64_encode($photo);
+            }
+        }
+        
         $this->photo = $photo;
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: HumeurJournaliere::class, mappedBy: 'emotion')]
-    private Collection $humeurJournalieres;
-
-    /**
-     * @return Collection<int, HumeurJournaliere>
-     */
     public function getHumeurJournalieres(): Collection
     {
         if (!$this->humeurJournalieres instanceof Collection) {
@@ -85,18 +118,6 @@ class Emotion
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Scenario::class, mappedBy: 'emotion')]
-    private Collection $scenarios;
-
-    public function __construct()
-    {
-        $this->humeurJournalieres = new ArrayCollection();
-        $this->scenarios = new ArrayCollection();
-    }
-
-    /**
-     * @return Collection<int, Scenario>
-     */
     public function getScenarios(): Collection
     {
         if (!$this->scenarios instanceof Collection) {
@@ -118,5 +139,4 @@ class Emotion
         $this->getScenarios()->removeElement($scenario);
         return $this;
     }
-
 }
