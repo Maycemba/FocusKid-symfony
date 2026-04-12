@@ -1,0 +1,30 @@
+{% extends 'base-back.html.twig' %}
+
+{% block title %}Lecon{% endblock %}
+
+{% block body %}
+    <h1>Lecon</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id_lecon</th>
+                <td>{{ lecon.idLecon }}</td>
+            </tr>
+            <tr>
+                <th>Titre_lecon</th>
+                <td>{{ lecon.titreLecon }}</td>
+            </tr>
+            <tr>
+                <th>Contenu</th>
+                <td>{{ lecon.contenu }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_lecon_index') }}">back to list</a>
+
+    <a href="{{ path('app_lecon_edit', {'id_lecon': lecon.id_lecon}) }}">edit</a>
+
+    {{ include('lecon/_delete_form.html.twig') }}
+{% endblock %}

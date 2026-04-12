@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New ReponseUserExercice{% endblock %}
+
+{% block body %}
+    <h1>Create new ReponseUserExercice</h1>
+
+    {{ include('reponse_user_exercice/_form.html.twig') }}
+
+    <a href="{{ path('app_reponse_user_exercice_index') }}">back to list</a>
+{% endblock %}

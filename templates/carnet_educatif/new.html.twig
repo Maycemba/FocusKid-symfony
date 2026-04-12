@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New CarnetEducatif{% endblock %}
+
+{% block body %}
+    <h1>Create new CarnetEducatif</h1>
+
+    {{ include('carnet_educatif/_form.html.twig') }}
+
+    <a href="{{ path('app_carnet_educatif_index') }}">back to list</a>
+{% endblock %}

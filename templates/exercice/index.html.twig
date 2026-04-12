@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Exercice index{% endblock %}
+
+{% block body %}
+    <h1>Exercice index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Titre</th>
+                <th>Type</th>
+                <th>Consigne</th>
+                <th>Difficulte</th>
+                <th>Duree</th>
+                <th>Contenu</th>
+                <th>Pour_tous_enfants</th>
+                <th>Actif</th>
+                <th>Cree_par</th>
+                <th>Date_creation</th>
+                <th>Complete</th>
+                <th>Archive</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for exercice in exercices %}
+            <tr>
+                <td>{{ exercice.id }}</td>
+                <td>{{ exercice.titre }}</td>
+                <td>{{ exercice.type }}</td>
+                <td>{{ exercice.consigne }}</td>
+                <td>{{ exercice.difficulte }}</td>
+                <td>{{ exercice.duree }}</td>
+                <td>{{ exercice.contenu }}</td>
+                <td>{{ exercice.pourTousEnfants ? 'Yes' : 'No' }}</td>
+                <td>{{ exercice.actif ? 'Yes' : 'No' }}</td>
+                <td>{{ exercice.creePar }}</td>
+                <td>{{ exercice.dateCreation ? exercice.dateCreation|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ exercice.complete ? 'Yes' : 'No' }}</td>
+                <td>{{ exercice.archive ? 'Yes' : 'No' }}</td>
+                <td>
+                    <a href="{{ path('app_exercice_show', {'id': exercice.id}) }}">show</a>
+                    <a href="{{ path('app_exercice_edit', {'id': exercice.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="14">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_exercice_new') }}">Create new</a>
+{% endblock %}

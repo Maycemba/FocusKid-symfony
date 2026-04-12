@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ReponseExercice{% endblock %}
+
+{% block body %}
+    <h1>ReponseExercice</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ reponse_exercice.id }}</td>
+            </tr>
+            <tr>
+                <th>Exercice_id</th>
+                <td>{{ reponse_exercice.exerciceId }}</td>
+            </tr>
+            <tr>
+                <th>Enfant_id</th>
+                <td>{{ reponse_exercice.enfantId }}</td>
+            </tr>
+            <tr>
+                <th>Score</th>
+                <td>{{ reponse_exercice.score }}</td>
+            </tr>
+            <tr>
+                <th>Temps_passe</th>
+                <td>{{ reponse_exercice.tempsPasse }}</td>
+            </tr>
+            <tr>
+                <th>Reponses</th>
+                <td>{{ reponse_exercice.reponses }}</td>
+            </tr>
+            <tr>
+                <th>Reussite</th>
+                <td>{{ reponse_exercice.reussite ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Date_passage</th>
+                <td>{{ reponse_exercice.datePassage ? reponse_exercice.datePassage|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_reponse_exercice_index') }}">back to list</a>
+
+    <a href="{{ path('app_reponse_exercice_edit', {'id': reponse_exercice.id}) }}">edit</a>
+
+    {{ include('reponse_exercice/_delete_form.html.twig') }}
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}AlertesEmail{% endblock %}
+
+{% block body %}
+    <h1>AlertesEmail</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ alertes_email.id }}</td>
+            </tr>
+            <tr>
+                <th>Enfant_id</th>
+                <td>{{ alertes_email.enfantId }}</td>
+            </tr>
+            <tr>
+                <th>Type_alerte</th>
+                <td>{{ alertes_email.typeAlerte }}</td>
+            </tr>
+            <tr>
+                <th>Date_envoi</th>
+                <td>{{ alertes_email.dateEnvoi ? alertes_email.dateEnvoi|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Email_envoye</th>
+                <td>{{ alertes_email.emailEnvoye }}</td>
+            </tr>
+            <tr>
+                <th>Session_ids</th>
+                <td>{{ alertes_email.sessionIds }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_alertes_email_index') }}">back to list</a>
+
+    <a href="{{ path('app_alertes_email_edit', {'id': alertes_email.id}) }}">edit</a>
+
+    {{ include('alertes_email/_delete_form.html.twig') }}
+{% endblock %}

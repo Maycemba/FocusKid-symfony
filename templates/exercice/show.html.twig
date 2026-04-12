@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Exercice{% endblock %}
+
+{% block body %}
+    <h1>Exercice</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ exercice.id }}</td>
+            </tr>
+            <tr>
+                <th>Titre</th>
+                <td>{{ exercice.titre }}</td>
+            </tr>
+            <tr>
+                <th>Type</th>
+                <td>{{ exercice.type }}</td>
+            </tr>
+            <tr>
+                <th>Consigne</th>
+                <td>{{ exercice.consigne }}</td>
+            </tr>
+            <tr>
+                <th>Difficulte</th>
+                <td>{{ exercice.difficulte }}</td>
+            </tr>
+            <tr>
+                <th>Duree</th>
+                <td>{{ exercice.duree }}</td>
+            </tr>
+            <tr>
+                <th>Contenu</th>
+                <td>{{ exercice.contenu }}</td>
+            </tr>
+            <tr>
+                <th>Pour_tous_enfants</th>
+                <td>{{ exercice.pourTousEnfants ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Actif</th>
+                <td>{{ exercice.actif ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Cree_par</th>
+                <td>{{ exercice.creePar }}</td>
+            </tr>
+            <tr>
+                <th>Date_creation</th>
+                <td>{{ exercice.dateCreation ? exercice.dateCreation|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Complete</th>
+                <td>{{ exercice.complete ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Archive</th>
+                <td>{{ exercice.archive ? 'Yes' : 'No' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_exercice_index') }}">back to list</a>
+
+    <a href="{{ path('app_exercice_edit', {'id': exercice.id}) }}">edit</a>
+
+    {{ include('exercice/_delete_form.html.twig') }}
+{% endblock %}

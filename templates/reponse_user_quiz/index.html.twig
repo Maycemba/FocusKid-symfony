@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ReponseUserQuiz index{% endblock %}
+
+{% block body %}
+    <h1>ReponseUserQuiz index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id_rep_user</th>
+                <th>Est_correcte</th>
+                <th>Temps_reponse</th>
+                <th>Date_reponse</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for reponse_user_quiz in reponse_user_quizzes %}
+            <tr>
+                <td>{{ reponse_user_quiz.idRepUser }}</td>
+                <td>{{ reponse_user_quiz.estCorrecte ? 'Yes' : 'No' }}</td>
+                <td>{{ reponse_user_quiz.tempsReponse }}</td>
+                <td>{{ reponse_user_quiz.dateReponse ? reponse_user_quiz.dateReponse|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_reponse_user_quiz_show', {'id_rep_user': reponse_user_quiz.id_rep_user}) }}">show</a>
+                    <a href="{{ path('app_reponse_user_quiz_edit', {'id_rep_user': reponse_user_quiz.id_rep_user}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_reponse_user_quiz_new') }}">Create new</a>
+{% endblock %}

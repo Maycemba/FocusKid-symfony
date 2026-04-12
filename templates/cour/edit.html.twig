@@ -1,0 +1,28 @@
+{% extends 'base-back.html.twig' %}
+
+{% block title %}Edit Cour{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/css/education-forms.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="education-page">
+        <div class="education-form-shell">
+            <div class="education-form-card">
+                <span class="education-form-eyebrow">Gestion pedagogique</span>
+                <h1 class="education-form-title">Modifier le cours</h1>
+                <p class="education-form-subtitle">Mettez a jour les informations du cours avant d'ajouter ou modifier ses lecons.</p>
+
+                {{ include('cour/_form.html.twig', {'button_label': 'Mettre a jour le cours'}) }}
+
+                <div class="education-form-actions">
+                    <a class="education-btn-secondary" href="{{ path('app_cour_index') }}">Retour a la liste</a>
+                </div>
+
+                {{ include('cour/_delete_form.html.twig') }}
+            </div>
+        </div>
+    </section>
+{% endblock %}

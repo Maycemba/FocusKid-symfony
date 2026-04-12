@@ -1,0 +1,43 @@
+{% extends 'base-back.html.twig' %}
+
+{% block title %}Cour index{% endblock %}
+
+{% block body %}
+    <h1>Cour index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id_cours</th>
+                <th>Titre</th>
+                <th>Niveau</th>
+                <th>Description</th>
+                <th>Formateur</th>
+                <th>Statut</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for cour in cours %}
+            <tr>
+                <td>{{ cour.idCours }}</td>
+                <td>{{ cour.titre }}</td>
+                <td>{{ cour.niveau }}</td>
+                <td>{{ cour.description }}</td>
+                <td>{{ cour.formateur }}</td>
+                <td>{{ cour.statut }}</td>
+                <td>
+                    <a href="{{ path('app_cour_show', {'id_cours': cour.id_cours}) }}">show</a>
+                    <a href="{{ path('app_cour_edit', {'id_cours': cour.id_cours}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_cour_new') }}">Create new</a>
+{% endblock %}

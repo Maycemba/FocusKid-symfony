@@ -1,0 +1,81 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\SessionsDeCalme;
+use App\Form\SessionsDeCalmeType;
+use App\Repository\SessionsDeCalmeRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[Route('/sessions/de/calme')]
+final class SessionsDeCalmeController extends AbstractController
+{
+    #[Route(name: 'app_sessions_de_calme_index', methods: ['GET'])]
+    public function index(SessionsDeCalmeRepository $sessionsDeCalmeRepository): Response
+    {
+        return $this->render('sessions_de_calme/index.html.twig', [
+            'sessions_de_calmes' => $sessionsDeCalmeRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/new', name: 'app_sessions_de_calme_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $sessionsDeCalme = new SessionsDeCalme();
+        $form = $this->createForm(SessionsDeCalmeType::class, $sessionsDeCalme);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($sessionsDeCalme);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_sessions_de_calme_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('sessions_de_calme/new.html.twig', [
+            'sessions_de_calme' => $sessionsDeCalme,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_sessions_de_calme_show', methods: ['GET'])]
+    public function show(SessionsDeCalme $sessionsDeCalme): Response
+    {
+        return $this->render('sessions_de_calme/show.html.twig', [
+            'sessions_de_calme' => $sessionsDeCalme,
+        ]);
+    }
+
+    #[Route('/{id}/edit', name: 'app_sessions_de_calme_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, SessionsDeCalme $sessionsDeCalme, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(SessionsDeCalmeType::class, $sessionsDeCalme);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_sessions_de_calme_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('sessions_de_calme/edit.html.twig', [
+            'sessions_de_calme' => $sessionsDeCalme,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_sessions_de_calme_delete', methods: ['POST'])]
+    public function delete(Request $request, SessionsDeCalme $sessionsDeCalme, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$sessionsDeCalme->getId(), $request->getPayload()->getString('_token'))) {
+            $entityManager->remove($sessionsDeCalme);
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_sessions_de_calme_index', [], Response::HTTP_SEE_OTHER);
+    }
+}

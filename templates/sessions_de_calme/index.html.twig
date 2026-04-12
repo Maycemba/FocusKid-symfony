@@ -1,0 +1,47 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}SessionsDeCalme index{% endblock %}
+
+{% block body %}
+    <h1>SessionsDeCalme index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Type_activite</th>
+                <th>Declencheur</th>
+                <th>Duree_prevue</th>
+                <th>Duree_reelle</th>
+                <th>Horodatage</th>
+                <th>Feedback_enfant</th>
+                <th>Note_parent</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for sessions_de_calme in sessions_de_calmes %}
+            <tr>
+                <td>{{ sessions_de_calme.id }}</td>
+                <td>{{ sessions_de_calme.typeActivite }}</td>
+                <td>{{ sessions_de_calme.declencheur }}</td>
+                <td>{{ sessions_de_calme.dureePrevue }}</td>
+                <td>{{ sessions_de_calme.dureeReelle }}</td>
+                <td>{{ sessions_de_calme.horodatage ? sessions_de_calme.horodatage|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ sessions_de_calme.feedbackEnfant }}</td>
+                <td>{{ sessions_de_calme.noteParent }}</td>
+                <td>
+                    <a href="{{ path('app_sessions_de_calme_show', {'id': sessions_de_calme.id}) }}">show</a>
+                    <a href="{{ path('app_sessions_de_calme_edit', {'id': sessions_de_calme.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="9">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_sessions_de_calme_new') }}">Create new</a>
+{% endblock %}

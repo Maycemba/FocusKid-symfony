@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CarnetEducatif{% endblock %}
+
+{% block body %}
+    <h1>CarnetEducatif</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ carnet_educatif.id }}</td>
+            </tr>
+            <tr>
+                <th>Date_etude</th>
+                <td>{{ carnet_educatif.dateEtude ? carnet_educatif.dateEtude|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Heure_debut</th>
+                <td>{{ carnet_educatif.heureDebut ? carnet_educatif.heureDebut|date('H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Heure_fin</th>
+                <td>{{ carnet_educatif.heureFin ? carnet_educatif.heureFin|date('H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Duree_totale</th>
+                <td>{{ carnet_educatif.dureeTotale }}</td>
+            </tr>
+            <tr>
+                <th>Lieu</th>
+                <td>{{ carnet_educatif.lieu }}</td>
+            </tr>
+            <tr>
+                <th>Matiere</th>
+                <td>{{ carnet_educatif.matiere }}</td>
+            </tr>
+            <tr>
+                <th>Type_activite</th>
+                <td>{{ carnet_educatif.typeActivite }}</td>
+            </tr>
+            <tr>
+                <th>Niveau_difficulte</th>
+                <td>{{ carnet_educatif.niveauDifficulte }}</td>
+            </tr>
+            <tr>
+                <th>Niveau_concentration</th>
+                <td>{{ carnet_educatif.niveauConcentration }}</td>
+            </tr>
+            <tr>
+                <th>Niveau_agitation</th>
+                <td>{{ carnet_educatif.niveauAgitation }}</td>
+            </tr>
+            <tr>
+                <th>Nombre_interruptions</th>
+                <td>{{ carnet_educatif.nombreInterruptions }}</td>
+            </tr>
+            <tr>
+                <th>Temps_avant_perte_concentration</th>
+                <td>{{ carnet_educatif.tempsAvantPerteConcentration }}</td>
+            </tr>
+            <tr>
+                <th>Travaille_seul</th>
+                <td>{{ carnet_educatif.travailleSeul ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Demande_aide</th>
+                <td>{{ carnet_educatif.demandeAide ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Niveau_autonomie</th>
+                <td>{{ carnet_educatif.niveauAutonomie }}</td>
+            </tr>
+            <tr>
+                <th>Travail_termine</th>
+                <td>{{ carnet_educatif.travailTermine ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Difficultes</th>
+                <td>{{ carnet_educatif.difficultes }}</td>
+            </tr>
+            <tr>
+                <th>Points_positifs</th>
+                <td>{{ carnet_educatif.pointsPositifs }}</td>
+            </tr>
+            <tr>
+                <th>Created_at</th>
+                <td>{{ carnet_educatif.createdAt ? carnet_educatif.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_carnet_educatif_index') }}">back to list</a>
+
+    <a href="{{ path('app_carnet_educatif_edit', {'id': carnet_educatif.id}) }}">edit</a>
+
+    {{ include('carnet_educatif/_delete_form.html.twig') }}
+{% endblock %}

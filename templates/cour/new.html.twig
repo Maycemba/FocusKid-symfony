@@ -1,0 +1,26 @@
+{% extends 'base-back.html.twig' %}
+
+{% block title %}New Cour{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/css/education-forms.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="education-page">
+        <div class="education-form-shell">
+            <div class="education-form-card">
+                <span class="education-form-eyebrow">Gestion pedagogique</span>
+                <h1 class="education-form-title">Creer un cours</h1>
+                <p class="education-form-subtitle">Ajoutez les informations principales du cours. Une fois enregistre, vous serez redirige vers la creation d'une lecon liee a ce cours.</p>
+
+                {{ include('cour/_form.html.twig') }}
+
+                <div class="education-form-actions">
+                    <a class="education-btn-secondary" href="{{ path('app_cour_index') }}">Retour a la liste</a>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

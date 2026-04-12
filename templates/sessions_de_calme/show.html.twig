@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}SessionsDeCalme{% endblock %}
+
+{% block body %}
+    <h1>SessionsDeCalme</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ sessions_de_calme.id }}</td>
+            </tr>
+            <tr>
+                <th>Type_activite</th>
+                <td>{{ sessions_de_calme.typeActivite }}</td>
+            </tr>
+            <tr>
+                <th>Declencheur</th>
+                <td>{{ sessions_de_calme.declencheur }}</td>
+            </tr>
+            <tr>
+                <th>Duree_prevue</th>
+                <td>{{ sessions_de_calme.dureePrevue }}</td>
+            </tr>
+            <tr>
+                <th>Duree_reelle</th>
+                <td>{{ sessions_de_calme.dureeReelle }}</td>
+            </tr>
+            <tr>
+                <th>Horodatage</th>
+                <td>{{ sessions_de_calme.horodatage ? sessions_de_calme.horodatage|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Feedback_enfant</th>
+                <td>{{ sessions_de_calme.feedbackEnfant }}</td>
+            </tr>
+            <tr>
+                <th>Note_parent</th>
+                <td>{{ sessions_de_calme.noteParent }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_sessions_de_calme_index') }}">back to list</a>
+
+    <a href="{{ path('app_sessions_de_calme_edit', {'id': sessions_de_calme.id}) }}">edit</a>
+
+    {{ include('sessions_de_calme/_delete_form.html.twig') }}
+{% endblock %}

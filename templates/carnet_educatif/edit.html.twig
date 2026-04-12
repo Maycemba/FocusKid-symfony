@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit CarnetEducatif{% endblock %}
+
+{% block body %}
+    <h1>Edit CarnetEducatif</h1>
+
+    {{ include('carnet_educatif/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_carnet_educatif_index') }}">back to list</a>
+
+    {{ include('carnet_educatif/_delete_form.html.twig') }}
+{% endblock %}

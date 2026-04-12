@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New SessionsDeCalme{% endblock %}
+
+{% block body %}
+    <h1>Create new SessionsDeCalme</h1>
+
+    {{ include('sessions_de_calme/_form.html.twig') }}
+
+    <a href="{{ path('app_sessions_de_calme_index') }}">back to list</a>
+{% endblock %}
