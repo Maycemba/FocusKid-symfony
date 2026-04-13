@@ -1,4 +1,115 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+{# _form.html.twig #}
+{{ form_start(form, {'attr': {'class': 'form-material'}}) }}
+    <div class="row">
+        <div class="col-12">
+            
+            {# Titre #}
+            <div class="mb-3">
+                {{ form_label(form.titre, 'Titre de l\'exercice', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Exercice de mathématiques'}}) }}
+                <div class="text-danger">
+                    {{ form_errors(form.titre) }}
+                </div>
+            </div>
+            
+            {# Type #}
+            <div class="mb-3">
+                {{ form_label(form.type, 'Type d\'exercice', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(form.type) }}
+            </div>
+            
+            {# Consigne #}
+            <div class="mb-3">
+                {{ form_label(form.consigne, 'Consigne', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                {{ form_widget(form.consigne, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Décrivez la consigne...'}}) }}
+                {{ form_errors(form.consigne) }}
+            </div>
+            
+            <div class="row">
+                {# Difficulté #}
+                <div class="col-md-6 mb-3">
+                    {{ form_label(form.difficulte, 'Niveau de difficulté', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                    {{ form_widget(form.difficulte, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.difficulte) }}
+                </div>
+                
+                {# Durée #}
+                <div class="col-md-6 mb-3">
+                    {{ form_label(form.duree, 'Durée (minutes)', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                    {{ form_widget(form.duree, {'attr': {'class': 'form-control', 'placeholder': 'Ex: 30'}}) }}
+                    {{ form_errors(form.duree) }}
+                </div>
+            </div>
+            
+            {# Contenu #}
+            <div class="mb-3">
+                {{ form_label(form.contenu, 'Contenu', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                {{ form_widget(form.contenu, {'attr': {'class': 'form-control', 'rows': 6, 'placeholder': 'Contenu détaillé de l\'exercice...'}}) }}
+                {{ form_errors(form.contenu) }}
+            </div>
+            
+            <div class="row">
+                {# Pour tous les enfants #}
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        {{ form_widget(form.pour_tous_enfants, {'attr': {'class': 'form-check-input', 'role': 'switch'}}) }}
+                        {{ form_label(form.pour_tous_enfants, 'Pour tous les enfants', {'label_attr': {'class': 'form-check-label'}}) }}
+                    </div>
+                    {{ form_errors(form.pour_tous_enfants) }}
+                </div>
+                
+                {# Actif #}
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        {{ form_widget(form.actif, {'attr': {'class': 'form-check-input', 'role': 'switch'}}) }}
+                        {{ form_label(form.actif, 'Exercice actif', {'label_attr': {'class': 'form-check-label'}}) }}
+                    </div>
+                    {{ form_errors(form.actif) }}
+                </div>
+            </div>
+            
+            <div class="row">
+                {# Complété #}
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        {{ form_widget(form.complete, {'attr': {'class': 'form-check-input', 'role': 'switch'}}) }}
+                        {{ form_label(form.complete, 'Complété', {'label_attr': {'class': 'form-check-label'}}) }}
+                    </div>
+                    {{ form_errors(form.complete) }}
+                </div>
+                
+                {# Archivé #}
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        {{ form_widget(form.archive, {'attr': {'class': 'form-check-input', 'role': 'switch'}}) }}
+                        {{ form_label(form.archive, 'Archivé', {'label_attr': {'class': 'form-check-label'}}) }}
+                    </div>
+                    {{ form_errors(form.archive) }}
+                </div>
+            </div>
+            
+            {# Créé par (si tu veux le montrer) #}
+            <div class="mb-3" style="display: none;">
+                {{ form_widget(form.cree_par) }}
+            </div>
+            
+            {# Date de création (cachée car auto-générée) #}
+            <div class="mb-3" style="display: none;">
+                {{ form_widget(form.date_creation) }}
+            </div>
+            
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <button type="submit" class="btn btn-primary px-5">
+                <i class="ti ti-device-floppy"></i> Enregistrer
+            </button>
+            <a href="{{ path('app_exercice_index') }}" class="btn btn-secondary px-5 ms-2">
+                <i class="ti ti-x"></i> Annuler
+            </a>
+        </div>
+    </div>
 {{ form_end(form) }}

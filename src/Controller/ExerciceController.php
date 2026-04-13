@@ -78,4 +78,26 @@ final class ExerciceController extends AbstractController
 
         return $this->redirectToRoute('app_exercice_index', [], Response::HTTP_SEE_OTHER);
     }
+    #[Route('/archive/{id}', name: 'app_exercice_archive', methods: ['POST'])]
+public function archive(Request $request, Exercice $exercice, EntityManagerInterface $entityManager): Response
+{
+    if ($this->isCsrfTokenValid('archive' . $exercice->getId(), $request->request->get('_token'))) {
+        $exercice->setArchive(true);
+        $exercice->setActif(false);
+        $entityManager->flush();
+        $this->addFlash('success', 'Exercice archivé avec succès!');
+    }
+    return $this->redirectToRoute('app_exercice_index');
+}
+
+#[Route('/restore/{id}', name: 'app_exercice_restore', methods: ['POST'])]
+public function restore(Request $request, Exercice $exercice, EntityManagerInterface $entityManager): Response
+{
+    if ($this->isCsrfTokenValid('restore' . $exercice->getId(), $request->request->get('_token'))) {
+        $exercice->setArchive(false);
+        $entityManager->flush();
+        $this->addFlash('success', 'Exercice restauré avec succès!');
+    }
+    return $this->redirectToRoute('app_exercice_index');
+}
 }
