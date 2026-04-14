@@ -12,16 +12,34 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/sessions/de/calme')]
-final class SessionsDeCalmeController extends AbstractController
+final class SessionsDeCalmeController extends AbstractController  // Changé: extends AbstractController au lieu de BaseController
 {
-    #[Route(name: 'app_sessions_de_calme_index', methods: ['GET'])]
+
+
+   #[Route(name: 'app_sessions_de_calme_index', methods: ['GET'])]
     public function index(SessionsDeCalmeRepository $sessionsDeCalmeRepository): Response
     {
         return $this->render('sessions_de_calme/index.html.twig', [
             'sessions_de_calmes' => $sessionsDeCalmeRepository->findAll(),
+            // AJOUT OBLIGATOIRE - Données du carousel
+            'carousel_slides' => [
+                [
+                    'image' => 'base-front/img/carousel-1.jpg',
+                    'title' => 'The Best Kindergarten School For Your Child',
+                    'description' => 'Vero elitr justo clita lorem. Ipsum dolor at sed stet sit diam no. Kasd rebum ipsum et diam justo clita et kasd rebum sea elitr.',
+                    'learn_more_link' => '#',
+                    'classes_link' => '#'
+                ],
+                [
+                    'image' => 'base-front/img/carousel-2.jpg',
+                    'title' => 'Make A Brighter Future For Your Child',
+                    'description' => 'Vero elitr justo clita lorem. Ipsum dolor at sed stet sit diam no. Kasd rebum ipsum et diam justo clita et kasd rebum sea elitr.',
+                    'learn_more_link' => '#',
+                    'classes_link' => '#'
+                ]
+            ]
         ]);
     }
-
     #[Route('/new', name: 'app_sessions_de_calme_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -39,6 +57,16 @@ final class SessionsDeCalmeController extends AbstractController
         return $this->render('sessions_de_calme/new.html.twig', [
             'sessions_de_calme' => $sessionsDeCalme,
             'form' => $form,
+            // AJOUTEZ AUSSI ICI
+            'carousel_slides' => [
+                [
+                    'image' => 'base-front/img/carousel-1.jpg',
+                    'title' => 'The Best Kindergarten School For Your Child',
+                    'description' => 'Vero elitr justo clita lorem.',
+                    'learn_more_link' => '#',
+                    'classes_link' => '#'
+                ]
+            ]
         ]);
     }
 
@@ -47,6 +75,16 @@ final class SessionsDeCalmeController extends AbstractController
     {
         return $this->render('sessions_de_calme/show.html.twig', [
             'sessions_de_calme' => $sessionsDeCalme,
+            // AJOUTEZ AUSSI ICI
+            'carousel_slides' => [
+                [
+                    'image' => 'base-front/img/carousel-1.jpg',
+                    'title' => 'The Best Kindergarten School For Your Child',
+                    'description' => 'Vero elitr justo clita lorem.',
+                    'learn_more_link' => '#',
+                    'classes_link' => '#'
+                ]
+            ]
         ]);
     }
 
@@ -65,6 +103,16 @@ final class SessionsDeCalmeController extends AbstractController
         return $this->render('sessions_de_calme/edit.html.twig', [
             'sessions_de_calme' => $sessionsDeCalme,
             'form' => $form,
+            // AJOUTEZ AUSSI ICI
+            'carousel_slides' => [
+                [
+                    'image' => 'base-front/img/carousel-1.jpg',
+                    'title' => 'The Best Kindergarten School For Your Child',
+                    'description' => 'Vero elitr justo clita lorem.',
+                    'learn_more_link' => '#',
+                    'classes_link' => '#'
+                ]
+            ]
         ]);
     }
 

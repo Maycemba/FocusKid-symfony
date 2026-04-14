@@ -37,6 +37,7 @@ class Emotion
         $this->scenarios = new ArrayCollection();
     }
 
+    // ========== ID ==========
     public function getId(): ?int
     {
         return $this->id;
@@ -48,9 +49,7 @@ class Emotion
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $nom = null;
-
+    // ========== NOM ==========
     public function getNom(): ?string
     {
         return $this->nom;
@@ -62,9 +61,7 @@ class Emotion
         return $this;
     }
 
-    #[ORM\Column(type: 'blob', nullable: true)]
-    private ?string $photo = null;
-
+    // ========== PHOTO ==========
     public function getPhoto(): ?string
     {
         return $this->photo;
@@ -121,9 +118,7 @@ class Emotion
         return null;
     }
 
-    #[ORM\OneToMany(targetEntity: HumeurJournaliere::class, mappedBy: 'emotion')]
-    private Collection $humeurJournalieres;
-
+    // ========== HUMEUR JOURNALIERES ==========
     /**
      * @return Collection<int, HumeurJournaliere>
      */
@@ -149,15 +144,7 @@ class Emotion
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Scenario::class, mappedBy: 'emotion')]
-    private Collection $scenarios;
-
-    public function __construct()
-    {
-        $this->humeurJournalieres = new ArrayCollection();
-        $this->scenarios = new ArrayCollection();
-    }
-
+    // ========== SCENARIOS ==========
     /**
      * @return Collection<int, Scenario>
      */
@@ -182,5 +169,4 @@ class Emotion
         $this->getScenarios()->removeElement($scenario);
         return $this;
     }
-
 }
