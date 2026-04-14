@@ -6,6 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\EmotionRepository;
 
@@ -17,6 +18,24 @@ class Emotion
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $nom = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $photo = null;
+
+    #[ORM\OneToMany(targetEntity: HumeurJournaliere::class, mappedBy: 'emotion')]
+    private Collection $humeurJournalieres;
+
+    #[ORM\OneToMany(targetEntity: Scenario::class, mappedBy: 'emotion')]
+    private Collection $scenarios;
+
+    public function __construct()
+    {
+        $this->humeurJournalieres = new ArrayCollection();
+        $this->scenarios = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -51,10 +70,55 @@ class Emotion
         return $this->photo;
     }
 
-    public function setPhoto(?string $photo): self
+    public function setPhoto($photo): self
     {
+        if ($photo === null) {
+            $this->photo = null;
+            return $this;
+        }
+
+        // Si c'est un objet UploadedFile de Symfony
+        if (is_object($photo) && method_exists($photo, 'getPathname')) {
+            $photo = file_get_contents($photo->getPathname());
+        }
+        
+        // Si c'est un chemin de fichier
+        if (is_string($photo) && file_exists($photo)) {
+            $photo = file_get_contents($photo);
+        }
+        
+        // Si c'est une ressource (flux)
+        if (is_resource($photo)) {
+            $photo = stream_get_contents($photo);
+        }
+        
+        // Si c'est une chaîne binaire, convertir en base64
+        if (is_string($photo) && !empty($photo)) {
+            // Vérifier si ce n'est pas déjà du base64
+            if (!preg_match('/^[A-Za-z0-9+\/=]+$/', $photo) || strlen($photo) % 4 != 0) {
+                $photo = base64_encode($photo);
+            }
+        }
+        
         $this->photo = $photo;
         return $this;
+    }
+
+    /**
+     * Retourne la photo sous forme de base64 (prête pour l'affichage)
+     */
+    public function getPhotoBase64(): ?string
+    {
+        if (!$this->photo) {
+            return null;
+        }
+        
+        // Si déjà en base64, retourner directement
+        if (preg_match('/^[A-Za-z0-9+\/=]+$/', $this->photo)) {
+            return 'data:image/jpeg;base64,' . $this->photo;
+        }
+        
+        return null;
     }
 
     #[ORM\OneToMany(targetEntity: HumeurJournaliere::class, mappedBy: 'emotion')]

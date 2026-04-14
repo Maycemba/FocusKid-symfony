@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/carnet/educatif')]
+#[Route('/carnet_educatif')]
 final class CarnetEducatifController extends AbstractController
 {
     #[Route(name: 'app_carnet_educatif_index', methods: ['GET'])]
