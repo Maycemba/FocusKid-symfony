@@ -36,6 +36,31 @@
         .type-config.active {
             display: block;
         }
+        /* Styles pour les erreurs */
+        .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .is-invalid {
+            border-color: #e74c3c !important;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .alert-error ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #e74c3c;
+            background-image: none;
+        }
     </style>
 {% endblock %}
 
@@ -57,41 +82,79 @@
                 </div>
             </div>
             <div class="card-body">
-                {{ form_start(form, {'attr': {'id': 'exerciceForm'}}) }}
+                {# Afficher les erreurs globales du formulaire #}
+                {% if form_errors(form) %}
+                    <div class="alert-error">
+                        <strong><i class="ti ti-alert-circle"></i> Veuillez corriger les erreurs suivantes :</strong>
+                        {{ form_errors(form) }}
+                    </div>
+                {% endif %}
+
+                {{ form_start(form, {'attr': {'id': 'exerciceForm', 'novalidate': 'novalidate'}}) }}
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form_label(form.titre) }}
-                            {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Exercice de mémoire - Les animaux'}}) }}
-                            {{ form_errors(form.titre) }}
+                            {{ form_widget(form.titre, {'attr': {'class': 'form-control ' ~ (form.titre.vars.errors|length > 0 ? 'is-invalid' : ''), 'placeholder': 'Ex: Exercice de mémoire - Les animaux'}}) }}
+                            {% if form.titre.vars.errors|length > 0 %}
+                                <div class="error-message">
+                                    {% for error in form.titre.vars.errors %}
+                                        <i class="ti ti-alert-circle"></i> {{ error.message }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                         
                         <div class="col-md-3 mb-3">
                             {{ form_label(form.type) }}
-                            {{ form_widget(form.type, {'attr': {'class': 'form-select', 'id': 'exercice_type'}}) }}
-                            {{ form_errors(form.type) }}
+                            {{ form_widget(form.type, {'attr': {'class': 'form-select ' ~ (form.type.vars.errors|length > 0 ? 'is-invalid' : ''), 'id': 'exercice_type'}}) }}
+                            {% if form.type.vars.errors|length > 0 %}
+                                <div class="error-message">
+                                    {% for error in form.type.vars.errors %}
+                                        <i class="ti ti-alert-circle"></i> {{ error.message }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                         
                         <div class="col-md-3 mb-3">
                             {{ form_label(form.difficulte) }}
-                            {{ form_widget(form.difficulte, {'attr': {'class': 'form-select'}}) }}
-                            {{ form_errors(form.difficulte) }}
+                            {{ form_widget(form.difficulte, {'attr': {'class': 'form-select ' ~ (form.difficulte.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
+                            {% if form.difficulte.vars.errors|length > 0 %}
+                                <div class="error-message">
+                                    {% for error in form.difficulte.vars.errors %}
+                                        <i class="ti ti-alert-circle"></i> {{ error.message }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-12 mb-3">
                             {{ form_label(form.consigne) }}
-                            {{ form_widget(form.consigne, {'attr': {'class': 'form-control', 'rows': 3}}) }}
-                            {{ form_errors(form.consigne) }}
+                            {{ form_widget(form.consigne, {'attr': {'class': 'form-control ' ~ (form.consigne.vars.errors|length > 0 ? 'is-invalid' : ''), 'rows': 3}}) }}
+                            {% if form.consigne.vars.errors|length > 0 %}
+                                <div class="error-message">
+                                    {% for error in form.consigne.vars.errors %}
+                                        <i class="ti ti-alert-circle"></i> {{ error.message }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             {{ form_label(form.duree) }}
-                            {{ form_widget(form.duree, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(form.duree) }}
+                            {{ form_widget(form.duree, {'attr': {'class': 'form-control ' ~ (form.duree.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
+                            {% if form.duree.vars.errors|length > 0 %}
+                                <div class="error-message">
+                                    {% for error in form.duree.vars.errors %}
+                                        <i class="ti ti-alert-circle"></i> {{ error.message }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                         
                         <div class="col-md-3 mb-3">
@@ -270,13 +333,13 @@
         div.className = 'question-row row mb-2';
         div.innerHTML = `
             <div class="col-md-5">
-                <input type="text" class="form-control" placeholder="Images (ex: 🐶,🐱,🐭)" value="${images}">
+                <input type="text" class="form-control" placeholder="Images (ex: 🐶,🐱,🐭)" value="${images.replace(/"/g, '&quot;')}">
             </div>
             <div class="col-md-4">
-                <input type="text" class="form-control" placeholder="Intrus" value="${intrus}">
+                <input type="text" class="form-control" placeholder="Intrus" value="${intrus.replace(/"/g, '&quot;')}">
             </div>
             <div class="col-md-2">
-                <input type="text" class="form-control" placeholder="Réponse" value="${reponse}">
+                <input type="text" class="form-control" placeholder="Réponse" value="${reponse.replace(/"/g, '&quot;')}">
             </div>
             <div class="col-md-1">
                 <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.question-row').remove()">🗑️</button>
@@ -293,13 +356,13 @@
         div.className = 'sequence-row row mb-2';
         div.innerHTML = `
             <div class="col-md-5">
-                <input type="text" class="form-control" placeholder="Série (ex: 2,4,6,8,?)" value="${serie}">
+                <input type="text" class="form-control" placeholder="Série (ex: 2,4,6,8,?)" value="${serie.replace(/"/g, '&quot;')}">
             </div>
             <div class="col-md-4">
-                <input type="text" class="form-control" placeholder="Réponse" value="${reponse}">
+                <input type="text" class="form-control" placeholder="Réponse" value="${reponse.replace(/"/g, '&quot;')}">
             </div>
             <div class="col-md-2">
-                <input type="text" class="form-control" placeholder="Règle" value="${regle}">
+                <input type="text" class="form-control" placeholder="Règle" value="${regle.replace(/"/g, '&quot;')}">
             </div>
             <div class="col-md-1">
                 <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.sequence-row').remove()">🗑️</button>
@@ -316,10 +379,10 @@
         div.className = 'defi-row row mb-2';
         div.innerHTML = `
             <div class="col-md-6">
-                <input type="text" class="form-control" placeholder="Question" value="${question}">
+                <input type="text" class="form-control" placeholder="Question" value="${question.replace(/"/g, '&quot;')}">
             </div>
             <div class="col-md-4">
-                <input type="text" class="form-control" placeholder="Réponse" value="${reponse}">
+                <input type="text" class="form-control" placeholder="Réponse" value="${reponse.replace(/"/g, '&quot;')}">
             </div>
             <div class="col-md-1">
                 <input type="number" class="form-control" placeholder="Points" value="${points}">
@@ -329,6 +392,13 @@
             </div>
         `;
         container.appendChild(div);
+    }
+    
+    // Supprimer la classe is-invalid quand l'utilisateur modifie le champ
+    function removeInvalidClass(input) {
+        input.classList.remove('is-invalid');
+        const errorDiv = input.parentElement.querySelector('.error-message');
+        if(errorDiv) errorDiv.style.display = 'none';
     }
     
     // Changer la configuration selon le type
@@ -396,8 +466,19 @@
         const typeSelect = document.getElementById('exercice_type');
         if(typeSelect) {
             typeSelect.addEventListener('change', changeExerciceType);
-            changeExerciceType(); // Appeler une fois pour initialiser
+            changeExerciceType();
         }
+        
+        // Ajouter les écouteurs pour enlever la classe is-invalid
+        const inputs = document.querySelectorAll('.form-control, .form-select');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                removeInvalidClass(this);
+            });
+            input.addEventListener('change', function() {
+                removeInvalidClass(this);
+            });
+        });
         
         // Construction du JSON avant soumission
         const form = document.getElementById('exerciceForm');
