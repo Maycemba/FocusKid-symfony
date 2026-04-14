@@ -6,6 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\CourRepository;
 
@@ -29,7 +30,20 @@ class Cour
         return $this;
     }
 
+    // ============ TITRE ============
+    
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: "Le titre est obligatoire")]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: "Le titre doit contenir au moins {{ limit }} caractères",
+        maxMessage: "Le titre ne doit pas dépasser {{ limit }} caractères"
+    )]
+    #[Assert\Regex(
+        pattern: "/^[a-zA-ZÀ-ÿ0-9\s\-_.,!?]+$/",
+        message: "Le titre contient des caractères non autorisés"
+    )]
     private ?string $titre = null;
 
     public function getTitre(): ?string
@@ -43,7 +57,14 @@ class Cour
         return $this;
     }
 
+    // ============ NIVEAU ============
+    
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank(message: "Le niveau est obligatoire")]
+    #[Assert\Choice(
+        choices: ["1", "2", "3", "4", "5", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème"],
+        message: "Choisissez un niveau valide"
+    )]
     private ?string $niveau = null;
 
     public function getNiveau(): ?string
@@ -57,7 +78,16 @@ class Cour
         return $this;
     }
 
+    // ============ DESCRIPTION ============
+    
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\NotBlank(message: "La description est obligatoire")]
+    #[Assert\Length(
+        min: 10,
+        max: 500,
+        minMessage: "La description doit contenir au moins {{ limit }} caractères",
+        maxMessage: "La description ne doit pas dépasser {{ limit }} caractères"
+    )]
     private ?string $description = null;
 
     public function getDescription(): ?string
@@ -71,7 +101,20 @@ class Cour
         return $this;
     }
 
+    // ============ FORMATEUR ============
+    
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank(message: "Le formateur est obligatoire")]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: "Le nom du formateur doit contenir au moins {{ limit }} caractères",
+        maxMessage: "Le nom du formateur ne doit pas dépasser {{ limit }} caractères"
+    )]
+    #[Assert\Regex(
+        pattern: "/^[a-zA-ZÀ-ÿ\s\-]+$/",
+        message: "Le nom du formateur ne doit contenir que des lettres et des espaces mpolkijhngbfvdlkjfds"
+    )]
     private ?string $formateur = null;
 
     public function getFormateur(): ?string
@@ -85,7 +128,13 @@ class Cour
         return $this;
     }
 
+    
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank(message: "Le statut est obligatoire")]
+    #[Assert\Choice(
+        choices: ["brouillon", "publié", "archive", "Brouillon", "Publié", "Archive"],
+        message: "Choisissez un statut valide (brouillon, publié, archive)"
+    )]
     private ?string $statut = null;
 
     public function getStatut(): ?string
@@ -99,8 +148,22 @@ class Cour
         return $this;
     }
 
+    
     #[ORM\OneToMany(targetEntity: Exercice::class, mappedBy: 'cour')]
     private Collection $exercices;
+
+    #[ORM\OneToMany(targetEntity: Lecon::class, mappedBy: 'cour')]
+    private Collection $lecons;
+
+    #[ORM\OneToMany(targetEntity: Quiz::class, mappedBy: 'cour')]
+    private Collection $quizs;
+
+    public function __construct()
+    {
+        $this->exercices = new ArrayCollection();
+        $this->lecons = new ArrayCollection();
+        $this->quizs = new ArrayCollection();
+    }
 
     /**
      * @return Collection<int, Exercice>
@@ -127,9 +190,6 @@ class Cour
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Lecon::class, mappedBy: 'cour')]
-    private Collection $lecons;
-
     /**
      * @return Collection<int, Lecon>
      */
@@ -153,16 +213,6 @@ class Cour
     {
         $this->getLecons()->removeElement($lecon);
         return $this;
-    }
-
-    #[ORM\OneToMany(targetEntity: Quiz::class, mappedBy: 'cour')]
-    private Collection $quizs;
-
-    public function __construct()
-    {
-        $this->exercices = new ArrayCollection();
-        $this->lecons = new ArrayCollection();
-        $this->quizs = new ArrayCollection();
     }
 
     /**
@@ -190,9 +240,10 @@ class Cour
         return $this;
     }
 
+    // ============ ALIAS ============
+    
     public function getIdCours(): ?int
     {
         return $this->id_cours;
     }
-
 }

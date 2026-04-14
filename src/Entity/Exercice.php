@@ -29,6 +29,25 @@ class Exercice
         return $this;
     }
 
+    // ============ JOINTURE AVEC UTILISATEUR ============
+    
+   #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'exercices')]
+#[ORM\JoinColumn(name: 'cree_par', referencedColumnName: 'id', nullable: true)]
+private ?Utilisateur $utilisateur = null;
+
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
+        return $this;
+    }
+
+    // ============ CHAMPS AVEC VALIDATION ============
+
     #[ORM\Column(type: 'string', nullable: false)]
     private ?string $titre = null;
 
