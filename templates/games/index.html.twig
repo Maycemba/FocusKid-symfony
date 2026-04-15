@@ -1,0 +1,35 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Jeux - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+            <h1 class="mb-3">Nos Jeux</h1>
+            <p>Découvrez nos jeux éducatifs pour apprendre en s'amusant !</p>
+        </div>
+        <div class="row g-4">
+            {% for jeu in jeux %}
+            <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="{{ loop.index0 * 0.2 + 0.1 }}s">
+                <div class="classes-item">
+                    <div class="bg-light rounded-circle w-75 mx-auto p-3">
+                        <img class="img-fluid rounded-circle" src="{{ asset('base-front/img/game-icon.png') }}" alt="Jeu">
+                    </div>
+                    <div class="bg-light rounded p-4 pt-5 mt-n5">
+                        <a class="d-block text-center h3 mt-3 mb-4" href="{{ path('app_games_show', {'id': jeu.id}) }}">{{ jeu.titre }}</a>
+                        <div class="text-center">
+                            <span class="badge bg-primary">{{ jeu.type }}</span>
+                            <span class="badge bg-success ms-2">Niveau {{ jeu.niveau }}</span>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{{ path('app_games_show', {'id': jeu.id}) }}" class="btn btn-primary">Jouer</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
