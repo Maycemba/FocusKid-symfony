@@ -22,6 +22,20 @@ class GamesController extends AbstractController
         ]);
     }
 
+    #[Route('/games/{id}', name: 'app_games_show')]
+    public function show($id, JeuRepository $jeuRepository): Response
+    {
+        $jeu = $jeuRepository->find($id);
+
+        if (!$jeu) {
+            throw $this->createNotFoundException('Jeu not found');
+        }
+
+        return $this->render('games/show.html.twig', [
+            'jeu' => $jeu,
+        ]);
+    }
+
     #[Route('/games/{id}/submit', name: 'app_games_submit', methods: ['POST'])]
     public function submit(Request $request, $id, JeuRepository $jeuRepository, EntityManagerInterface $entityManager): Response
     {
@@ -60,3 +74,4 @@ class GamesController extends AbstractController
             'total' => $total,
         ]);
     }
+}
