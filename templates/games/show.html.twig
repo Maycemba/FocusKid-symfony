@@ -11,25 +11,25 @@
         </div>
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                <div class="bg-light rounded p-5">
+                <form method="post" action="{{ path('app_games_submit', {'id': jeu.id}) }}" class="bg-light rounded p-5">
                     <h3 class="mb-4">Questions du jeu</h3>
                     {% for question in jeu.questions %}
                     <div class="mb-4">
                         <h5>{{ loop.index }}. {{ question.questionText }}</h5>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="q{{ question.id }}" id="q{{ question.id }}a" value="A">
+                            <input class="form-check-input" type="radio" name="q{{ question.id }}" id="q{{ question.id }}a" value="A" required>
                             <label class="form-check-label" for="q{{ question.id }}a">
                                 {{ question.optionA }}
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="q{{ question.id }}" id="q{{ question.id }}b" value="B">
+                            <input class="form-check-input" type="radio" name="q{{ question.id }}" id="q{{ question.id }}b" value="B" required>
                             <label class="form-check-label" for="q{{ question.id }}b">
                                 {{ question.optionB }}
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="q{{ question.id }}" id="q{{ question.id }}c" value="C">
+                            <input class="form-check-input" type="radio" name="q{{ question.id }}" id="q{{ question.id }}c" value="C" required>
                             <label class="form-check-label" for="q{{ question.id }}c">
                                 {{ question.optionC }}
                             </label>
@@ -37,18 +37,11 @@
                     </div>
                     {% endfor %}
                     <div class="text-center">
-                        <button class="btn btn-primary" onclick="submitQuiz()">Soumettre</button>
+                        <button class="btn btn-primary" type="submit">Soumettre le Quiz</button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-function submitQuiz() {
-    // Simple alert for now; in real implementation, send to server
-    alert('Quiz soumis !');
-}
-</script>
 {% endblock %}

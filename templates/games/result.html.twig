@@ -1,0 +1,33 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Résultat - {{ jeu.titre }}{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+            <h1 class="mb-3">Résultat du Quiz</h1>
+            <h2>{{ jeu.titre }}</h2>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="bg-light rounded p-5 text-center">
+                    <h3 class="mb-4">Votre Score</h3>
+                    <div class="display-4 text-primary mb-3">{{ score }} / {{ total }}</div>
+                    <p class="mb-4">
+                        {% if score / total >= 0.8 %}
+                            Excellent ! Vous avez très bien réussi.
+                        {% elseif score / total >= 0.6 %}
+                            Bien joué ! Continuez comme ça.
+                        {% else %}
+                            Pas mal, mais vous pouvez faire mieux !
+                        {% endif %}
+                    </p>
+                    <a href="{{ path('app_games_index') }}" class="btn btn-primary me-3">Jouer un autre jeu</a>
+                    <a href="{{ path('app_games_show', {'id': jeu.id}) }}" class="btn btn-secondary">Rejouer</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
