@@ -1,71 +1,167 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-front.html.twig' %}
+{% block title %}Carnets éducatifs{% endblock %}
 
-{% block title %}CarnetEducatif index{% endblock %}
+{% block stylesheets %}
+<style>
+/* ===== VOTRE STYLE EXISTANT (conservé intégralement) ===== */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@600;700;800&display=swap');
+:root {
+  --primary:#1CC88A;--primary-light:#d4f7ec;--primary-dark:#0eae70;
+  --secondary:#4E73DF;--secondary-light:#e8edfd;
+  --warning:#F39C12;--warning-light:#fef3e0;
+  --info:#3ABEF9;--info-light:#e7f7ff;
+  --text:#2d3561;--muted:#8590a5;--surface:#f8faff;--border:#e8ecf5;
+}
+body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pulse-ring{0%,100%{box-shadow:0 8px 24px rgba(28,200,138,.3)}50%{box-shadow:0 8px 36px rgba(28,200,138,.55)}}
+
+.page-hero{
+  background:linear-gradient(135deg,#f8faff 0%,#eef2ff 60%,#f0fdf9 100%);
+  border-bottom:2px solid var(--border);
+  padding:2.5rem 0 2rem;position:relative;overflow:hidden;
+}
+.page-hero::before,.page-hero::after{
+  content:'';position:absolute;border-radius:50%;
+  background:radial-gradient(circle,rgba(28,200,138,.13) 0%,transparent 70%);
+  animation:float 4s ease-in-out infinite;
+}
+.page-hero::before{width:220px;height:220px;top:-70px;right:-60px}
+.page-hero::after{width:160px;height:160px;bottom:-50px;left:-40px;animation-delay:1.5s;background:radial-gradient(circle,rgba(78,115,223,.12) 0%,transparent 70%)}
+
+.hero-title{font-family:'Baloo 2',cursive;font-size:2.2rem;font-weight:800;display:flex;align-items:center;gap:.75rem;margin:0}
+.hero-icon{width:54px;height:54px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 8px 24px rgba(28,200,138,.35);animation:pulse-ring 2.5s ease infinite;flex-shrink:0}
+.hero-sub{font-size:.95rem;color:var(--muted);margin-top:.25rem}
+
+.btn-new{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.75rem;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:none;border-radius:999px;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;text-decoration:none;box-shadow:0 6px 20px rgba(28,200,138,.4);transition:all .25s;white-space:nowrap}
+.btn-new:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(28,200,138,.5);color:#fff}
+
+.table-card{background:#fff;border:1.5px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:0 8px 32px rgba(78,115,223,.08);animation:fadeUp .5s ease both .1s}
+.table-card table{width:100%;border-collapse:collapse}
+.table-card thead tr{background:linear-gradient(90deg,var(--surface) 0%,#edf0ff 100%);border-bottom:2px solid var(--border)}
+.table-card thead th{padding:1.1rem 1.25rem;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.table-card tbody tr{border-bottom:1px solid var(--border);transition:background .18s;animation:fadeUp .4s ease both}
+.table-card tbody tr:last-child{border-bottom:none}
+.table-card tbody tr:hover{background:var(--surface)}
+.table-card tbody td{padding:.95rem 1.25rem;font-size:.92rem}
+
+.id-chip{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:var(--secondary-light);color:var(--secondary);border-radius:10px;font-weight:800;font-size:.85rem}
+.subject-tag{display:inline-block;padding:.25rem .75rem;background:var(--primary-light);color:#0a7a52;border-radius:8px;font-weight:700;font-size:.84rem}
+.duration-tag{display:inline-flex;align-items:center;gap:.3rem;font-weight:700;color:var(--text)}
+
+.conc-wrap{display:flex;align-items:center;gap:.6rem}
+.conc-num{font-weight:800;font-size:.9rem;min-width:24px}
+.conc-track{flex:1;height:6px;background:var(--border);border-radius:999px;overflow:hidden;min-width:55px}
+.conc-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:999px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+.btn-sm-see,.btn-sm-edit{display:inline-flex;align-items:center;gap:.3rem;padding:.38rem .9rem;border-radius:10px;font-size:.82rem;font-weight:700;font-family:'Nunito',sans-serif;text-decoration:none;transition:all .2s;border:none;cursor:pointer}
+.btn-sm-see{background:var(--info-light);color:#1484c0}.btn-sm-see:hover{background:#ccecff;transform:translateY(-1px)}
+.btn-sm-edit{background:var(--warning-light);color:#9a6200}.btn-sm-edit:hover{background:#fde8b0;transform:translateY(-1px)}
+
+.empty-wrap{text-align:center;padding:5rem 2rem;animation:fadeUp .6s ease both}
+.empty-icon{font-size:4rem;display:block;margin-bottom:1rem;animation:float 3s ease-in-out infinite}
+
+/* Badge pour travail terminé (ajouté sans casser le style existant) */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .22rem .75rem;
+  border-radius: 999px;
+  font-size: .82rem;
+  font-weight: 800;
+}
+.badge-status.yes {
+  background: var(--primary-light);
+  color: #0a7a52;
+  border: 1.5px solid rgba(28,200,138,.3);
+}
+.badge-status.no {
+  background: var(--danger-light);
+  color: #c0392b;
+  border: 1.5px solid rgba(231,76,60,.25);
+}
+</style>
+{% endblock %}
 
 {% block body %}
-    <h1>CarnetEducatif index</h1>
+<div class="page-hero">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <div class="hero-title">
+          <div class="hero-icon">📚</div>
+          Carnets éducatifs
+        </div>
+        <div class="hero-sub">Suivez et analysez vos sessions d'apprentissage</div>
+      </div>
+      <div class="d-flex gap-2">
+        {# NOUVEAU BOUTON vers la liste des commentaires #}
+        <a href="{{ path('app_commentaire_index') }}" class="btn-new" style="background: linear-gradient(135deg, var(--info), #1484c0);">
+          💬 Tous les commentaires
+        </a>
+        <a href="{{ path('app_carnet_educatif_new') }}" class="btn-new">➕ Nouveau carnet</a>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Date_etude</th>
-                <th>Heure_debut</th>
-                <th>Heure_fin</th>
-                <th>Duree_totale</th>
-                <th>Lieu</th>
-                <th>Matiere</th>
-                <th>Type_activite</th>
-                <th>Niveau_difficulte</th>
-                <th>Niveau_concentration</th>
-                <th>Niveau_agitation</th>
-                <th>Nombre_interruptions</th>
-                <th>Temps_avant_perte_concentration</th>
-                <th>Travaille_seul</th>
-                <th>Demande_aide</th>
-                <th>Niveau_autonomie</th>
-                <th>Travail_termine</th>
-                <th>Difficultes</th>
-                <th>Points_positifs</th>
-                <th>Created_at</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for carnet_educatif in carnet_educatifs %}
-            <tr>
-                <td>{{ carnet_educatif.id }}</td>
-                <td>{{ carnet_educatif.dateEtude ? carnet_educatif.dateEtude|date('Y-m-d') : '' }}</td>
-                <td>{{ carnet_educatif.heureDebut ? carnet_educatif.heureDebut|date('H:i:s') : '' }}</td>
-                <td>{{ carnet_educatif.heureFin ? carnet_educatif.heureFin|date('H:i:s') : '' }}</td>
-                <td>{{ carnet_educatif.dureeTotale }}</td>
-                <td>{{ carnet_educatif.lieu }}</td>
-                <td>{{ carnet_educatif.matiere }}</td>
-                <td>{{ carnet_educatif.typeActivite }}</td>
-                <td>{{ carnet_educatif.niveauDifficulte }}</td>
-                <td>{{ carnet_educatif.niveauConcentration }}</td>
-                <td>{{ carnet_educatif.niveauAgitation }}</td>
-                <td>{{ carnet_educatif.nombreInterruptions }}</td>
-                <td>{{ carnet_educatif.tempsAvantPerteConcentration }}</td>
-                <td>{{ carnet_educatif.travailleSeul ? 'Yes' : 'No' }}</td>
-                <td>{{ carnet_educatif.demandeAide ? 'Yes' : 'No' }}</td>
-                <td>{{ carnet_educatif.niveauAutonomie }}</td>
-                <td>{{ carnet_educatif.travailTermine ? 'Yes' : 'No' }}</td>
-                <td>{{ carnet_educatif.difficultes }}</td>
-                <td>{{ carnet_educatif.pointsPositifs }}</td>
-                <td>{{ carnet_educatif.createdAt ? carnet_educatif.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_carnet_educatif_show', {'id': carnet_educatif.id}) }}">show</a>
-                    <a href="{{ path('app_carnet_educatif_edit', {'id': carnet_educatif.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="21">no records found</td>
-            </tr>
+<div class="container py-5">
+  {% if carnet_educatifs|length > 0 %}
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Matière</th>
+          <th>Durée</th>
+          <th>Concentration</th>
+          <th>Travail terminé</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for carnet in carnet_educatifs %}
+        <tr style="animation-delay:{{ loop.index * 0.05 }}s">
+          <td><strong>{{ carnet.dateEtude ? carnet.dateEtude|date('d/m/Y') : '—' }}</strong></td>
+          <td><span class="subject-tag">{{ carnet.matiere }}</span></td>
+          <td><span class="duration-tag">⏱ {{ carnet.dureeTotale }} min</span></td>
+          <td>
+            <div class="conc-wrap">
+              <span class="conc-num">{{ carnet.niveauConcentration }}</span>
+              <div class="conc-track">
+                <div class="conc-fill" style="width:{{ carnet.niveauConcentration * 10 }}%"></div>
+              </div>
+            </div>
+           </td>
+          <td>
+            {% if carnet.travailTermine %}
+              <span class="badge-status yes">✅ Terminé</span>
+            {% else %}
+              <span class="badge-status no">⏳ Non terminé</span>
+            {% endif %}
+           </td>
+          <td>
+            <div class="d-flex gap-2">
+              <a href="{{ path('app_carnet_educatif_show', {'id': carnet.id}) }}" class="btn-sm-see">👁 Voir</a>
+              {# Optionnel : vous pouvez ajouter le bouton Modifier ici si souhaité #}
+            </div>
+           </td>
+         </tr>
         {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_carnet_educatif_new') }}">Create new</a>
+      </tbody>
+     </table>
+  </div>
+  {% else %}
+  <div class="empty-wrap">
+    <span class="empty-icon">📭</span>
+    <p style="color:var(--muted);font-size:1.05rem">Aucun carnet trouvé.<br>Créez votre première session d'étude !</p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="{{ path('app_carnet_educatif_new') }}" class="btn-new">➕ Nouveau carnet</a>
+      <a href="{{ path('app_commentaire_index') }}" class="btn-new" style="background: linear-gradient(135deg, var(--info), #1484c0);">💬 Voir commentaires</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
 {% endblock %}

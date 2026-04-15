@@ -1,4 +1,30 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_start(form, {'attr': {'class': 'commentaire-form'}}) }}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            {{ form_label(form.date_seule, '📅 Date', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.date_seule, {'attr': {'class': 'form-control form-control-lg rounded-3'}}) }}
+            {{ form_errors(form.date_seule) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_label(form.heure_seule, '⏰ Heure', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.heure_seule, {'attr': {'class': 'form-control form-control-lg rounded-3'}}) }}
+            {{ form_errors(form.heure_seule) }}
+        </div>
+    </div>
+     <div class="mb-4">
+        {{ form_label(form.type_commentaire, '🏷️ Type', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+        {{ form_widget(form.type_commentaire, {'attr': {'class': 'form-select form-select-lg rounded-3'}}) }}
+        {{ form_errors(form.type_commentaire) }}
+    </div>
+    <div class="mb-4">
+        {{ form_label(form.texte_commentaire, '✏️ Votre commentaire', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+        {{ form_widget(form.texte_commentaire, {'attr': {'class': 'form-control rounded-3', 'rows': 5}}) }}
+        {{ form_errors(form.texte_commentaire) }}
+    </div>
+
+   
+
+    <div class="d-grid gap-2 mt-4">
+        <button class="btn btn-primary btn-lg rounded-pill shadow-sm">{{ button_label|default('Enregistrer') }}</button>
+    </div>
 {{ form_end(form) }}

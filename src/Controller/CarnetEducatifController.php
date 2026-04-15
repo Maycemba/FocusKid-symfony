@@ -1,4 +1,5 @@
 <?php
+// src/Controller/CarnetEducatifController.php
 
 namespace App\Controller;
 
@@ -11,10 +12,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/carnet/educatif')]
+#[Route('carnet_educatif')]
 final class CarnetEducatifController extends AbstractController
 {
-    #[Route(name: 'app_carnet_educatif_index', methods: ['GET'])]
+    #[Route('/', name: 'app_carnet_educatif_index', methods: ['GET'])]
     public function index(CarnetEducatifRepository $carnetEducatifRepository): Response
     {
         return $this->render('carnet_educatif/index.html.twig', [
@@ -30,13 +31,37 @@ final class CarnetEducatifController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // La durée a été envoyée par le formulaire (champ readonly)
+            // Mais on recalcule pour être sûr (évite la triche)
+            $carnetEducatif->calculateDureeTotale();
             $entityManager->persist($carnetEducatif);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_carnet_educatif_index', [], Response::HTTP_SEE_OTHER);
+            $this->addFlash('success', 'Carnet créé avec succès.');
+            return $this->redirectToRoute('app_carnet_educatif_index');
         }
 
         return $this->render('carnet_educatif/new.html.twig', [
+            'carnet_educatif' => $carnetEducatif,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/{id}/edit', name: 'app_carnet_educatif_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, CarnetEducatif $carnetEducatif, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(CarnetEducatifType::class, $carnetEducatif);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $carnetEducatif->calculateDureeTotale();
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Carnet modifié.');
+            return $this->redirectToRoute('app_carnet_educatif_index');
+        }
+
+        return $this->render('carnet_educatif/edit.html.twig', [
             'carnet_educatif' => $carnetEducatif,
             'form' => $form,
         ]);
@@ -50,32 +75,14 @@ final class CarnetEducatifController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_carnet_educatif_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, CarnetEducatif $carnetEducatif, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(CarnetEducatifType::class, $carnetEducatif);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_carnet_educatif_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('carnet_educatif/edit.html.twig', [
-            'carnet_educatif' => $carnetEducatif,
-            'form' => $form,
-        ]);
-    }
-
     #[Route('/{id}', name: 'app_carnet_educatif_delete', methods: ['POST'])]
     public function delete(Request $request, CarnetEducatif $carnetEducatif, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$carnetEducatif->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$carnetEducatif->getId(), $request->request->get('_token'))) {
             $entityManager->remove($carnetEducatif);
             $entityManager->flush();
+            $this->addFlash('success', 'Carnet supprimé.');
         }
-
-        return $this->redirectToRoute('app_carnet_educatif_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_carnet_educatif_index');
     }
 }

@@ -5,16 +5,18 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 use App\Repository\UtilisateurRepository;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
-#[ORM\Table(name: 'utilisateur')]
-class Utilisateur
+#[ORM\Table(name: 'users')]
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'UserID', type: 'integer')]
     private ?int $id = null;
 
     public function getId(): ?int
@@ -28,7 +30,7 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(name: 'Username', type: 'string', nullable: false)]
     private ?string $username = null;
 
     public function getUsername(): ?string
@@ -42,7 +44,7 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(name: 'Email', type: 'string', nullable: false)]
     private ?string $email = null;
 
     public function getEmail(): ?string
@@ -56,7 +58,7 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false, name: 'passwordHash')]
+    #[ORM\Column(name: 'PasswordHash', type: 'string', nullable: false)]
     private ?string $passwordHash = null;
 
     public function getPasswordHash(): ?string
@@ -70,21 +72,21 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $role = null;
+    #[ORM\Column(name: 'Role', type: 'integer', nullable: false)]
+    private ?int $role = null;
 
-    public function getRole(): ?string
+    public function getRole(): ?int
     {
         return $this->role;
     }
 
-    public function setRole(string $role): self
+    public function setRole(int $role): self
     {
         $this->role = $role;
         return $this;
     }
 
-   #[ORM\Column(type: 'boolean', nullable: true, name: 'isActive')]
+    #[ORM\Column(name: 'IsActive', type: 'boolean', nullable: true)]
     private ?bool $isActive = null;
 
     public function isIsActive(): ?bool
@@ -98,7 +100,7 @@ class Utilisateur
         return $this;
     }
 
-#[ORM\Column(type: 'datetime', nullable: true, name: 'createdAt')]
+    #[ORM\Column(name: 'LockUntil', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $createdAt = null;
 
     public function getCreatedAt(): ?\DateTimeInterface
@@ -112,19 +114,19 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'boolean', nullable: true)]
-    private ?bool $notifications_email = null;
+    // #[ORM\Column(type: 'boolean', nullable: true)]
+    // private ?bool $notifications_email = null;
 
-    public function isNotifications_email(): ?bool
-    {
-        return $this->notifications_email;
-    }
+    // public function isNotifications_email(): ?bool
+    // {
+    //     return $this->notifications_email;
+    // }
 
-    public function setNotifications_email(?bool $notifications_email): self
-    {
-        $this->notifications_email = $notifications_email;
-        return $this;
-    }
+    // public function setNotifications_email(?bool $notifications_email): self
+    // {
+    //     $this->notifications_email = $notifications_email;
+    //     return $this;
+    // }
 
     #[ORM\OneToMany(targetEntity: CarnetEducatif::class, mappedBy: 'utilisateur')]
     private Collection $carnetEducatifs;
@@ -292,4 +294,46 @@ class Utilisateur
         return $this;
     }
 
+    // Méthodes pour UserInterface
+    public function getUserIdentifier(): string
+    {
+        return $this->username; // Utiliser username au lieu d'email
+    }
+
+    public function getRoles(): array
+    {
+        $roles = [];
+
+        // Convertir le rôle numérique en rôle Symfony
+        if ($this->role === 0) {
+            $roles[] = 'ROLE_PARENT';
+        } elseif ($this->role === 1) {
+            $roles[] = 'ROLE_ADMIN';
+        }
+
+        // Toujours ajouter un rôle par défaut
+        if (empty($roles)) {
+            $roles[] = 'ROLE_USER';
+        }
+
+        return array_unique($roles);
+    }
+
+    public function eraseCredentials(): void
+    {
+        // Si vous stockez des données temporaires sensibles sur l'utilisateur, effacez-les ici
+    }
+
+    // Méthodes pour PasswordAuthenticatedUserInterface
+    public function getPassword(): ?string
+    {
+        return $this->passwordHash;
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->passwordHash = $password;
+        return $this;
+    }
+    
 }
