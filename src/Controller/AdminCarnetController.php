@@ -1,35 +1,74 @@
 <?php
-// src/Controller/Admin/AdminCarnetController.php
 
 namespace App\Controller;
 
 use App\Entity\CarnetEducatif;
 use App\Form\CarnetEducatifType;
 use App\Repository\CarnetEducatifRepository;
+use App\Repository\CommentaireRepository;   // ← à importer
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/admin/carnet_educatif', name: 'admin_carnet_')]
+#[Route('/admin/carnet', name: 'admin_carnet_')]
 class AdminCarnetController extends AbstractController
 {
     #[Route('/', name: 'index', methods: ['GET'])]
-    public function index(CarnetEducatifRepository $repository): Response
-    {
-        // Admin voit tous les carnets
-        $carnets = $repository->findAll();
-        return $this->render('front/indexAdmin.html.twig', [
-            'carnet_educatifs' => $carnets,
+    public function index(
+        Request $request,
+        CarnetEducatifRepository $repository,
+        CommentaireRepository $commentaireRepository   // ← injection
+    ): Response {
+        $search = $request->query->get('search');
+        $matiere = $request->query->get('matiere');
+        $travailTermine = $request->query->get('travail_termine');
+
+        $qb = $repository->createQueryBuilder('c')
+            ->leftJoin('c.utilisateur', 'u')
+            ->addSelect('u');
+
+        if ($search) {
+            $qb->andWhere('c.matiere LIKE :search OR c.contenu LIKE :search OR c.lieu LIKE :search')
+               ->setParameter('search', '%'.$search.'%');
+        }
+        if ($matiere) {
+            $qb->andWhere('c.matiere = :matiere')
+               ->setParameter('matiere', $matiere);
+        }
+        if ($travailTermine !== null && $travailTermine !== '') {
+            $qb->andWhere('c.travailTermine = :tt')
+               ->setParameter('tt', (bool) $travailTermine);
+        }
+
+        $carnets = $qb->getQuery()->getResult();
+
+        $matieres = $repository->createQueryBuilder('c')
+            ->select('DISTINCT c.matiere')
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        // --- Statistiques pour les graphiques ---
+        $totalCarnets = $repository->count([]);               // total des carnets
+        $totalCommentaires = $commentaireRepository->count([]); // total des commentaires
+
+        return $this->render('AdminCarnet/indexAdmin.html.twig', [
+            'carnets' => $carnets,
+            'search' => $search,
+            'matiere' => $matiere,
+            'matieres' => $matieres,
+            'travail_termine' => $travailTermine,
+            'total_carnets' => $totalCarnets,
+            'total_commentaires' => $totalCommentaires,
         ]);
     }
 
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(CarnetEducatif $carnet): Response
     {
-        return $this->render('car/show.html.twig', [
-            'carnet_educatif' => $carnet,
+        return $this->render('AdminCarnet/showCarnet.html.twig', [
+            'carnet' => $carnet,
         ]);
     }
 
@@ -40,14 +79,16 @@ class AdminCarnetController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $carnet->calculateDureeTotale(); // recalcul de la durée
+            if (method_exists($carnet, 'calculateDureeTotale')) {
+                $carnet->calculateDureeTotale();
+            }
             $em->flush();
-            $this->addFlash('success', 'Carnet modifié avec succès.');
+            $this->addFlash('success', 'Carnet modifié.');
             return $this->redirectToRoute('admin_carnet_index');
         }
 
-        return $this->render('carnet_educatif/edit.html.twig', [
-            'carnet_educatif' => $carnet,
+        return $this->render('AdminCarnet/editCarnet.html.twig', [
+            'carnet' => $carnet,
             'form' => $form->createView(),
         ]);
     }
@@ -61,5 +102,13 @@ class AdminCarnetController extends AbstractController
             $this->addFlash('success', 'Carnet supprimé.');
         }
         return $this->redirectToRoute('admin_carnet_index');
+    }
+
+    #[Route('/{id}/confirm-delete', name: 'delete_confirm', methods: ['GET'])]
+    public function deleteConfirm(CarnetEducatif $carnet): Response
+    {
+        return $this->render('AdminCarnet/deleteCarnet.html.twig', [
+            'carnet' => $carnet,
+        ]);
     }
 }

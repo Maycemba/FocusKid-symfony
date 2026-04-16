@@ -96,13 +96,17 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
         </div>
         <div class="hero-sub">Suivez et analysez vos sessions d'apprentissage</div>
       </div>
-      <div class="d-flex gap-2">
-        <a href="{{ path('app_commentaire_index') }}" class="btn-new" style="background: linear-gradient(135deg, var(--info), #1484c0);">
-          💬 Tous les commentaires
-        </a>
-        <a href="{{ path('app_carnet_educatif_new') }}" class="btn-new">➕ Nouveau carnet</a>
-      </div>
-    </div>
+      
+       <div class="d-flex gap-2">
+    <a href="{{ path('app_commentaire_index') }}" class="btn-new" style="background: linear-gradient(135deg, var(--info), #1484c0);">
+        💬 Tous les commentaires
+    </a>
+    <a href="{{ path('app_carnet_educatif_stats') }}" class="btn-new" style="background: linear-gradient(135deg, #6f42c1, #5932a8);">
+        📊 Statistiques
+    </a>
+    <a href="{{ path('app_carnet_educatif_new') }}" class="btn-new">➕ Nouveau carnet</a>
+
+       
   </div>
 </div>
 
@@ -182,6 +186,7 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
           </td>
         </tr>
         {% endfor %}
+       
       </tbody>
     </table>
   </div>

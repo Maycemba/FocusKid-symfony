@@ -1,0 +1,216 @@
+{% extends 'base-back.html.twig' %}
+
+{% block title %}Admin – Gestion des carnets éducatifs{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+  .admin-card {
+    background: #fff;
+    border: 1px solid #e8ecf5;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(78,115,223,.08);
+  }
+  .admin-filter-bar {
+    background: #f8faff;
+    border-radius: 20px;
+    padding: 1rem 1.5rem;
+  }
+  .table-admin th {
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #5a6a8a;
+  }
+  .badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.22rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .badge-status.yes {
+    background: #d4f7ec;
+    color: #0a7a52;
+  }
+  .badge-status.no {
+    background: #fee2e2;
+    color: #c0392b;
+  }
+  .subject-tag {
+    background: #e8edfd;
+    color: #4e6fdf;
+    padding: 0.2rem 0.7rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+  .btn-icon {
+    padding: 0.3rem 0.8rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  /* Styles pour les cartes de statistiques */
+  .stats-card {
+    background: white;
+    border-radius: 24px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+    transition: 0.2s;
+    border: 1px solid #eef2f8;
+  }
+  .stats-card .number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #1e2a5e;
+  }
+  .stats-card .label {
+    font-size: 0.9rem;
+    color: #6c7a91;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .stats-card .icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>📚 Gestion des carnets éducatifs</h1>
+        <div>
+            <a href="{{ path('admin_commentaire_index') }}" class="btn btn-outline-info me-2">
+                💬 Commentaires
+            </a>
+            <a href="{{ path('admin_carnet_index') }}" class="btn btn-outline-secondary">⟳ Actualiser</a>
+        </div>
+    </div>
+
+    <!-- ========== SECTION STATISTIQUES + GRAPHIQUE ========== -->
+    <div class="row mb-4">
+        <!-- Carte Total Carnets -->
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="icon">📘</div>
+                <div class="number">{{ total_carnets|default(0) }}</div>
+                <div class="label">Carnets éducatifs</div>
+            </div>
+        </div>
+        <!-- Carte Total Commentaires -->
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="icon">💬</div>
+                <div class="number">{{ total_commentaires|default(0) }}</div>
+                <div class="label">Commentaires</div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Filtres -->
+    <div class="admin-filter-bar mb-4">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">🔍 Recherche</label>
+                <input type="text" name="search" class="form-control" placeholder="Matière, contenu, lieu..." value="{{ search|default('') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">📚 Matière</label>
+                <select name="matiere" class="form-select">
+                    <option value="">Toutes</option>
+                    {% for m in matieres|default([]) %}
+                        <option value="{{ m }}" {% if matiere == m %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">✅ Travail terminé</label>
+                <select name="travail_termine" class="form-select">
+                    <option value="">Tous</option>
+                    <option value="1" {% if travail_termine == '1' %}selected{% endif %}>Terminé</option>
+                    <option value="0" {% if travail_termine == '0' %}selected{% endif %}>Non terminé</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tableau des carnets -->
+    <div class="admin-card">
+        <div class="table-responsive">
+            <table class="table table-admin align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Matière</th>
+                        <th>Durée (min)</th>
+                        <th>Concentration</th>
+                        <th>Travail terminé</th>
+                        <th>Utilisateur</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for carnet in carnets %}
+                    <tr>
+                        <td><span class="badge bg-light text-dark">{{ carnet.id }}</span></td>
+                        <td>{{ carnet.dateEtude ? carnet.dateEtude|date('d/m/Y') : '—' }}</td>
+                        <td><span class="subject-tag">{{ carnet.matiere }}</span></td>
+                        <td>{{ carnet.dureeTotale ?? '—' }}</td>
+                        <td>
+                            {% if carnet.niveauConcentration is defined %}
+                                {{ carnet.niveauConcentration }}/10
+                                <div class="progress mt-1" style="height: 4px;">
+                                    <div class="progress-bar bg-success" style="width: {{ carnet.niveauConcentration * 10 }}%"></div>
+                                </div>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if carnet.travailTermine %}
+                                <span class="badge-status yes">✅ Terminé</span>
+                            {% else %}
+                                <span class="badge-status no">⏳ Non terminé</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ carnet.utilisateur ? carnet.utilisateur.email : 'N/A' }}</td>
+                        <td>
+                            <div class="d-flex justify-content-end gap-1">
+                                <a href="{{ path('admin_carnet_show', {id: carnet.id}) }}"
+                                   class="btn-icon btn btn-info btn-sm text-white"
+                                   title="Voir le détail">
+                                    👁 Voir
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">Aucun carnet trouvé.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
