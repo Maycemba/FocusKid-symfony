@@ -445,6 +445,21 @@ body {
           <a href="{{ path('app_carnet_educatif_index') }}" class="btn-back">← Retour</a>
           <a href="{{ path('app_carnet_educatif_edit', {'id': carnet_educatif.id}) }}" class="btn-edit">✏️ Modifier</a>
           <a href="{{ path('app_commentaire_new', {'carnetId': carnet_educatif.id}) }}" class="btn-comment">💬 Commenter</a>
+          <a href="{{ path('app_carnet_educatif_pdf', {'id': carnet_educatif.id}) }}" class="btn-pdf" style="
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .6rem 1.4rem;
+    border-radius: 999px;
+    font-size: .9rem;
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    text-decoration: none;
+    background: #fff;
+    color: #dc3545;
+    border: 1.5px solid #dc3545;
+    transition: all .2s;
+">📄 PDF</a>
           {# Formulaire de suppression (avec CSRF) #}
           <form method="post" action="{{ path('app_carnet_educatif_delete', {'id': carnet_educatif.id}) }}"
                 onsubmit="return confirm('Supprimer définitivement ce carnet ?');" class="d-inline">

@@ -16,13 +16,45 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/commentaire')]
 final class CommentaireController extends AbstractController
 {
-    #[Route(name: 'app_commentaire_index', methods: ['GET'])]
-    public function index(CommentaireRepository $commentaireRepository): Response
-    {
-        return $this->render('commentaire/index.html.twig', [
-            'commentaires' => $commentaireRepository->findAll(),
-        ]);
+    #[Route('/', name: 'app_commentaire_index', methods: ['GET'])]
+public function index(Request $request, CommentaireRepository $commentaireRepository): Response
+{
+    // Paramètres de filtre
+    $search = $request->query->get('search', '');
+    $type = $request->query->get('type', '');
+    $carnetId = $request->query->get('carnet_id', '');
+
+    $qb = $commentaireRepository->createQueryBuilder('c')
+        ->leftJoin('c.carnetEducatif', 'ce');
+
+    if ($search) {
+        $qb->andWhere('c.texte_commentaire LIKE :search')
+           ->setParameter('search', '%'.$search.'%');
     }
+    if ($type) {
+        $qb->andWhere('c.type_commentaire = :type')
+           ->setParameter('type', $type);
+    }
+    if ($carnetId) {
+        $qb->andWhere('ce.id = :carnetId')
+           ->setParameter('carnetId', $carnetId);
+    }
+
+    $qb->orderBy('c.date_commentaire', 'DESC');
+
+    $commentaires = $qb->getQuery()->getResult();
+
+    // Types disponibles pour le filtre
+    $types = ['Observation', 'Problème', 'Suggestion', 'Amélioration'];
+
+    return $this->render('commentaire/index.html.twig', [
+        'commentaires' => $commentaires,
+        'types' => $types,
+        'search' => $search,
+        'selected_type' => $type,
+        'carnet_id' => $carnetId,
+    ]);
+}
 
     #[Route('/new/{carnetId?}', name: 'app_commentaire_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, ?int $carnetId = null): Response

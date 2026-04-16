@@ -62,7 +62,7 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
 .empty-wrap{text-align:center;padding:5rem 2rem;animation:fadeUp .6s ease both}
 .empty-icon{font-size:4rem;display:block;margin-bottom:1rem;animation:float 3s ease-in-out infinite}
 
-/* Badge pour travail terminé (ajouté sans casser le style existant) */
+/* Badge pour travail terminé */
 .badge-status {
   display: inline-flex;
   align-items: center;
@@ -97,7 +97,6 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
         <div class="hero-sub">Suivez et analysez vos sessions d'apprentissage</div>
       </div>
       <div class="d-flex gap-2">
-        {# NOUVEAU BOUTON vers la liste des commentaires #}
         <a href="{{ path('app_commentaire_index') }}" class="btn-new" style="background: linear-gradient(135deg, var(--info), #1484c0);">
           💬 Tous les commentaires
         </a>
@@ -108,6 +107,40 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
 </div>
 
 <div class="container py-5">
+
+  {# Barre de filtre #}
+  <div class="card shadow-sm border-0 rounded-4 mb-4">
+    <div class="card-body p-4">
+      <form method="get" action="{{ path('app_carnet_educatif_index') }}" class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label fw-bold">🔍 Recherche</label>
+          <input type="text" name="search" class="form-control" placeholder="Matière, lieu, activité..." value="{{ search|default('') }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">📚 Matière</label>
+          <select name="matiere" class="form-select">
+            <option value="">Toutes</option>
+            {% for m in matieres|default([]) %}
+              <option value="{{ m }}" {% if selected_matiere == m %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">✅ Travail terminé</label>
+          <select name="travail_termine" class="form-select">
+            <option value="">Tous</option>
+            <option value="1" {% if selected_travail_termine == '1' %}selected{% endif %}>Terminé</option>
+            <option value="0" {% if selected_travail_termine == '0' %}selected{% endif %}>Non terminé</option>
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end gap-2">
+          <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+          <a href="{{ path('app_carnet_educatif_index') }}" class="btn btn-outline-secondary w-100">Réinitialiser</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
   {% if carnet_educatifs|length > 0 %}
   <div class="table-card">
     <table>
@@ -134,33 +167,29 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
                 <div class="conc-fill" style="width:{{ carnet.niveauConcentration * 10 }}%"></div>
               </div>
             </div>
-           </td>
+          </td>
           <td>
             {% if carnet.travailTermine %}
               <span class="badge-status yes">✅ Terminé</span>
             {% else %}
               <span class="badge-status no">⏳ Non terminé</span>
             {% endif %}
-           </td>
+          </td>
           <td>
             <div class="d-flex gap-2">
               <a href="{{ path('app_carnet_educatif_show', {'id': carnet.id}) }}" class="btn-sm-see">👁 Voir</a>
-              {# Optionnel : vous pouvez ajouter le bouton Modifier ici si souhaité #}
             </div>
-           </td>
-         </tr>
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
-     </table>
+    </table>
   </div>
   {% else %}
   <div class="empty-wrap">
     <span class="empty-icon">📭</span>
     <p style="color:var(--muted);font-size:1.05rem">Aucun carnet trouvé.<br>Créez votre première session d'étude !</p>
-    <div class="d-flex justify-content-center gap-3">
-      <a href="{{ path('app_carnet_educatif_new') }}" class="btn-new">➕ Nouveau carnet</a>
-      <a href="{{ path('app_commentaire_index') }}" class="btn-new" style="background: linear-gradient(135deg, var(--info), #1484c0);">💬 Voir commentaires</a>
-    </div>
+    
   </div>
   {% endif %}
 </div>
