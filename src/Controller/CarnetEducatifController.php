@@ -15,7 +15,7 @@ use Dompdf\Dompdf;          // ← Ajout
 use Dompdf\Options;         // ← Ajout
 use Twig\Environment;       // ← Ajout (pour le rendu du template PDF)
 
-#[Route('carnet_educatif')]
+#[Route('/carnet_educatif')]
 final class CarnetEducatifController extends AbstractController
 {
     #[Route('/', name: 'app_carnet_educatif_index', methods: ['GET'])]
