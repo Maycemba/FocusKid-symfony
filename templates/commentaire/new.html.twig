@@ -1,11 +1,65 @@
-{% extends 'base.html.twig' %}
+{# templates/commentaire/new.html.twig #}
+{% extends 'base-front.html.twig' %}
 
-{% block title %}New Commentaire{% endblock %}
+{% block title %}Nouveau commentaire{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+  /* Styles identiques à ceux du formulaire de carnet */
+  .bg-gradient-success {
+    background: linear-gradient(135deg, #1CC88A, #0eae70);
+  }
+  .rounded-top-4 {
+    border-top-left-radius: 1rem !important;
+    border-top-right-radius: 1rem !important;
+  }
+  .rounded-4 {
+    border-radius: 1rem !important;
+  }
+  .shadow-lg {
+    box-shadow: 0 1rem 2rem rgba(0,0,0,.1) !important;
+  }
+</style>
+{% endblock %}
 
 {% block body %}
-    <h1>Create new Commentaire</h1>
-
-    {{ include('commentaire/_form.html.twig') }}
-
-    <a href="{{ path('app_commentaire_index') }}">back to list</a>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-gradient-success text-white rounded-top-4">
+                    <h3 class="mb-0">💬 Ajouter un commentaire</h3>
+                    <p class="mb-0 small">Partagez votre avis sur la séance</p>
+                </div>
+                <div class="card-body p-4">
+                    {{ form_start(form) }}
+                        {{ form_errors(form) }}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ form_row(form.date_seule, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(form.heure_seule, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            <div class="col-12">
+                                {{ form_row(form.texte_commentaire, {'attr': {'class': 'form-control', 'rows': 5}}) }}
+                            </div>
+                            <div class="col-12">
+                                {{ form_row(form.type_commentaire, {'attr': {'class': 'form-select'}}) }}
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a href="{{ carnet ? path('app_carnet_educatif_show', {'id': carnet.id}) : path('app_commentaire_index') }}" class="btn btn-outline-secondary rounded-pill px-4">Annuler</a>
+                            <button type="submit" class="btn btn-success rounded-pill px-4">💾 Enregistrer</button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+                <div class="card-footer bg-light rounded-bottom-4">
+                    <small class="text-muted">* Tous les champs sont obligatoires</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
