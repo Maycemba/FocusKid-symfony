@@ -1,54 +1,226 @@
 {% extends 'base-back.html.twig' %}
 
-{% block title %}SessionsDeCalme index{% endblock %}
+{% block title %}Sessions de calme - FocusKids{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .badge-type {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-musique { background-color: #3498db; color: white; }
+        .badge-coloriage { background-color: #e74c3c; color: white; }
+        .badge-respiration { background-color: #2ecc71; color: white; }
+        .badge-histoire { background-color: #f39c12; color: white; }
+        .table-actions .btn {
+            margin: 0 2px;
+            padding: 4px 8px;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    {# Le carousel s'affichera automatiquement ici #}
-    {# Le code du carousel est déjà dans base-front.html.twig #}
-    
-    <div class="container-xxl py-5">
-        <div class="container">
-            <h1>SessionsDeCalme index</h1>
-            
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Type_activite</th>
-                        <th>Declencheur</th>
-                        <th>Duree_prevue</th>
-                        <th>Duree_reelle</th>
-                        <th>Horodatage</th>
-                        <th>Feedback_enfant</th>
-                        <th>Note_parent</th>
-                        <th>actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for sessions_de_calme in sessions_de_calmes %}
-                    <tr>
-                        <td>{{ sessions_de_calme.id }}</td>
-                        <td>{{ sessions_de_calme.typeActivite }}</td>
-                        <td>{{ sessions_de_calme.declencheur }}</td>
-                        <td>{{ sessions_de_calme.dureePrevue }}</td>
-                        <td>{{ sessions_de_calme.dureeReelle }}</td>
-                        <td>{{ sessions_de_calme.horodatage ? sessions_de_calme.horodatage|date('Y-m-d H:i:s') : '' }}</td>
-                        <td>{{ sessions_de_calme.feedbackEnfant }}</td>
-                        <td>{{ sessions_de_calme.noteParent }}</td>
-                        <td>
-                            <a href="{{ path('app_sessions_de_calme_show', {'id': sessions_de_calme.id}) }}">show</a>
-                            <a href="{{ path('app_sessions_de_calme_edit', {'id': sessions_de_calme.id}) }}">edit</a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="9">no records found</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            
-            <a href="{{ path('app_sessions_de_calme_new') }}">Create new</a>
+<div class="container-fluid px-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="mt-4">
+                    <i class="ti ti-meditation"></i> Sessions de calme
+                </h1>
+                <a href="{{ path('app_sessions_de_calme_new') }}" class="btn btn-primary btn-lg">
+                    <i class="ti ti-plus"></i> Nouvelle session
+                </a>
+            </div>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active">Gestion des sessions de relaxation</li>
+            </ol>
         </div>
     </div>
+    
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="text-white-50">Total sessions</h5>
+                        <h2 class="text-white">{{ sessions_de_calmes|length }}</h2>
+                    </div>
+                    <i class="ti ti-calendar-stats" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="text-white-50">Durée moyenne</h5>
+                        <h2 class="text-white">
+                            {% set totalDuree = 0 %}
+                            {% set countDuree = 0 %}
+                            {% for session in sessions_de_calmes %}
+                                {% set dureeReelle = session.dureeReelle|default(0)|number_format %}
+                                {% if dureeReelle > 0 %}
+                                    {% set totalDuree = totalDuree + dureeReelle %}
+                                    {% set countDuree = countDuree + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ countDuree > 0 ? (totalDuree / countDuree)|round : 0 }} min
+                        </h2>
+                    </div>
+                    <i class="ti ti-clock" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="text-white-50">Satisfaction</h5>
+                        <h2 class="text-white">
+                            {% set totalNotes = 0 %}
+                            {% set countNotes = 0 %}
+                            {% for session in sessions_de_calmes %}
+                                {% set noteParent = session.noteParent|default(0)|number_format %}
+                                {% if noteParent > 0 %}
+                                    {% set totalNotes = totalNotes + noteParent %}
+                                    {% set countNotes = countNotes + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ countNotes > 0 ? (totalNotes / countNotes)|round(1) : 0 }}/5
+                        </h2>
+                    </div>
+                    <i class="ti ti-star" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="text-white-50">Aujourd'hui</h5>
+                        <h2 class="text-white">
+                            {% set todayCount = 0 %}
+                            {% set today = "now"|date('Y-m-d') %}
+                            {% for session in sessions_de_calmes %}
+                                {% if session.horodatage is not null and session.horodatage|date('Y-m-d') == today %}
+                                    {% set todayCount = todayCount + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ todayCount }}
+                        </h2>
+                    </div>
+                    <i class="ti ti-calendar" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="ti ti-table"></i> Liste des sessions
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="dataTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Type d'activité</th>
+                            <th>Déclencheur</th>
+                            <th>Durée prévue</th>
+                            <th>Durée réelle</th>
+                            <th>Horodatage</th>
+                            <th>Feedback enfant</th>
+                            <th>Note parent</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for session in sessions_de_calmes %}
+                        <tr>
+                            <td>{{ session.id }}</td>
+                            <td>
+                                <span class="badge-type badge-{{ session.typeActivite|lower }}">
+                                    {{ session.typeActivite }}
+                                </span>
+                            </td>
+                            <td>{{ session.declencheur|default('-') }}</td>
+                            <td>{{ session.dureePrevue|default(0) }} min</td>
+                            <td>
+                                {% set dureePrevue = session.dureePrevue|default(0)|number_format %}
+                                {% set dureeReelle = session.dureeReelle|default(0)|number_format %}
+                                {{ dureeReelle }} min
+                                {% if dureeReelle > 0 and dureePrevue > 0 %}
+                                    {% set difference = dureeReelle - dureePrevue %}
+                                    {% if difference > 0 %}
+                                        <span class="text-danger">(+{{ difference }})</span>
+                                    {% elseif difference < 0 %}
+                                        <span class="text-success">({{ difference }})</span>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td>{{ session.horodatage ? session.horodatage|date('d/m/Y H:i') : '-' }}</td>
+                            <td>
+                                {% if session.feedbackEnfant %}
+                                    <span class="badge bg-success">{{ session.feedbackEnfant }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Non renseigné</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set noteParentInt = session.noteParent|default(0)|number_format %}
+                                {% if noteParentInt > 0 %}
+                                    {% for i in 1..noteParentInt %}
+                                        <i class="ti ti-star text-warning"></i>
+                                    {% endfor %}
+                                    {% if noteParentInt < 5 %}
+                                        {% for i in (noteParentInt + 1)..5 %}
+                                            <i class="ti ti-star text-secondary"></i>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="table-actions">
+                                <a href="{{ path('app_sessions_de_calme_show', {'id': session.id}) }}" class="btn btn-sm btn-info" title="Voir">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                                <a href="{{ path('app_sessions_de_calme_edit', {'id': session.id}) }}" class="btn btn-sm btn-warning" title="Modifier">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                                {{ include('sessions_de_calme/_delete_form.html.twig', {'sessions_de_calme': session}) }}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center">
+                                <div class="alert alert-info mb-0">
+                                    <i class="ti ti-info-circle"></i> Aucune session trouvée
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3 text-center">
+                <a href="{{ path('app_sessions_de_calme_new') }}" class="btn btn-success">
+                    <i class="ti ti-plus"></i> Créer une nouvelle session
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

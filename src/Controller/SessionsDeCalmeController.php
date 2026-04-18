@@ -115,15 +115,30 @@ final class SessionsDeCalmeController extends AbstractController  // Changé: ex
             ]
         ]);
     }
-
-    #[Route('/{id}', name: 'app_sessions_de_calme_delete', methods: ['POST'])]
+ #[Route('/{id}/delete', name: 'app_sessions_de_calme_delete', methods: ['POST'])]
     public function delete(Request $request, SessionsDeCalme $sessionsDeCalme, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$sessionsDeCalme->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($sessionsDeCalme);
-            $entityManager->flush();
+        // Vérifier le token CSRF
+        if ($this->isCsrfTokenValid('delete' . $sessionsDeCalme->getId(), $request->request->get('_token'))) {
+            
+            try {
+                // Supprimer l'entité
+                $entityManager->remove($sessionsDeCalme);
+                $entityManager->flush();
+                
+                // Ajouter un message de succès
+                $this->addFlash('success', 'La session a été supprimée avec succès !');
+                
+            } catch (\Exception $e) {
+                // En cas d'erreur
+                $this->addFlash('error', 'Une erreur est survenue lors de la suppression : ' . $e->getMessage());
+            }
+        } else {
+            // Token CSRF invalide
+            $this->addFlash('error', 'Token CSRF invalide. Veuillez réessayer.');
         }
-
+        
+        // Rediriger vers la liste
         return $this->redirectToRoute('app_sessions_de_calme_index', [], Response::HTTP_SEE_OTHER);
     }
 }

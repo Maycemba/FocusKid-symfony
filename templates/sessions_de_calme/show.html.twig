@@ -1,50 +1,173 @@
 {% extends 'base-back.html.twig' %}
 
-{% block title %}SessionsDeCalme{% endblock %}
+{% block title %}Détail de la session - FocusKids{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .detail-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .info-label {
+            font-weight: bold;
+            color: #4e73df;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>SessionsDeCalme list</h1>
+<div class="container-fluid px-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Navigation breadcrumb -->
+            <nav aria-label="breadcrumb" class="mt-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('app_sessions_de_calme_index') }}">Sessions de calme</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        Session #{{ sessions_de_calme.id }}
+                    </li>
+                </ol>
+            </nav>
+            
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h4 class="text-white mb-0">
+                                <i class="ti ti-meditation"></i> Détail de la session
+                            </h4>
+                            <small class="text-white-50">Informations complètes de la session</small>
+                        </div>
+                        <div>
+                            <a href="{{ path('app_sessions_de_calme_index') }}" class="btn btn-light">
+                                <i class="ti ti-arrow-left"></i> Retour à la liste
+                            </a>
+                            <a href="{{ path('app_sessions_de_calme_edit', {'id': sessions_de_calme.id}) }}" 
+                               class="btn btn-warning">
+                                <i class="ti ti-edit"></i> Modifier
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="detail-card">
+                                <h5 class="text-primary">
+                                    <i class="ti ti-info-circle"></i> Informations générales
+                                </h5>
+                                <hr>
+                                <div class="info-label">ID de la session</div>
+                                <div class="info-value">#{{ sessions_de_calme.id }}</div>
+                                
+                                <div class="info-label">Type d'activité</div>
+                                <div class="info-value">
+                                    <span class="badge bg-primary">{{ sessions_de_calme.typeActivite }}</span>
+                                </div>
+                                
+                                <div class="info-label">Déclencheur</div>
+                                <div class="info-value">{{ sessions_de_calme.declencheur|default('Non spécifié') }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="detail-card">
+                                <h5 class="text-primary">
+                                    <i class="ti ti-clock"></i> Durée et horodatage
+                                </h5>
+                                <hr>
+                                <div class="info-label">Durée prévue</div>
+                                <div class="info-value">{{ sessions_de_calme.dureePrevue }} minutes</div>
+                                
+                                <div class="info-label">Durée réelle</div>
+                                <div class="info-value">{{ sessions_de_calme.dureeReelle|default('Non renseignée') }} minutes</div>
+                                
+                                <div class="info-label">Date et heure</div>
+                                <div class="info-value">
+                                    {{ sessions_de_calme.horodatage ? sessions_de_calme.horodatage|date('d/m/Y H:i:s') : 'Non renseignée' }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="detail-card">
+                                <h5 class="text-primary">
+                                    <i class="ti ti-mood-happy"></i> Feedback enfant
+                                </h5>
+                                <hr>
+                                <div class="info-label">Ressenti de l'enfant</div>
+                                <div class="info-value">
+                                    {% if sessions_de_calme.feedbackEnfant %}
+                                        <span class="badge bg-success">{{ sessions_de_calme.feedbackEnfant }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Non renseigné</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="detail-card">
+                                <h5 class="text-primary">
+                                    <i class="ti ti-star"></i> Évaluation parent
+                                </h5>
+                                <hr>
+                                <div class="info-label">Note donnée</div>
+                               <div class="info-value">
+    {% if sessions_de_calme.noteParent %}
+        {# 1. Render filled stars #}
+        {% for i in 1..sessions_de_calme.noteParent %}
+            <i class="ti ti-star text-warning" style="font-size: 1.5rem;"></i>
+        {% endfor %}
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ sessions_de_calme.id }}</td>
-            </tr>
-            <tr>
-                <th>Type_activite</th>
-                <td>{{ sessions_de_calme.typeActivite }}</td>
-            </tr>
-            <tr>
-                <th>Declencheur</th>
-                <td>{{ sessions_de_calme.declencheur }}</td>
-            </tr>
-            <tr>
-                <th>Duree_prevue</th>
-                <td>{{ sessions_de_calme.dureePrevue }}</td>
-            </tr>
-            <tr>
-                <th>Duree_reelle</th>
-                <td>{{ sessions_de_calme.dureeReelle }}</td>
-            </tr>
-            <tr>
-                <th>Horodatage</th>
-                <td>{{ sessions_de_calme.horodatage ? sessions_de_calme.horodatage|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Feedback_enfant</th>
-                <td>{{ sessions_de_calme.feedbackEnfant }}</td>
-            </tr>
-            <tr>
-                <th>Note_parent</th>
-                <td>{{ sessions_de_calme.noteParent }}</td>
-            </tr>
-        </tbody>
-    </table>
+        {# 2. Render empty stars #}
+        {% set start = sessions_de_calme.noteParent|number_format + 1 %}
+        {% if start <= 5 %}
+            {% for i in start..5 %}
+                <i class="ti ti-star text-secondary" style="font-size: 1.5rem;"></i>
+            {% endfor %}
+        {% endif %}
+        
+        <span class="ms-2">({{ sessions_de_calme.noteParent }}/5)</span>
+    {% else %}
+        <span class="text-muted">Non notée</span>
+    {% endif %}
+</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">
+                            <i class="ti ti-calendar"></i> Créé le : 
+                            {{ sessions_de_calme.horodatage ? sessions_de_calme.horodatage|date('d/m/Y H:i:s') : 'N/A' }}
+                        </small>
+                        <div class="modal-footer">
+    
+    {{ include('sessions_de_calme/_delete_form.html.twig', {'sessions_de_calme': sessions_de_calme}) }}
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <a href="{{ path('app_sessions_de_calme_index') }}">back to list</a>
+<!-- Modal de suppression -->
+{# Dans edit.html.twig (ligne 193) et show.html.twig (ligne 326) #}
 
-    <a href="{{ path('app_sessions_de_calme_edit', {'id': sessions_de_calme.id}) }}">edit</a>
-
-    {{ include('sessions_de_calme/_delete_form.html.twig') }}
 {% endblock %}

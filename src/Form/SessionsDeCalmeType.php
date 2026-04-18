@@ -44,7 +44,7 @@ class SessionsDeCalmeType extends AbstractType
             ->add('note_parent')
             ->add('utilisateur', EntityType::class, [
                 'class' => Utilisateur::class,
-                'choice_label' => 'id',
+                'choice_label' => 'username',
             ])
         ;
     }
