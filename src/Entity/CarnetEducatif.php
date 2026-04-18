@@ -20,7 +20,7 @@ class CarnetEducatif
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'carnetEducatifs')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'UserID', nullable: false)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     #[Assert\NotNull(message: 'L\'utilisateur est obligatoire.')]
     private ?Utilisateur $utilisateur = null;
 
