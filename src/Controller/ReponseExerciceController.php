@@ -78,4 +78,5 @@ final class ReponseExerciceController extends AbstractController
 
         return $this->redirectToRoute('app_reponse_exercice_index', [], Response::HTTP_SEE_OTHER);
     }
+    
 }

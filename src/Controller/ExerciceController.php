@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Exercice;
+use App\Entity\ExerciceEnfant;
+use App\Entity\Utilisateur;
 use App\Form\ExerciceType;
 use App\Repository\ExerciceRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -32,8 +34,23 @@ final class ExerciceController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($exercice);
             $entityManager->flush();
-
-            return $this->redirectToRoute('app_exercice_index', [], Response::HTTP_SEE_OTHER);
+            
+            // Gérer la sélection des enfants (table exercice_enfant)
+            $enfantsSelectionnes = $form->get('enfantsSelectionnes')->getData();
+            
+            if (!$exercice->isPourTousEnfants() && $enfantsSelectionnes && count($enfantsSelectionnes) > 0) {
+                foreach ($enfantsSelectionnes as $enfant) {
+                    $exerciceEnfant = new ExerciceEnfant();
+                    $exerciceEnfant->setExerciceId($exercice->getId());
+                    $exerciceEnfant->setEnfantId($enfant->getId());
+                    $exerciceEnfant->setDateAttribution(new \DateTime());
+                    $entityManager->persist($exerciceEnfant);
+                }
+                $entityManager->flush();
+            }
+            
+            $this->addFlash('success', 'Exercice créé avec succès !');
+            return $this->redirectToRoute('app_exercice_index');
         }
 
         return $this->render('exercice/new.html.twig', [
@@ -78,26 +95,38 @@ final class ExerciceController extends AbstractController
 
         return $this->redirectToRoute('app_exercice_index', [], Response::HTTP_SEE_OTHER);
     }
-    #[Route('/archive/{id}', name: 'app_exercice_archive', methods: ['POST'])]
-public function archive(Request $request, Exercice $exercice, EntityManagerInterface $entityManager): Response
-{
-    if ($this->isCsrfTokenValid('archive' . $exercice->getId(), $request->request->get('_token'))) {
-        $exercice->setArchive(true);
-        $exercice->setActif(false);
-        $entityManager->flush();
-        $this->addFlash('success', 'Exercice archivé avec succès!');
+   #[Route('/archive/{id}', name: 'app_exercice_archive', methods: ['POST'])]
+    public function archive(Request $request, Exercice $exercice, EntityManagerInterface $entityManager): Response
+    {
+        // Vérifier le token CSRF
+        $token = $request->request->get('_token');
+        
+        if ($this->isCsrfTokenValid('archive' . $exercice->getId(), $token)) {
+            $exercice->setArchive(true);
+            $exercice->setActif(false);
+            $entityManager->flush();
+            $this->addFlash('success', 'Exercice "' . $exercice->getTitre() . '" archivé avec succès!');
+        } else {
+            $this->addFlash('error', 'Token invalide. Veuillez réessayer.');
+        }
+        
+        return $this->redirectToRoute('app_exercice_index');
     }
-    return $this->redirectToRoute('app_exercice_index');
-}
 
-#[Route('/restore/{id}', name: 'app_exercice_restore', methods: ['POST'])]
-public function restore(Request $request, Exercice $exercice, EntityManagerInterface $entityManager): Response
-{
-    if ($this->isCsrfTokenValid('restore' . $exercice->getId(), $request->request->get('_token'))) {
-        $exercice->setArchive(false);
-        $entityManager->flush();
-        $this->addFlash('success', 'Exercice restauré avec succès!');
+    #[Route('/restore/{id}', name: 'app_exercice_restore', methods: ['POST'])]
+    public function restore(Request $request, Exercice $exercice, EntityManagerInterface $entityManager): Response
+    {
+        // Vérifier le token CSRF
+        $token = $request->request->get('_token');
+        
+        if ($this->isCsrfTokenValid('restore' . $exercice->getId(), $token)) {
+            $exercice->setArchive(false);
+            $entityManager->flush();
+            $this->addFlash('success', 'Exercice "' . $exercice->getTitre() . '" restauré avec succès!');
+        } else {
+            $this->addFlash('error', 'Token invalide. Veuillez réessayer.');
+        }
+        
+        return $this->redirectToRoute('app_exercice_index');
     }
-    return $this->redirectToRoute('app_exercice_index');
-}
 }

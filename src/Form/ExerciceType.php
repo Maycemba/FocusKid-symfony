@@ -6,13 +6,15 @@ use App\Entity\Exercice;
 use App\Entity\Utilisateur;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Doctrine\ORM\EntityRepository;
 
 class ExerciceType extends AbstractType
 {
@@ -53,10 +55,9 @@ class ExerciceType extends AbstractType
                 'label' => 'Durée (secondes)',
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('contenu', TextareaType::class, [
-                'label' => 'Contenu (JSON)',
+            ->add('contenu', HiddenType::class, [  // ← HiddenType
                 'required' => false,
-                'attr' => ['class' => 'form-control', 'rows' => 5, 'id' => 'contenuJson']
+                'attr' => ['id' => 'contenuJson']
             ])
             ->add('pour_tous_enfants', CheckboxType::class, [
                 'label' => 'Pour tous les enfants',
@@ -68,27 +69,30 @@ class ExerciceType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-check-input']
             ])
-            ->add('complete', CheckboxType::class, [
-                'label' => 'Complété',
-                'required' => false,
-                'attr' => ['class' => 'form-check-input']
-            ])
             ->add('archive', CheckboxType::class, [
                 'label' => 'Archivé',
                 'required' => false,
                 'attr' => ['class' => 'form-check-input']
             ])
-            // Champ cree_par - optionnel, sera set automatiquement
-            ->add('cree_par', IntegerType::class, [
+            // Champ pour sélectionner les enfants
+            ->add('enfantsSelectionnes', EntityType::class, [
+                'class' => Utilisateur::class,
+                'choice_label' => 'username',
+                'multiple' => true,
                 'required' => false,
-                'attr' => ['class' => 'form-control', 'style' => 'display:none']
+                'mapped' => false,
+                'query_builder' => function (EntityRepository $er) {
+                    return $er->createQueryBuilder('u')
+                        ->where('u.role = :role')
+                        ->setParameter('role', 'enfant')
+                        ->orderBy('u.username', 'ASC');
+                },
+                'attr' => ['class' => 'form-select', 'size' => 5, 'id' => 'enfantsSelectionnes'],
+                'label' => 'Enfants sélectionnés'
             ])
-            // Champ date_creation - caché car auto-généré
-            ->add('date_creation', null, [
-                'required' => false,
-                'widget' => 'single_text',
-                'attr' => ['style' => 'display:none']
-            ])
+            // Seulement cree_par en hidden (optionnel)
+            ->add('cree_par', HiddenType::class, ['required' => false])
+            // SUPPRIMER date_creation et complete
         ;
     }
 
