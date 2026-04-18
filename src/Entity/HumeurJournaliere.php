@@ -5,7 +5,6 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
 use App\Repository\HumeurJournaliereRepository;
 
 #[ORM\Entity(repositoryClass: HumeurJournaliereRepository::class)]
@@ -16,6 +15,19 @@ class HumeurJournaliere
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
+
+    #[ORM\ManyToOne(targetEntity: Emotion::class, inversedBy: 'humeurJournalieres')]
+    #[ORM\JoinColumn(name: 'emotionId', referencedColumnName: 'id')]
+    private ?Emotion $emotion = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true, name: 'dateHeure')]
+    private ?\DateTimeInterface $dateHeure = null;
+
+    public function __construct()
+    {
+        // Définir la date par défaut à maintenant
+        $this->dateHeure = new \DateTime();
+    }
 
     public function getId(): ?int
     {
@@ -28,10 +40,6 @@ class HumeurJournaliere
         return $this;
     }
 
-    #[ORM\ManyToOne(targetEntity: Emotion::class, inversedBy: 'humeurJournalieres')]
-    #[ORM\JoinColumn(name: 'emotionId', referencedColumnName: 'id')]
-    private ?Emotion $emotion = null;
-
     public function getEmotion(): ?Emotion
     {
         return $this->emotion;
@@ -43,9 +51,6 @@ class HumeurJournaliere
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $dateHeure = null;
-
     public function getDateHeure(): ?\DateTimeInterface
     {
         return $this->dateHeure;
@@ -56,5 +61,4 @@ class HumeurJournaliere
         $this->dateHeure = $dateHeure;
         return $this;
     }
-
 }

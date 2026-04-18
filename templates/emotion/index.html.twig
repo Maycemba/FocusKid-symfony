@@ -1,37 +1,245 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}Emotion index{% endblock %}
+{% block title %}Gestion des émotions - FocusKids{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #9C27B0;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        .table-emotion {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .table-emotion thead {
+            background: #9C27B0;
+            color: white;
+        }
+        .table-emotion th, .table-emotion td {
+            vertical-align: middle;
+            padding: 12px;
+        }
+        .emotion-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+        .btn-action {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin: 0 3px;
+        }
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box input {
+            padding-left: 40px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #999;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #f8f9fa;
+            border-radius: 20px;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Emotion index</h1>
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">
+                <i class="ti ti-emoji-happy"></i> Gestion des émotions
+            </h2>
+            <p class="text-muted">Gérez les émotions pour les enfants</p>
+        </div>
+        <a href="{{ path('app_emotion_new') }}" class="btn btn-primary">
+            <i class="ti ti-plus"></i> Nouvelle émotion
+        </a>
+    </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Nom</th>
-                <th>Photo</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for emotion in emotions %}
-            <tr>
-                <td>{{ emotion.id }}</td>
-                <td>{{ emotion.nom }}</td>
-                <td>{{ emotion.photo }}</td>
-                <td>
-                    <a href="{{ path('app_emotion_show', {'id': emotion.id}) }}">show</a>
-                    <a href="{{ path('app_emotion_edit', {'id': emotion.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <!-- Cartes statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ emotions|length }}</div>
+                <div class="stat-label">😊 Total émotions</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ emotions|filter(e => e.photo is not empty)|length }}</div>
+                <div class="stat-label">🖼️ Avec image</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ emotions|filter(e => e.nom is not empty)|length }}</div>
+                <div class="stat-label">📝 Nom définis</div>
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ path('app_emotion_new') }}">Create new</a>
+    <!-- Filtres -->
+    <div class="filter-section">
+        <div class="row">
+            <div class="col-md-8 mb-3">
+                <div class="search-box">
+                    <i class="ti ti-search"></i>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Rechercher une émotion...">
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <button id="resetFilters" class="btn btn-secondary w-100">
+                    <i class="ti ti-refresh"></i> Réinitialiser
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau des émotions -->
+    <div class="table-responsive">
+        <table class="table table-emotion">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Image</th>
+                    <th>Nom</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emotion in emotions %}
+                    <tr>
+                        <td>{{ emotion.id }}</td>
+                        <td>
+                            {% if emotion.photo %}
+                                <img src="data:image/jpeg;base64,{{ emotion.photo }}" 
+                                     alt="{{ emotion.nom }}" 
+                                     class="emotion-img">
+                            {% else %}
+                                <span class="emotion-img d-inline-flex align-items-center justify-content-center bg-light">
+                                    😊
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ emotion.nom|default('Sans nom') }}</td>
+                        <td>
+                            <a href="{{ path('app_emotion_show', {'id': emotion.id}) }}" class="btn btn-sm btn-info btn-action" title="Voir">
+                                <i class="ti ti-eye"></i>
+                            </a>
+                            <a href="{{ path('app_emotion_edit', {'id': emotion.id}) }}" class="btn btn-sm btn-warning btn-action" title="Modifier">
+                                <i class="ti ti-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">Aucune émotion trouvée</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if emotions|length == 0 %}
+        <div class="empty-state">
+            <i class="ti ti-emoji-neutral"></i>
+            <h4>Aucune émotion trouvée</h4>
+            <p class="text-muted">Commencez par créer votre première émotion !</p>
+            <a href="{{ path('app_emotion_new') }}" class="btn btn-primary mt-3">
+                <i class="ti ti-plus"></i> Créer une émotion
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var searchInput = document.getElementById('searchInput');
+            var resetBtn = document.getElementById('resetFilters');
+            var tableRows = document.querySelectorAll('.table-emotion tbody tr');
+            
+            function filterEmotions() {
+                var searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+                var visibleCount = 0;
+                
+                for (var i = 0; i < tableRows.length; i++) {
+                    var row = tableRows[i];
+                    var nomCell = row.cells[2];
+                    var nom = nomCell ? nomCell.textContent.toLowerCase() : '';
+                    var show = true;
+                    
+                    if (searchTerm && nom.indexOf(searchTerm) === -1) {
+                        show = false;
+                    }
+                    
+                    row.style.display = show ? '' : 'none';
+                    if (show) visibleCount++;
+                }
+                
+                // Afficher/masquer message "aucun résultat"
+                var emptyMessage = document.getElementById('emptyFilterMessage');
+                var tbody = document.querySelector('.table-emotion tbody');
+                
+                if (visibleCount === 0 && tableRows.length > 0) {
+                    if (!emptyMessage) {
+                        emptyMessage = document.createElement('tr');
+                        emptyMessage.id = 'emptyFilterMessage';
+                        emptyMessage.innerHTML = '<td colspan="4" class="text-center">Aucune émotion ne correspond à vos critères</td>';
+                        tbody.appendChild(emptyMessage);
+                    }
+                    emptyMessage.style.display = '';
+                } else if (emptyMessage) {
+                    emptyMessage.style.display = 'none';
+                }
+            }
+            
+            if (searchInput) searchInput.addEventListener('keyup', filterEmotions);
+            
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    if (searchInput) searchInput.value = '';
+                    filterEmotions();
+                });
+            }
+            
+            filterEmotions();
+        });
+    </script>
 {% endblock %}

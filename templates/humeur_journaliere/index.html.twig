@@ -1,35 +1,336 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}HumeurJournaliere index{% endblock %}
+{% block title %}Gestion de l'humeur journalière - FocusKids{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .humeur-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-left: 5px solid #4CAF50;
+            height: 100%;
+        }
+        .humeur-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .humeur-emoji {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box input {
+            padding-left: 40px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #999;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #f8f9fa;
+            border-radius: 20px;
+        }
+        .empty-state i {
+            font-size: 64px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+        .btn-action {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin: 0 3px;
+        }
+        .badge-humeur {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-tresbien { background: #4CAF50; color: white; }
+        .badge-bien { background: #8BC34A; color: white; }
+        .badge-moyen { background: #FFC107; color: black; }
+        .badge-difficile { background: #F44336; color: white; }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>HumeurJournaliere index</h1>
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">
+                <i class="ti ti-smile"></i> Humeur journalière
+            </h2>
+            <p class="text-muted">Suivez l'évolution émotionnelle des enfants</p>
+        </div>
+        <a href="{{ path('app_humeur_journaliere_new') }}" class="btn btn-primary">
+            <i class="ti ti-plus"></i> Nouvelle humeur
+        </a>
+    </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>DateHeure</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for humeur_journaliere in humeur_journalieres %}
-            <tr>
-                <td>{{ humeur_journaliere.id }}</td>
-                <td>{{ humeur_journaliere.dateHeure ? humeur_journaliere.dateHeure|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_humeur_journaliere_show', {'id': humeur_journaliere.id}) }}">show</a>
-                    <a href="{{ path('app_humeur_journaliere_edit', {'id': humeur_journaliere.id}) }}">edit</a>
-                </td>
-            </tr>
+    <!-- Cartes statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ humeur_journalieres|length }}</div>
+                <div class="stat-label">😊 Total enregistrements</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ humeur_journalieres|filter(h => h.dateHeure|date('Y-m-d') == 'now'|date('Y-m-d'))|length }}</div>
+                <div class="stat-label">📅 Aujourd'hui</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ humeur_journalieres|filter(h => h.emotion is not empty)|length }}</div>
+                <div class="stat-label">😊 Avec émotion</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filter-section">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="search-box">
+                    <i class="ti ti-search"></i>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Rechercher par émotion...">
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <select id="dateFilter" class="form-select">
+                    <option value="all">📅 Toutes les dates</option>
+                    <option value="today">Aujourd'hui</option>
+                    <option value="week">Cette semaine</option>
+                    <option value="month">Ce mois</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <button id="resetFilters" class="btn btn-secondary w-100">
+                    <i class="ti ti-refresh"></i> Réinitialiser
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des humeurs en cartes -->
+    <div id="humeursContainer">
+        {% if humeur_journalieres|length > 0 %}
+            <div class="row" id="humeursGrid">
+                {% for humeur in humeur_journalieres %}
+                    <div class="col-md-6 col-lg-4 humeur-item mb-3" 
+                         data-emotion="{{ humeur.emotion ? humeur.emotion.nom|lower : '' }}"
+                         data-date="{{ humeur.dateHeure ? humeur.dateHeure|date('Y-m-d') : '' }}">
+                        <div class="humeur-card">
+                            <!-- Header avec date -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <span class="badge-humeur 
+                                        {% if humeur.emotion %}
+                                            {% if humeur.emotion.nom == 'Très bien' or humeur.emotion.nom == 'tres bien' %}badge-tresbien
+                                            {% elseif humeur.emotion.nom == 'Bien' %}badge-bien
+                                            {% elseif humeur.emotion.nom == 'Moyen' %}badge-moyen
+                                            {% else %}badge-difficile{% endif %}
+                                        {% else %}badge-moyen{% endif %}">
+                                        {{ humeur.emotion ? humeur.emotion.nom : 'Non spécifié' }}
+                                    </span>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="ti ti-calendar"></i> {{ humeur.dateHeure ? humeur.dateHeure|date('d/m/Y H:i') : '' }}
+                                </small>
+                            </div>
+                            
+                            <!-- Émoji -->
+                            <div class="humeur-emoji text-center">
+                                {% if humeur.emotion %}
+                                    {% if humeur.emotion.nom == 'Très bien' or humeur.emotion.nom == 'tres bien' %}
+                                        😊
+                                    {% elseif humeur.emotion.nom == 'Bien' %}
+                                        🙂
+                                    {% elseif humeur.emotion.nom == 'Moyen' %}
+                                        😐
+                                    {% elseif humeur.emotion.nom == 'Difficile' %}
+                                        😟
+                                    {% else %}
+                                        😊
+                                    {% endif %}
+                                {% else %}
+                                    😊
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="mt-3 d-flex justify-content-center">
+                                <a href="{{ path('app_humeur_journaliere_show', {'id': humeur.id}) }}" class="btn btn-sm btn-info btn-action" title="Voir">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                                <a href="{{ path('app_humeur_journaliere_edit', {'id': humeur.id}) }}" class="btn btn-sm btn-warning btn-action" title="Modifier">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         {% else %}
-            <tr>
-                <td colspan="3">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            <div class="empty-state">
+                <i class="ti ti-emoji-neutral"></i>
+                <h4>Aucune humeur enregistrée</h4>
+                <p class="text-muted">Commencez par enregistrer la première humeur !</p>
+                <a href="{{ path('app_humeur_journaliere_new') }}" class="btn btn-primary mt-3">
+                    <i class="ti ti-plus"></i> Enregistrer une humeur
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
 
-    <a href="{{ path('app_humeur_journaliere_new') }}">Create new</a>
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var searchInput = document.getElementById('searchInput');
+            var dateFilter = document.getElementById('dateFilter');
+            var resetBtn = document.getElementById('resetFilters');
+            var humeurItems = document.querySelectorAll('.humeur-item');
+            
+            function filterHumeurs() {
+                var searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+                var dateValue = dateFilter ? dateFilter.value : 'all';
+                var today = new Date();
+                var currentDate = today.toISOString().slice(0,10);
+                
+                // Calculer le début de semaine (lundi)
+                var startOfWeek = new Date(today);
+                var day = today.getDay();
+                var diff = today.getDate() - day + (day === 0 ? -6 : 1);
+                startOfWeek = new Date(today.setDate(diff));
+                var startOfWeekStr = startOfWeek.toISOString().slice(0,10);
+                
+                // Début du mois
+                var startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                var startOfMonthStr = startOfMonth.toISOString().slice(0,10);
+                
+                var visibleCount = 0;
+                
+                for (var i = 0; i < humeurItems.length; i++) {
+                    var item = humeurItems[i];
+                    var emotion = item.dataset.emotion || '';
+                    var itemDate = item.dataset.date || '';
+                    var show = true;
+                    
+                    // Filtre recherche
+                    if (searchTerm && emotion.indexOf(searchTerm) === -1) {
+                        show = false;
+                    }
+                    
+                    // Filtre date
+                    if (show && dateValue !== 'all') {
+                        if (dateValue === 'today' && itemDate !== currentDate) {
+                            show = false;
+                        } else if (dateValue === 'week' && itemDate < startOfWeekStr) {
+                            show = false;
+                        } else if (dateValue === 'month' && itemDate < startOfMonthStr) {
+                            show = false;
+                        }
+                    }
+                    
+                    item.style.display = show ? '' : 'none';
+                    if (show) visibleCount++;
+                }
+                
+                var emptyMessage = document.getElementById('emptyFilterMessage');
+                
+                if (visibleCount === 0 && humeurItems.length > 0) {
+                    if (!emptyMessage) {
+                        emptyMessage = document.createElement('div');
+                        emptyMessage.id = 'emptyFilterMessage';
+                        emptyMessage.className = 'col-12';
+                        emptyMessage.innerHTML = '<div class="empty-state"><i class="ti ti-filter-off"></i><h4>Aucun résultat</h4><p class="text-muted">Aucune humeur ne correspond à vos critères</p><button id="clearFiltersBtn" class="btn btn-primary mt-3">Effacer les filtres</button></div>';
+                        document.getElementById('humeursGrid').appendChild(emptyMessage);
+                        
+                        document.getElementById('clearFiltersBtn').addEventListener('click', function() {
+                            if(searchInput) searchInput.value = '';
+                            if(dateFilter) dateFilter.value = 'all';
+                            filterHumeurs();
+                        });
+                    }
+                    emptyMessage.style.display = 'block';
+                } else if (emptyMessage) {
+                    emptyMessage.style.display = 'none';
+                }
+            }
+            
+            if (searchInput) searchInput.addEventListener('keyup', filterHumeurs);
+            if (dateFilter) dateFilter.addEventListener('change', filterHumeurs);
+            
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    if (searchInput) searchInput.value = '';
+                    if (dateFilter) dateFilter.value = 'all';
+                    filterHumeurs();
+                });
+            }
+            
+            // Animation au chargement
+            var cards = document.querySelectorAll('.humeur-card');
+            for (var i = 0; i < cards.length; i++) {
+                var card = cards[i];
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(function(card, index) {
+                    return function() {
+                        card.style.transition = 'all 0.3s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    };
+                }(card, i), i * 50);
+            }
+            
+            filterHumeurs();
+        });
+    </script>
 {% endblock %}

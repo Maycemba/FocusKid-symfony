@@ -30,10 +30,20 @@ final class EmotionController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            
+            $photoFile = $form->get('photoFile')->getData();
+            
+            if ($photoFile) {
+                $photoContent = file_get_contents($photoFile->getPathname());
+                $photoBase64 = base64_encode($photoContent);
+                $emotion->setPhoto($photoBase64);
+            }
+            
             $entityManager->persist($emotion);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_emotion_index', [], Response::HTTP_SEE_OTHER);
+            $this->addFlash('success', 'Émotion créée avec succès !');
+            return $this->redirectToRoute('app_emotion_index');
         }
 
         return $this->render('emotion/new.html.twig', [
@@ -53,13 +63,30 @@ final class EmotionController extends AbstractController
     #[Route('/{id}/edit', name: 'app_emotion_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Emotion $emotion, EntityManagerInterface $entityManager): Response
     {
+        // Créer une copie de l'ancienne photo
+        $oldPhoto = $emotion->getPhoto();
+        
         $form = $this->createForm(EmotionType::class, $emotion);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            
+            $photoFile = $form->get('photoFile')->getData();
+            
+            if ($photoFile) {
+                // Nouvelle image uploadée
+                $photoContent = file_get_contents($photoFile->getPathname());
+                $photoBase64 = base64_encode($photoContent);
+                $emotion->setPhoto($photoBase64);
+            } else {
+                // Garder l'ancienne photo si aucune nouvelle n'est uploadée
+                $emotion->setPhoto($oldPhoto);
+            }
+            
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_emotion_index', [], Response::HTTP_SEE_OTHER);
+            $this->addFlash('success', 'Émotion modifiée avec succès !');
+            return $this->redirectToRoute('app_emotion_index');
         }
 
         return $this->render('emotion/edit.html.twig', [
@@ -68,14 +95,31 @@ final class EmotionController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_emotion_delete', methods: ['POST'])]
+    #[Route('/{id}/delete-photo', name: 'app_emotion_delete_photo', methods: ['POST'])]
+    public function deletePhoto(Request $request, Emotion $emotion, EntityManagerInterface $entityManager): Response
+    {
+        $token = $request->request->get('_token');
+        
+        if ($this->isCsrfTokenValid('delete-photo' . $emotion->getId(), $token)) {
+            $emotion->setPhoto(null);
+            $entityManager->flush();
+            $this->addFlash('success', 'Image supprimée avec succès !');
+        }
+        
+        return $this->redirectToRoute('app_emotion_edit', ['id' => $emotion->getId()]);
+    }
+
+    #[Route('/{id}/delete', name: 'app_emotion_delete', methods: ['POST'])]
     public function delete(Request $request, Emotion $emotion, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$emotion->getId(), $request->getPayload()->getString('_token'))) {
+        $token = $request->request->get('_token');
+        
+        if ($this->isCsrfTokenValid('delete' . $emotion->getId(), $token)) {
             $entityManager->remove($emotion);
             $entityManager->flush();
+            $this->addFlash('success', 'Émotion supprimée avec succès !');
         }
 
-        return $this->redirectToRoute('app_emotion_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_emotion_index');
     }
 }

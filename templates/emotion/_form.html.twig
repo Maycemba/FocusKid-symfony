@@ -1,4 +1,28 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_start(form, {'attr': {'class': 'form-material'}}) }}
+    
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.nom, 'Nom de l\'émotion', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Joie, Tristesse, Colère...'}}) }}
+            {{ form_errors(form.nom) }}
+        </div>
+        
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.photo, 'Image', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.photo, {'attr': {'class': 'form-control', 'accept': 'image/*'}}) }}
+            {{ form_errors(form.photo) }}
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <button type="submit" class="btn btn-primary px-5">
+                <i class="ti ti-device-floppy"></i> {{ button_label|default('Enregistrer') }}
+            </button>
+            <a href="{{ path('app_emotion_index') }}" class="btn btn-secondary px-5 ms-2">
+                <i class="ti ti-x"></i> Annuler
+            </a>
+        </div>
+    </div>
+    
 {{ form_end(form) }}

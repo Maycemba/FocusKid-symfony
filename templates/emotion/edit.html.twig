@@ -1,13 +1,172 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}Edit Emotion{% endblock %}
+{% block title %}Modifier l'émotion - FocusKids{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .image-preview {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 1px solid #e0e0e0;
+            padding: 5px;
+        }
+        .current-image {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .current-image img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 10px;
+        }
+        .form-label {
+            font-weight: 600;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Edit Emotion</h1>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h4 class="card-title text-white mb-0">
+                            <i class="ti ti-edit"></i> Modifier l'émotion
+                        </h4>
+                        <small class="text-white-50">Modifiez les informations de l'émotion</small>
+                    </div>
+                    <a href="{{ path('app_emotion_index') }}" class="btn btn-light">
+                        <i class="ti ti-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'id': 'emotionForm'}}) }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.nom, 'Nom de l\'émotion', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Joie, Tristesse, Colère...'}}) }}
+                            {{ form_errors(form.nom) }}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.photoFile, 'Image', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.photoFile, {'attr': {'class': 'form-control', 'accept': 'image/*', 'onchange': 'previewImage(this)'}}) }}
+                            {{ form_errors(form.photoFile) }}
+                            <small class="text-muted">Formats acceptés: JPG, PNG, GIF (max 2Mo)</small>
+                            <div id="imagePreviewContainer" style="display: none; margin-top: 10px;">
+                                <img id="imagePreview" class="image-preview" alt="Aperçu">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if emotion.photo %}
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="current-image">
+                                <label class="form-label">Image actuelle :</label>
+                                <div>
+                                    <img src="data:image/jpeg;base64,{{ emotion.photo }}" alt="{{ emotion.nom }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="ti ti-device-floppy"></i> Mettre à jour
+                            </button>
+                            {% if emotion.photo %}
+                            <button type="button" class="btn btn-warning px-5 ms-2" onclick="deletePhoto({{ emotion.id }})">
+                                <i class="ti ti-trash"></i> Supprimer l'image
+                            </button>
+                            {% endif %}
+                            <button type="button" class="btn btn-danger px-5 ms-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="ti ti-trash"></i> Supprimer l'émotion
+                            </button>
+                            <a href="{{ path('app_emotion_index') }}" class="btn btn-secondary px-5 ms-2">
+                                <i class="ti ti-x"></i> Annuler
+                            </a>
+                        </div>
+                    </div>
+                    
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
 
-    {{ include('emotion/_form.html.twig', {'button_label': 'Update'}) }}
+<!-- Modal Suppression de l'émotion -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Voulez-vous vraiment supprimer l'émotion <strong>{{ emotion.nom }}</strong> ?</p>
+                <p class="text-muted small">Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{{ path('app_emotion_delete', {'id': emotion.id}) }}" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ emotion.id) }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="ti ti-trash"></i> Supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <a href="{{ path('app_emotion_index') }}">back to list</a>
-
-    {{ include('emotion/_delete_form.html.twig') }}
+<script>
+    function previewImage(input) {
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const preview = document.getElementById('imagePreview');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                previewContainer.style.display = 'block';
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            previewContainer.style.display = 'none';
+        }
+    }
+    
+    function deletePhoto(emotionId) {
+        if (confirm('Voulez-vous vraiment supprimer cette image ?')) {
+            // Créer un formulaire pour supprimer l'image
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ path('app_emotion_delete_photo', {'id': 'ID_PLACEHOLDER'}) }}'.replace('ID_PLACEHOLDER', emotionId);
+            
+            const token = document.createElement('input');
+            token.type = 'hidden';
+            token.name = '_token';
+            token.value = '{{ csrf_token('delete-photo' ~ emotion.id) }}'.replace('{{ emotion.id }}', emotionId);
+            
+            form.appendChild(token);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
 {% endblock %}

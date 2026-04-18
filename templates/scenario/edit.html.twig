@@ -1,13 +1,121 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}Edit Scenario{% endblock %}
+{% block title %}Modifier le scénario - FocusKids{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-label {
+            font-weight: 600;
+        }
+        .animation-help {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        .preview-animation {
+            background: #f0f0f0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Edit Scenario</h1>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h4 class="card-title text-white mb-0">
+                            <i class="ti ti-edit"></i> Modifier le scénario
+                        </h4>
+                        <small class="text-white-50">Modifiez les informations du scénario</small>
+                    </div>
+                    <a href="{{ path('app_scenario_index') }}" class="btn btn-light">
+                        <i class="ti ti-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if scenario.animation %}
+                <div class="preview-animation">
+                    <label class="form-label">Aperçu de l'animation actuelle :</label>
+                    <div class="mt-2">
+                        {{ scenario.animation|raw }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {{ form_start(form, {'attr': {'class': 'form-material'}}) }}
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Décrivez le scénario...'}}) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            {{ form_label(form.animation, 'Animation (HTML/Emojis)', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.animation, {'attr': {'class': 'form-control', 'rows': 3, 'placeholder': 'Ex: 🎬, 🎭, 🎪, ou code HTML...'}}) }}
+                            {{ form_errors(form.animation) }}
+                            <div class="animation-help">
+                                <small class="text-muted">
+                                    <i class="ti ti-info-circle"></i> Vous pouvez utiliser:
+                                    <ul class="mt-2 mb-0">
+                                        <li>Des emojis: 🎬 🎭 🎪 🎨 🎯</li>
+                                        <li>Du HTML: <code>&lt;div class="animation"&gt;...&lt;/div&gt;</code></li>
+                                        <li>Des icônes FontAwesome: <code>&lt;i class="fas fa-film"&gt;&lt;/i&gt;</code></li>
+                                    </ul>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="ti ti-device-floppy"></i> Mettre à jour
+                            </button>
+                            <button type="button" class="btn btn-danger px-5 ms-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="ti ti-trash"></i> Supprimer
+                            </button>
+                            <a href="{{ path('app_scenario_index') }}" class="btn btn-secondary px-5 ms-2">
+                                <i class="ti ti-x"></i> Annuler
+                            </a>
+                        </div>
+                    </div>
+                    
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
 
-    {{ include('scenario/_form.html.twig', {'button_label': 'Update'}) }}
-
-    <a href="{{ path('app_scenario_index') }}">back to list</a>
-
-    {{ include('scenario/_delete_form.html.twig') }}
+<!-- Modal Suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Voulez-vous vraiment supprimer le scénario ?</p>
+                <p class="text-muted small">Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                {{ include('scenario/_delete_form.html.twig') }}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

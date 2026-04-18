@@ -1,13 +1,165 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}Edit HumeurJournaliere{% endblock %}
+{% block title %}Modifier l'humeur - FocusKids{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-label {
+            font-weight: 600;
+        }
+        .preview-emoji {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .preview-emoji span {
+            font-size: 64px;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Edit HumeurJournaliere</h1>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h4 class="card-title text-white mb-0">
+                            <i class="ti ti-edit"></i> Modifier l'humeur
+                        </h4>
+                        <small class="text-white-50">Modifiez l'humeur journalière</small>
+                    </div>
+                    <a href="{{ path('app_humeur_journaliere_index') }}" class="btn btn-light">
+                        <i class="ti ti-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'class': 'form-material'}}) }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.emotion, 'Émotion', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.emotion, {'attr': {'class': 'form-select', 'id': 'emotionSelect'}}) }}
+                            {{ form_errors(form.emotion) }}
+                            <small class="text-muted">Sélectionnez l'émotion ressentie</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.dateHeure, 'Date et heure', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.dateHeure, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.dateHeure) }}
+                            <small class="text-muted">Date et heure de l'enregistrement</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="preview-emoji" id="previewEmoji">
+                                <span>
+                                    {% if humeur_journaliere.emotion %}
+                                        {% if humeur_journaliere.emotion.nom == 'Très bien' or humeur_journaliere.emotion.nom == 'tres bien' %}
+                                            😊
+                                        {% elseif humeur_journaliere.emotion.nom == 'Bien' %}
+                                            🙂
+                                        {% elseif humeur_journaliere.emotion.nom == 'Moyen' %}
+                                            😐
+                                        {% elseif humeur_journaliere.emotion.nom == 'Difficile' %}
+                                            😟
+                                        {% else %}
+                                            😊
+                                        {% endif %}
+                                    {% else %}
+                                        😊
+                                    {% endif %}
+                                </span>
+                                <p class="mt-2 mb-0 text-muted">Aperçu de l'émotion</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="ti ti-device-floppy"></i> Mettre à jour
+                            </button>
+                            <button type="button" class="btn btn-danger px-5 ms-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="ti ti-trash"></i> Supprimer
+                            </button>
+                            <a href="{{ path('app_humeur_journaliere_index') }}" class="btn btn-secondary px-5 ms-2">
+                                <i class="ti ti-x"></i> Annuler
+                            </a>
+                        </div>
+                    </div>
+                    
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
 
-    {{ include('humeur_journaliere/_form.html.twig', {'button_label': 'Update'}) }}
+<!-- Modal Suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Voulez-vous vraiment supprimer cet enregistrement d'humeur ?</p>
+                <p class="text-muted small">Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                {{ include('humeur_journaliere/_delete_form.html.twig') }}
+            </div>
+        </div>
+    </div>
+</div>
 
-    <a href="{{ path('app_humeur_journaliere_index') }}">back to list</a>
-
-    {{ include('humeur_journaliere/_delete_form.html.twig') }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var emotionSelect = document.getElementById('humeur_journaliere_emotion');
+        var previewSpan = document.querySelector('#previewEmoji span');
+        
+        var emojiMap = {
+            'Très bien': '😊',
+            'tres bien': '😊',
+            'Bien': '🙂',
+            'bien': '🙂',
+            'Moyen': '😐',
+            'moyen': '😐',
+            'Difficile': '😟',
+            'difficile': '😟'
+        };
+        
+        function updatePreview() {
+            if (emotionSelect && emotionSelect.selectedIndex >= 0) {
+                var selectedOption = emotionSelect.options[emotionSelect.selectedIndex];
+                var emotionText = selectedOption ? selectedOption.text : '';
+                
+                var found = false;
+                for (var key in emojiMap) {
+                    if (emotionText.toLowerCase().indexOf(key.toLowerCase()) !== -1) {
+                        previewSpan.textContent = emojiMap[key];
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    previewSpan.textContent = '😊';
+                }
+            }
+        }
+        
+        if (emotionSelect) {
+            emotionSelect.addEventListener('change', updatePreview);
+        }
+    });
+</script>
 {% endblock %}

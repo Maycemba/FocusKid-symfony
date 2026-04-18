@@ -1,37 +1,270 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}Scenario index{% endblock %}
+{% block title %}Gestion des scénarios - FocusKids{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #FF9800;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .scenario-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-left: 5px solid #FF9800;
+            height: 100%;
+        }
+        .scenario-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box input {
+            padding-left: 40px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #999;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #f8f9fa;
+            border-radius: 20px;
+        }
+        .empty-state i {
+            font-size: 64px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+        .btn-action {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin: 0 3px;
+        }
+        .animation-preview {
+            font-size: 24px;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Scenario index</h1>
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">
+                <i class="ti ti-film"></i> Gestion des scénarios
+            </h2>
+            <p class="text-muted">Gérez tous les scénarios éducatifs</p>
+        </div>
+        <a href="{{ path('app_scenario_new') }}" class="btn btn-primary">
+            <i class="ti ti-plus"></i> Nouveau scénario
+        </a>
+    </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Description</th>
-                <th>Animation</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for scenario in scenarios %}
-            <tr>
-                <td>{{ scenario.id }}</td>
-                <td>{{ scenario.description }}</td>
-                <td>{{ scenario.animation }}</td>
-                <td>
-                    <a href="{{ path('app_scenario_show', {'id': scenario.id}) }}">show</a>
-                    <a href="{{ path('app_scenario_edit', {'id': scenario.id}) }}">edit</a>
-                </td>
-            </tr>
+    <!-- Cartes statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ scenarios|length }}</div>
+                <div class="stat-label">🎬 Total scénarios</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ scenarios|filter(s => s.animation is not empty)|length }}</div>
+                <div class="stat-label">🎨 Avec animation</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ scenarios|filter(s => s.description is not empty)|length }}</div>
+                <div class="stat-label">📝 Avec description</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filter-section">
+        <div class="row">
+            <div class="col-md-8 mb-3">
+                <div class="search-box">
+                    <i class="ti ti-search"></i>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un scénario...">
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <button id="resetFilters" class="btn btn-secondary w-100">
+                    <i class="ti ti-refresh"></i> Réinitialiser
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des scénarios en cartes -->
+    <div id="scenariosContainer">
+        {% if scenarios|length > 0 %}
+            <div class="row" id="scenariosGrid">
+                {% for scenario in scenarios %}
+                    <div class="col-md-6 col-lg-4 scenario-item mb-3" 
+                         data-description="{{ scenario.description|lower }}">
+                        <div class="scenario-card">
+                            <!-- Header -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                {# Dans index.html.twig, remplacer l'affichage de l'animation #}
+<div class="animation-preview">
+    {% if scenario.animation %}
+        {% set animData = scenario.animation %}
+        {% if animData starts with '/9j/' or animData starts with 'iVBOR' or animData starts with 'R0lGOD' %}
+            <img src="data:image/jpeg;base64,{{ animData }}" 
+                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 10px;">
         {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            <span>{{ animData|slice(0, 20) }}...</span>
+        {% endif %}
+    {% else %}
+        <span>🎬</span>
+    {% endif %}
+</div>
+                                <small class="text-muted">#{{ scenario.id }}</small>
+                            </div>
+                            
+                            <!-- Description -->
+                            <p class="text-muted small mb-3">
+                                {{ scenario.description|length > 100 ? scenario.description|slice(0, 100) ~ '...' : scenario.description }}
+                            </p>
+                            
+                            <!-- Actions -->
+                            <div class="mt-3 d-flex justify-content-end">
+                                <a href="{{ path('app_scenario_show', {'id': scenario.id}) }}" class="btn btn-sm btn-info btn-action" title="Voir">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                                <a href="{{ path('app_scenario_edit', {'id': scenario.id}) }}" class="btn btn-sm btn-warning btn-action" title="Modifier">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="ti ti-film-off"></i>
+                <h4>Aucun scénario trouvé</h4>
+                <p class="text-muted">Commencez par créer votre premier scénario !</p>
+                <a href="{{ path('app_scenario_new') }}" class="btn btn-primary mt-3">
+                    <i class="ti ti-plus"></i> Créer un scénario
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
 
-    <a href="{{ path('app_scenario_new') }}">Create new</a>
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var searchInput = document.getElementById('searchInput');
+            var resetBtn = document.getElementById('resetFilters');
+            var scenarioItems = document.querySelectorAll('.scenario-item');
+            
+            function filterScenarios() {
+                var searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+                var visibleCount = 0;
+                
+                for (var i = 0; i < scenarioItems.length; i++) {
+                    var item = scenarioItems[i];
+                    var description = item.dataset.description || '';
+                    var show = true;
+                    
+                    if (searchTerm && description.indexOf(searchTerm) === -1) {
+                        show = false;
+                    }
+                    
+                    item.style.display = show ? '' : 'none';
+                    if (show) visibleCount++;
+                }
+                
+                var emptyMessage = document.getElementById('emptyFilterMessage');
+                
+                if (visibleCount === 0 && scenarioItems.length > 0) {
+                    if (!emptyMessage) {
+                        emptyMessage = document.createElement('div');
+                        emptyMessage.id = 'emptyFilterMessage';
+                        emptyMessage.className = 'col-12';
+                        emptyMessage.innerHTML = '<div class="empty-state"><i class="ti ti-filter-off"></i><h4>Aucun résultat</h4><p class="text-muted">Aucun scénario ne correspond à vos critères</p><button id="clearFiltersBtn" class="btn btn-primary mt-3">Effacer les filtres</button></div>';
+                        document.getElementById('scenariosGrid').appendChild(emptyMessage);
+                        
+                        document.getElementById('clearFiltersBtn').addEventListener('click', function() {
+                            if(searchInput) searchInput.value = '';
+                            filterScenarios();
+                        });
+                    }
+                    emptyMessage.style.display = 'block';
+                } else if (emptyMessage) {
+                    emptyMessage.style.display = 'none';
+                }
+            }
+            
+            if (searchInput) searchInput.addEventListener('keyup', filterScenarios);
+            
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    if (searchInput) searchInput.value = '';
+                    filterScenarios();
+                });
+            }
+            
+            // Animation au chargement
+            var cards = document.querySelectorAll('.scenario-card');
+            for (var i = 0; i < cards.length; i++) {
+                var card = cards[i];
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(function(card, index) {
+                    return function() {
+                        card.style.transition = 'all 0.3s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    };
+                }(card, i), i * 50);
+            }
+            
+            filterScenarios();
+        });
+    </script>
 {% endblock %}

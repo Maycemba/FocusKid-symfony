@@ -6,8 +6,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Symfony\Component\Validator\Constraints as Assert;
-
 use App\Repository\EmotionRepository;
 
 #[ORM\Entity(repositoryClass: EmotionRepository::class)]
@@ -48,9 +46,6 @@ class Emotion
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $nom = null;
-
     public function getNom(): ?string
     {
         return $this->nom;
@@ -61,9 +56,6 @@ class Emotion
         $this->nom = $nom;
         return $this;
     }
-
-    #[ORM\Column(type: 'blob', nullable: true)]
-    private ?string $photo = null;
 
     public function getPhoto(): ?string
     {
@@ -104,29 +96,6 @@ class Emotion
         return $this;
     }
 
-    /**
-     * Retourne la photo sous forme de base64 (prête pour l'affichage)
-     */
-    public function getPhotoBase64(): ?string
-    {
-        if (!$this->photo) {
-            return null;
-        }
-        
-        // Si déjà en base64, retourner directement
-        if (preg_match('/^[A-Za-z0-9+\/=]+$/', $this->photo)) {
-            return 'data:image/jpeg;base64,' . $this->photo;
-        }
-        
-        return null;
-    }
-
-    #[ORM\OneToMany(targetEntity: HumeurJournaliere::class, mappedBy: 'emotion')]
-    private Collection $humeurJournalieres;
-
-    /**
-     * @return Collection<int, HumeurJournaliere>
-     */
     public function getHumeurJournalieres(): Collection
     {
         if (!$this->humeurJournalieres instanceof Collection) {
@@ -149,18 +118,6 @@ class Emotion
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Scenario::class, mappedBy: 'emotion')]
-    private Collection $scenarios;
-
-    public function __construct()
-    {
-        $this->humeurJournalieres = new ArrayCollection();
-        $this->scenarios = new ArrayCollection();
-    }
-
-    /**
-     * @return Collection<int, Scenario>
-     */
     public function getScenarios(): Collection
     {
         if (!$this->scenarios instanceof Collection) {
@@ -182,5 +139,4 @@ class Emotion
         $this->getScenarios()->removeElement($scenario);
         return $this;
     }
-
 }

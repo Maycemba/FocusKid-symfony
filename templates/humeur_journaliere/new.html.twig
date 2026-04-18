@@ -1,11 +1,173 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}New HumeurJournaliere{% endblock %}
+{% block title %}Nouvelle humeur - FocusKids{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-label {
+            font-weight: 600;
+        }
+        .preview-emoji {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .preview-emoji span {
+            font-size: 64px;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Create new HumeurJournaliere</h1>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h4 class="card-title text-white mb-0">
+                            <i class="ti ti-plus"></i> Enregistrer une humeur
+                        </h4>
+                        <small class="text-white-50">Ajoutez l'humeur journalière d'un enfant</small>
+                    </div>
+                    <a href="{{ path('app_humeur_journaliere_index') }}" class="btn btn-light">
+                        <i class="ti ti-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'class': 'form-material'}}) }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.emotion, 'Émotion', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.emotion, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_errors(form.emotion) }}
+                            <small class="text-muted">Sélectionnez l'émotion ressentie</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.dateHeure, 'Date et heure', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.dateHeure, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.dateHeure) }}
+                            <small class="text-muted">Date et heure de l'enregistrement</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="preview-emoji" id="previewEmoji">
+                                <span id="previewEmojiSpan">😊</span>
+                                <p class="mt-2 mb-0 text-muted">Aperçu de l'émotion</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="ti ti-device-floppy"></i> Enregistrer
+                            </button>
+                            <a href="{{ path('app_humeur_journaliere_index') }}" class="btn btn-secondary px-5 ms-2">
+                                <i class="ti ti-x"></i> Annuler
+                            </a>
+                        </div>
+                    </div>
+                    
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
 
-    {{ include('humeur_journaliere/_form.html.twig') }}
-
-    <a href="{{ path('app_humeur_journaliere_index') }}">back to list</a>
+<script>
+    // Attendre que la page soit complètement chargée
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // Fonction pour trouver le select des émotions
+        function findEmotionSelect() {
+            // Chercher par ID possible
+            var select = document.getElementById('humeur_journaliere_emotion');
+            if (select) return select;
+            
+            // Chercher par name
+            select = document.querySelector('select[name="humeur_journaliere[emotion]"]');
+            if (select) return select;
+            
+            // Chercher tous les selects et trouver celui qui contient des émotions
+            var allSelects = document.querySelectorAll('select');
+            for (var i = 0; i < allSelects.length; i++) {
+                var options = allSelects[i].options;
+                for (var j = 0; j < options.length; j++) {
+                    var text = options[j].text.toLowerCase();
+                    if (text.indexOf('bien') !== -1 || text.indexOf('moyen') !== -1) {
+                        return allSelects[i];
+                    }
+                }
+            }
+            return null;
+        }
+        
+        var emotionSelect = findEmotionSelect();
+        var previewSpan = document.getElementById('previewEmojiSpan');
+        
+        console.log('Select trouvé:', emotionSelect);
+        if (emotionSelect) {
+            console.log('Options du select:');
+            for (var i = 0; i < emotionSelect.options.length; i++) {
+                console.log(' - ' + emotionSelect.options[i].text + ' (valeur: ' + emotionSelect.options[i].value + ')');
+            }
+        }
+        
+        function getEmojiForEmotion(emotionText) {
+            if (!emotionText) return '😊';
+            
+            var text = emotionText.toLowerCase().trim();
+            console.log('Recherche emoji pour:', text);
+            
+            if (text === 'tres bien' || text === 'très bien' || text.indexOf('tres bien') !== -1 || text.indexOf('très bien') !== -1) {
+                return '😊';
+            }
+            if (text === 'bien' || (text.indexOf('bien') !== -1 && text.indexOf('tres') === -1 && text.indexOf('très') === -1)) {
+                return '🙂';
+            }
+            if (text === 'moyen' || text.indexOf('moyen') !== -1) {
+                return '😐';
+            }
+            if (text === 'difficile' || text.indexOf('difficile') !== -1) {
+                return '😟';
+            }
+            return '😊';
+        }
+        
+        function updatePreview() {
+            if (emotionSelect && previewSpan) {
+                var selectedIndex = emotionSelect.selectedIndex;
+                var selectedOption = emotionSelect.options[selectedIndex];
+                var emotionText = selectedOption ? selectedOption.text : '';
+                var emoji = getEmojiForEmotion(emotionText);
+                previewSpan.textContent = emoji;
+                console.log('Mise à jour - Émotion:', emotionText, 'Emoji:', emoji);
+            }
+        }
+        
+        if (emotionSelect) {
+            // Ajouter l'événement change
+            emotionSelect.addEventListener('change', updatePreview);
+            // Initialiser
+            updatePreview();
+        } else {
+            console.log('ERREUR: Select des émotions non trouvé!');
+            // Afficher tous les selects pour debug
+            var allSelects = document.querySelectorAll('select');
+            console.log('Tous les selects trouvés:', allSelects.length);
+            for (var i = 0; i < allSelects.length; i++) {
+                console.log('Select ' + i + ':', allSelects[i].id, allSelects[i].name);
+            }
+        }
+    });
+</script>
 {% endblock %}
