@@ -17,9 +17,6 @@ use Twig\Environment;       // ← Ajout (pour le rendu du template PDF)
 
 
 #[Route('carnet_educatif')]
-=======
-#[Route('/carnet_educatif')]
->>>>>>> d82d2a819ca8e47791ffeb2f0153d6bbe7b87101
 final class CarnetEducatifController extends AbstractController
 {
     #[Route('/', name: 'app_carnet_educatif_index', methods: ['GET'])]
