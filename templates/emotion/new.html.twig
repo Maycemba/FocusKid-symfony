@@ -1,11 +1,22 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}New Emotion{% endblock %}
+{% block title %}Nouvelle émotion{% endblock %}
 
 {% block body %}
-    <h1>Create new Emotion</h1>
+<div class="container-fluid">
 
-    {{ include('emotion/_form.html.twig') }}
+    <div class="card bg-light-info shadow-none position-relative overflow-hidden mb-4">
+        <div class="card-body px-4 py-3">
+            <h4 class="fw-semibold mb-8">Créer une émotion</h4>
+        </div>
+    </div>
 
-    <a href="{{ path('app_emotion_index') }}">back to list</a>
+    <div class="card">
+        <div class="card-body">
+            {{ include('emotion/_form.html.twig') }}
+            <a href="{{ path('app_emotion_index') }}" class="btn btn-secondary mt-2">← Retour</a>
+        </div>
+    </div>
+
+</div>
 {% endblock %}

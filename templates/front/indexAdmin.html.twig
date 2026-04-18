@@ -1,0 +1,34 @@
+{% extends 'base-back.html.twig' %} {# à adapter selon votre layout admin #}
+
+{% block title %}Gestion des carnets éducatifs{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1>📚 Tous les carnets éducatifs</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th><th>Date</th><th>Matière</th><th>Utilisateur</th><th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for carnet in carnet_educatifs %}
+            <tr>
+                <td>{{ carnet.id }}</td>
+                <td>{{ carnet.dateEtude|date('d/m/Y') }}</td>
+                <td>{{ carnet.matiere }}</td>
+                <td>{{ carnet.utilisateur.email ?? 'N/A' }}</td>
+                <td>
+                    <a href="{{ path('admin_carnet_show', {'id': carnet.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                    <a href="{{ path('admin_carnet_edit', {'id': carnet.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                    <form method="post" action="{{ path('admin_carnet_delete', {'id': carnet.id}) }}" style="display:inline-block">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ carnet.id) }}">
+                        <button class="btn btn-sm btn-danger">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

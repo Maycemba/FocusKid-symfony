@@ -7,7 +7,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
-
 use App\Repository\EmotionRepository;
 
 #[ORM\Entity(repositoryClass: EmotionRepository::class)]
@@ -37,7 +36,6 @@ class Emotion
         $this->scenarios = new ArrayCollection();
     }
 
-    // ========== ID ==========
     public function getId(): ?int
     {
         return $this->id;
@@ -49,7 +47,6 @@ class Emotion
         return $this;
     }
 
-    // ========== NOM ==========
     public function getNom(): ?string
     {
         return $this->nom;
@@ -61,7 +58,6 @@ class Emotion
         return $this;
     }
 
-    // ========== PHOTO ==========
     public function getPhoto(): ?string
     {
         return $this->photo;
@@ -118,10 +114,6 @@ class Emotion
         return null;
     }
 
-    // ========== HUMEUR JOURNALIERES ==========
-    /**
-     * @return Collection<int, HumeurJournaliere>
-     */
     public function getHumeurJournalieres(): Collection
     {
         if (!$this->humeurJournalieres instanceof Collection) {
@@ -144,10 +136,6 @@ class Emotion
         return $this;
     }
 
-    // ========== SCENARIOS ==========
-    /**
-     * @return Collection<int, Scenario>
-     */
     public function getScenarios(): Collection
     {
         if (!$this->scenarios instanceof Collection) {

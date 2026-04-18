@@ -1,0 +1,115 @@
+{# templates/carnet_educatif/pdf.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Carnet éducatif #{{ carnet_educatif.id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2cm;
+            color: #2d3561;
+        }
+        h1 {
+            font-size: 24px;
+            border-bottom: 2px solid #1CC88A;
+            padding-bottom: 8px;
+        }
+        h2 {
+            font-size: 18px;
+            background: #f8faff;
+            padding: 8px 12px;
+            border-left: 4px solid #1CC88A;
+            margin-top: 20px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .info-item {
+            border-bottom: 1px solid #e8ecf5;
+            padding: 8px 0;
+        }
+        .info-label {
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #8590a5;
+        }
+        .info-value {
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-yes {
+            background: #d4f7ec;
+            color: #0a7a52;
+        }
+        .badge-no {
+            background: #fdecea;
+            color: #c0392b;
+        }
+        .text-card {
+            margin: 20px 0;
+            padding: 12px;
+            background: #f8faff;
+            border-radius: 8px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            color: #8590a5;
+            border-top: 1px solid #e8ecf5;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📘 Carnet éducatif n°{{ carnet_educatif.id }}</h1>
+    <p><strong>Date :</strong> {{ carnet_educatif.dateEtude|date('d/m/Y') }} &nbsp;|&nbsp;
+       <strong>Durée :</strong> {{ carnet_educatif.dureeTotale }} minutes</p>
+
+    <h2>📌 Informations de session</h2>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">Date d'étude</div><div class="info-value">{{ carnet_educatif.dateEtude|date('d/m/Y') }}</div></div>
+        <div class="info-item"><div class="info-label">Heure début</div><div class="info-value">{{ carnet_educatif.heureDebut|date('H:i') }}</div></div>
+        <div class="info-item"><div class="info-label">Heure fin</div><div class="info-value">{{ carnet_educatif.heureFin|date('H:i') }}</div></div>
+        <div class="info-item"><div class="info-label">Lieu</div><div class="info-value">{{ carnet_educatif.lieu }}</div></div>
+        <div class="info-item"><div class="info-label">Matière</div><div class="info-value">{{ carnet_educatif.matiere }}</div></div>
+        <div class="info-item"><div class="info-label">Type d'activité</div><div class="info-value">{{ carnet_educatif.typeActivite }}</div></div>
+        <div class="info-item"><div class="info-label">Niveau difficulté</div><div class="info-value">{{ carnet_educatif.niveauDifficulte }}</div></div>
+    </div>
+
+    <h2>🧠 Comportement & concentration</h2>
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">Concentration</div><div class="info-value">{{ carnet_educatif.niveauConcentration }}/5</div></div>
+        <div class="info-item"><div class="info-label">Agitation</div><div class="info-value">{{ carnet_educatif.niveauAgitation }}/5</div></div>
+        <div class="info-item"><div class="info-label">Interruptions</div><div class="info-value">{{ carnet_educatif.nombreInterruptions }}</div></div>
+        <div class="info-item"><div class="info-label">Temps avant perte</div><div class="info-value">{{ carnet_educatif.tempsAvantPerteConcentration ?? '—' }} s</div></div>
+        <div class="info-item"><div class="info-label">Travaille seul</div><div class="info-value"><span class="badge {{ carnet_educatif.travailleSeul ? 'badge-yes' : 'badge-no' }}">{{ carnet_educatif.travailleSeul ? '✓ Oui' : '✗ Non' }}</span></div></div>
+        <div class="info-item"><div class="info-label">Demande aide</div><div class="info-value"><span class="badge {{ carnet_educatif.demandeAide ? 'badge-yes' : 'badge-no' }}">{{ carnet_educatif.demandeAide ? '✓ Oui' : '✗ Non' }}</span></div></div>
+        <div class="info-item"><div class="info-label">Autonomie</div><div class="info-value">{{ carnet_educatif.niveauAutonomie }}/5</div></div>
+        <div class="info-item"><div class="info-label">Travail terminé</div><div class="info-value"><span class="badge {{ carnet_educatif.travailTermine ? 'badge-yes' : 'badge-no' }}">{{ carnet_educatif.travailTermine ? '✅ Terminé' : '⏳ Non terminé' }}</span></div></div>
+    </div>
+
+    <h2>📝 Difficultés rencontrées</h2>
+    <div class="text-card">{{ carnet_educatif.difficultes ?: 'Aucune difficulté signalée.' }}</div>
+
+    <h2>⭐ Points positifs</h2>
+    <div class="text-card">{{ carnet_educatif.pointsPositifs ?: 'Aucun point noté.' }}</div>
+
+    <div class="footer">
+        Document généré le {{ 'now'|date('d/m/Y à H:i') }}<br>
+        Carnet éducatif - FocusKid
+    </div>
+</body>
+</html>

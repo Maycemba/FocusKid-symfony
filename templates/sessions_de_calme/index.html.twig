@@ -2,32 +2,10 @@
 
 {% block title %}Sessions de calme - FocusKids{% endblock %}
 
-{% block stylesheets %}
+{% block body %}
     {{ parent() }}
-    <style>
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
-            padding: 20px;
-            color: white;
-            margin-bottom: 20px;
-        }
-        .badge-type {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .badge-musique { background-color: #3498db; color: white; }
-        .badge-coloriage { background-color: #e74c3c; color: white; }
-        .badge-respiration { background-color: #2ecc71; color: white; }
-        .badge-histoire { background-color: #f39c12; color: white; }
-        .table-actions .btn {
-            margin: 0 2px;
-            padding: 4px 8px;
-        }
-    </style>
-{% endblock %}
+
+    <h1>SessionsDeCalme index</h1>
 
 {% block body %}
 <div class="container-fluid px-4">

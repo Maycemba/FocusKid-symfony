@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\JeuRepository;
 
@@ -29,6 +30,8 @@ class Jeu
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank(message: "Le titre ne peut pas être vide.")]
+    #[Assert\Length(max: 255, maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $titre = null;
 
     public function getTitre(): ?string
@@ -43,6 +46,7 @@ class Jeu
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank(message: "Le type ne peut pas être vide.")]
     private ?string $type = null;
 
     public function getType(): ?string
@@ -57,6 +61,7 @@ class Jeu
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank(message: "Le niveau ne peut pas être vide.")]
     private ?string $niveau = null;
 
     public function getNiveau(): ?string
@@ -86,15 +91,20 @@ class Jeu
 
     public function addQuestion(Question $question): self
     {
-        if (!$this->getQuestions()->contains($question)) {
-            $this->getQuestions()->add($question);
+        if (!$this->questions->contains($question)) {
+            $this->questions->add($question);
+            $question->setJeu($this);
         }
         return $this;
     }
 
     public function removeQuestion(Question $question): self
     {
-        $this->getQuestions()->removeElement($question);
+        if ($this->questions->removeElement($question)) {
+            if ($question->getJeu() === $this) {
+                $question->setJeu(null);
+            }
+        }
         return $this;
     }
 
@@ -120,15 +130,20 @@ class Jeu
 
     public function addScore(Score $score): self
     {
-        if (!$this->getScores()->contains($score)) {
-            $this->getScores()->add($score);
+        if (!$this->scores->contains($score)) {
+            $this->scores->add($score);
+            $score->setJeu($this);
         }
         return $this;
     }
 
     public function removeScore(Score $score): self
     {
-        $this->getScores()->removeElement($score);
+        if ($this->scores->removeElement($score)) {
+            if ($score->getJeu() === $this) {
+                $score->setJeu(null);
+            }
+        }
         return $this;
     }
 
