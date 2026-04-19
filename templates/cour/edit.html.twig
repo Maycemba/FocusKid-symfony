@@ -1,28 +1,65 @@
-{% extends 'base-front.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}Edit Cour{% endblock %}
+{% block title %}Modifier cours - FocusKids{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('assets/css/education-forms.css') }}">
+    <style>
+        .config-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #e0e0e0;
+        }
+        .badge-type {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-brouillon { background: #FF9800; color: white; }
+        .badge-publie { background: #4CAF50; color: white; }
+        .badge-archive { background: #9E9E9E; color: white; }
+
+        .delete-form-wrapper {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .delete-form-wrapper form {
+            display: inline-block;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
-    <section class="education-page">
-        <div class="education-form-shell">
-            <div class="education-form-card">
-                <span class="education-form-eyebrow">Gestion pedagogique</span>
-                <h1 class="education-form-title">Modifier le cours</h1>
-                <p class="education-form-subtitle">Mettez a jour les informations du cours avant d'ajouter ou modifier ses lecons.</p>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h4 class="card-title text-white mb-0">
+                            <i class="ti ti-edit"></i> Modifier le cours
+                        </h4>
+                        <small class="text-white-50">Mettez a jour les informations principales du cours</small>
+                    </div>
+                    <a href="{{ path('app_cour_index') }}" class="btn btn-light">
+                        <i class="ti ti-arrow-left"></i> Retour a la liste
+                    </a>
+                </div>
+            </div>
 
+            <div class="card-body">
                 {{ include('cour/_form.html.twig', {'button_label': 'Mettre a jour le cours'}) }}
 
-                <div class="education-form-actions">
-                    <a class="education-btn-secondary" href="{{ path('app_cour_index') }}">Retour a la liste</a>
+                <div class="delete-form-wrapper">
+                    {{ include('cour/_delete_form.html.twig') }}
                 </div>
-
-                {{ include('cour/_delete_form.html.twig') }}
             </div>
         </div>
-    </section>
+    </div>
+</div>
 {% endblock %}
