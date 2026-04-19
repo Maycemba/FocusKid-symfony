@@ -16,7 +16,7 @@ final class SessionsDeCalmeController extends AbstractController  // Changé: ex
 {
 
 
-   #[Route(name: 'app_sessions_de_calme_index', methods: ['GET'])]
+   /* #[Route(name: 'app_sessions_de_calme_index', methods: ['GET'])]
     public function index(SessionsDeCalmeRepository $sessionsDeCalmeRepository): Response
     {
         return $this->render('sessions_de_calme/index.html.twig', [
@@ -39,7 +39,80 @@ final class SessionsDeCalmeController extends AbstractController  // Changé: ex
                 ]
             ]
         ]);
+    } */
+   // Dans SessionsDeCalmeController.php, modifiez la méthode index :
+
+#[Route(name: 'app_sessions_de_calme_index', methods: ['GET'])]
+public function index(Request $request, SessionsDeCalmeRepository $sessionsDeCalmeRepository): Response
+{
+    // Récupérer les termes de recherche
+    $searchTerm = $request->query->get('search', '');
+    $typeFilter = $request->query->get('type', '');
+    $declencheurFilter = $request->query->get('declencheur', '');
+    $dateFrom = $request->query->get('date_from', '');
+    $dateTo = $request->query->get('date_to', '');
+    
+    // Construire la requête avec filtres
+    $queryBuilder = $sessionsDeCalmeRepository->createQueryBuilder('s');
+    
+    // Filtre de recherche générale
+    if (!empty($searchTerm)) {
+        $queryBuilder->andWhere('s.type_activite LIKE :search OR s.declencheur LIKE :search OR s.note_parent LIKE :search')
+                     ->setParameter('search', '%' . $searchTerm . '%');
     }
+    
+    // Filtre par type d'activité
+    if (!empty($typeFilter)) {
+        $queryBuilder->andWhere('s.type_activite = :type')
+                     ->setParameter('type', $typeFilter);
+    }
+    
+    // Filtre par déclencheur
+    if (!empty($declencheurFilter)) {
+        $queryBuilder->andWhere('s.declencheur = :declencheur')
+                     ->setParameter('declencheur', $declencheurFilter);
+    }
+    
+    // Filtre par date
+    if (!empty($dateFrom)) {
+        $queryBuilder->andWhere('s.horodatage >= :dateFrom')
+                     ->setParameter('dateFrom', new \DateTime($dateFrom . ' 00:00:00'));
+    }
+    
+    if (!empty($dateTo)) {
+        $queryBuilder->andWhere('s.horodatage <= :dateTo')
+                     ->setParameter('dateTo', new \DateTime($dateTo . ' 23:59:59'));
+    }
+    
+    $queryBuilder->orderBy('s.horodatage', 'DESC');
+    
+    $sessions = $queryBuilder->getQuery()->getResult();
+    
+    return $this->render('sessions_de_calme/index.html.twig', [
+        'sessions_de_calmes' => $sessions,
+        'searchTerm' => $searchTerm,
+        'typeFilter' => $typeFilter,
+        'declencheurFilter' => $declencheurFilter,
+        'dateFrom' => $dateFrom,
+        'dateTo' => $dateTo,
+        'carousel_slides' => [
+            [
+                'image' => 'base-front/img/carousel-1.jpg',
+                'title' => 'The Best Kindergarten School For Your Child',
+                'description' => 'Vero elitr justo clita lorem. Ipsum dolor at sed stet sit diam no. Kasd rebum ipsum et diam justo clita et kasd rebum sea elitr.',
+                'learn_more_link' => '#',
+                'classes_link' => '#'
+            ],
+            [
+                'image' => 'base-front/img/carousel-2.jpg',
+                'title' => 'Make A Brighter Future For Your Child',
+                'description' => 'Vero elitr justo clita lorem. Ipsum dolor at sed stet sit diam no. Kasd rebum ipsum et diam justo clita et kasd rebum sea elitr.',
+                'learn_more_link' => '#',
+                'classes_link' => '#'
+            ]
+        ]
+    ]);
+}
     #[Route('/new', name: 'app_sessions_de_calme_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
