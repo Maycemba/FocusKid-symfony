@@ -7,6 +7,7 @@ use App\Entity\ExerciceEnfant;
 use App\Entity\Utilisateur;
 use App\Form\ExerciceType;
 use App\Repository\ExerciceRepository;
+use App\Repository\UtilisateurRepository;  
 use App\Service\QuestionGeneratorIA;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -61,13 +62,27 @@ final class ExerciceController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_exercice_show', methods: ['GET'])]
-    public function show(Exercice $exercice): Response
-    {
-        return $this->render('exercice/show.html.twig', [
-            'exercice' => $exercice,
-        ]);
+
+// Dans ExerciceController.php
+
+#[Route('/{id}', name: 'app_exercice_show', methods: ['GET'])]
+public function show(Exercice $exercice, UtilisateurRepository $utilisateurRepository): Response
+{
+    // Récupérer le créateur (si existe)
+    $createur = null;
+    if ($exercice->getCreePar()) {
+        try {
+            $createur = $utilisateurRepository->find($exercice->getCreePar());
+        } catch (\Exception $e) {
+            $createur = null;
+        }
     }
+    
+    return $this->render('exercice/show.html.twig', [
+        'exercice' => $exercice,
+        'createur' => $createur,
+    ]);
+}
 
     #[Route('/{id}/edit', name: 'app_exercice_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Exercice $exercice, EntityManagerInterface $entityManager): Response
