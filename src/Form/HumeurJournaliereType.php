@@ -2,22 +2,31 @@
 
 namespace App\Form;
 
-use App\Entity\Emotion;
 use App\Entity\HumeurJournaliere;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use App\Entity\Emotion;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 
 class HumeurJournaliereType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('dateHeure')
             ->add('emotion', EntityType::class, [
+                'label' => 'Émotion',
                 'class' => Emotion::class,
-                'choice_label' => 'id',
+                'choice_label' => 'nom',
+                'attr' => ['class' => 'form-control'],
+                'required' => true
+            ])
+            ->add('dateHeure', DateTimeType::class, [
+                'label' => 'Date et heure',
+                'widget' => 'single_text',
+                'attr' => ['class' => 'form-control'],
+                'required' => false
             ])
         ;
     }

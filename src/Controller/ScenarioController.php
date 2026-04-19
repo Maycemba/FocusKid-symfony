@@ -30,9 +30,14 @@ final class ScenarioController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $file = $form->get('animation')->getData();
+            if ($file) {
+                $scenario->setAnimation($file);
+            }
             $entityManager->persist($scenario);
             $entityManager->flush();
 
+            $this->addFlash('success', 'Scénario créé avec succès !');
             return $this->redirectToRoute('app_scenario_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -57,8 +62,15 @@ final class ScenarioController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $file = $form->get('animation')->getData();
+            
+            if ($file) {
+                $scenario->setAnimation($file);
+            }
+            
             $entityManager->flush();
 
+            $this->addFlash('success', 'Scénario modifié avec succès !');
             return $this->redirectToRoute('app_scenario_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -74,6 +86,7 @@ final class ScenarioController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$scenario->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($scenario);
             $entityManager->flush();
+            $this->addFlash('success', 'Scénario supprimé avec succès !');
         }
 
         return $this->redirectToRoute('app_scenario_index', [], Response::HTTP_SEE_OTHER);

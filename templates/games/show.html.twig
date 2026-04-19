@@ -1,0 +1,47 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}{{ jeu.titre }} - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+            <h1 class="mb-3">{{ jeu.titre }}</h1>
+            <p>Type: {{ jeu.type }} | Niveau: {{ jeu.niveau }}</p>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <form method="post" action="{{ path('app_games_submit', {'id': jeu.id}) }}" class="bg-light rounded p-5">
+                    <h3 class="mb-4">Questions du jeu</h3>
+                    {% for question in jeu.questions %}
+                    <div class="mb-4">
+                        <h5>{{ loop.index }}. {{ question.questionText }}</h5>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q{{ question.id }}" id="q{{ question.id }}a" value="A" required>
+                            <label class="form-check-label" for="q{{ question.id }}a">
+                                {{ question.optionA }}
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q{{ question.id }}" id="q{{ question.id }}b" value="B" required>
+                            <label class="form-check-label" for="q{{ question.id }}b">
+                                {{ question.optionB }}
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q{{ question.id }}" id="q{{ question.id }}c" value="C" required>
+                            <label class="form-check-label" for="q{{ question.id }}c">
+                                {{ question.optionC }}
+                            </label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="text-center">
+                        <button class="btn btn-primary" type="submit">Soumettre le Quiz</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

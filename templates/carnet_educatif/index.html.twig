@@ -119,12 +119,5 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
     </table>
   </div>
 
-  {% else %}
-  <div class="empty-wrap">
-    <span class="empty-icon">📭</span>
-    <p style="color:var(--muted);font-size:1.05rem">Aucun carnet trouvé.<br>Créez votre première session d'étude !</p>
-    <a href="{{ path('app_carnet_educatif_new') }}" class="btn-new mt-3 d-inline-flex">➕ Commencer</a>
-  </div>
-  {% endif %}
-</div>
+    <a href="{{ path('app_carnet_educatif_new') }}">Create new</a>
 {% endblock %}

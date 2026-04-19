@@ -29,9 +29,9 @@ class SessionsDeCalme
         return $this;
     }
 
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'sessionsDeCalmes')]
-    #[ORM\JoinColumn(name: 'enfant_id', referencedColumnName: 'id')]
-    private ?Utilisateur $utilisateur = null;
+   #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'sessionsDeCalmes')]
+#[ORM\JoinColumn(name: 'enfant_id', referencedColumnName: 'id')]   // ← corrigé
+private ?Utilisateur $utilisateur = null;
 
     public function getUtilisateur(): ?Utilisateur
     {

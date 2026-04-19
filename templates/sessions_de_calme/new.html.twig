@@ -5,101 +5,366 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        .form-section {
+        .config-section {
             background: #f8f9fa;
             border-radius: 10px;
             padding: 20px;
-            margin-bottom: 20px;
-            border-left: 4px solid #4e73df;
+            margin-top: 20px;
+            border: 1px solid #e0e0e0;
         }
-        .required-field:after {
-            content: "*";
-            color: red;
-            margin-left: 5px;
+        .badge-type {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
         }
+        .badge-musique { background: #9C27B0; color: white; }
+        .badge-coloriage { background: #FF9800; color: white; }
+        .badge-respiration { background: #4CAF50; color: white; }
+        .badge-histoire { background: #2196F3; color: white; }
     </style>
 {% endblock %}
 
 {% block body %}
-<div class="container-fluid px-4">
-    <div class="row">
-        <div class="col-12">
-            <!-- Navigation breadcrumb -->
-            <nav aria-label="breadcrumb" class="mt-3">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="{{ path('app_sessions_de_calme_index') }}">Sessions de calme</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Nouvelle session</li>
-                </ol>
-            </nav>
-            
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h4 class="text-white mb-0">
-                                <i class="ti ti-meditation"></i> Créer une nouvelle session
-                            </h4>
-                            <small class="text-white-50">Ajoutez une session de relaxation pour un enfant</small>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h4 class="card-title text-white mb-0">
+                            <i class="ti ti-meditation"></i> Créer une nouvelle session de calme
+                        </h4>
+                        <small class="text-white-50">Ajoutez une nouvelle session de relaxation pour les enfants</small>
+                    </div>
+                    <a href="{{ path('app_sessions_de_calme_index') }}" class="btn btn-light">
+                        <i class="ti ti-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'id': 'sessionForm'}}) }}
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.type_activite) }}
+                            {{ form_widget(form.type_activite, {'attr': {'class': 'form-select', 'id': 'sessionType'}}) }}
+                            {{ form_errors(form.type_activite) }}
                         </div>
-                        <div>
-                            <a href="{{ path('app_sessions_de_calme_index') }}" class="btn btn-light">
-                                <i class="ti ti-arrow-left"></i> Retour à la liste
+                        
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.declencheur) }}
+                            {{ form_widget(form.declencheur, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_errors(form.declencheur) }}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.utilisateur) }}
+                            {{ form_widget(form.utilisateur, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_errors(form.utilisateur) }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            {{ form_label(form.duree_prevue) }}
+                            {{ form_widget(form.duree_prevue, {'attr': {'class': 'form-control', 'placeholder': 'Durée prévue (minutes)'}}) }}
+                            {{ form_errors(form.duree_prevue) }}
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            {{ form_label(form.duree_reelle) }}
+                            {{ form_widget(form.duree_reelle, {'attr': {'class': 'form-control', 'placeholder': 'Durée réelle (minutes)'}}) }}
+                            {{ form_errors(form.duree_reelle) }}
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            {{ form_label(form.horodatage) }}
+                            {{ form_widget(form.horodatage, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.horodatage) }}
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            {{ form_label(form.feedback_enfant) }}
+                            {{ form_widget(form.feedback_enfant, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_errors(form.feedback_enfant) }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            {{ form_label(form.note_parent) }}
+                            {{ form_widget(form.note_parent, {'attr': {'class': 'form-control', 'rows': 3, 'placeholder': 'Note du parent...'}}) }}
+                            {{ form_errors(form.note_parent) }}
+                        </div>
+                    </div>
+                    
+                    <!-- Section Configuration spécifique selon type_activite -->
+                    <div class="config-section">
+                        <h5 class="mb-3">
+                            <i class="ti ti-settings"></i> Configuration détaillée
+                            <span id="typeBadge" class="badge-type badge-musique ms-2">musique</span>
+                        </h5>
+                        
+                        <!-- Configuration MUSIQUE -->
+                        <div id="configMusique" class="type-config">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">🎵 Type de musique</label>
+                                    <select id="musiqueType" class="form-select">
+                                        <option value="classique">Musique classique</option>
+                                        <option value="nature">Sons de la nature</option>
+                                        <option value="ambiance">Musique d'ambiance</option>
+                                        <option value="piano">Piano doux</option>
+                                        <option value="instrumental">Instrumental</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">🔊 Volume</label>
+                                    <input type="range" id="musiqueVolume" class="form-range" min="0" max="100" value="50">
+                                    <span id="volumeValue" class="badge bg-info mt-1 d-inline-block">50%</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-semibold">📁 URL ou chemin du fichier audio</label>
+                                    <input type="text" id="musiqueUrl" class="form-control" placeholder="/uploads/musique/relaxation.mp3">
+                                    <small class="text-muted">Laissez vide pour utiliser la musique par défaut</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Configuration COLORIAGE -->
+                        <div id="configColoriage" class="type-config" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">🎨 Thème du coloriage</label>
+                                    <select id="coloriageTheme" class="form-select">
+                                        <option value="animaux">Animaux</option>
+                                        <option value="nature">Nature</option>
+                                        <option value="mandala">Mandala</option>
+                                        <option value="personnages">Personnages</option>
+                                        <option value="vehicules">Véhicules</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">🖍️ Niveau de difficulté</label>
+                                    <select id="coloriageDifficulte" class="form-select">
+                                        <option value="facile">Facile</option>
+                                        <option value="moyen">Moyen</option>
+                                        <option value="difficile">Difficile</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-semibold">🖼️ Image de coloriage (fichier)</label>
+                                    <input type="file" id="coloriageImage" class="form-control" accept="image/*">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Configuration RESPIRATION -->
+                        <div id="configRespiration" class="type-config" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label fw-semibold">🌬️ Inspiration (secondes)</label>
+                                    <input type="number" id="respirationInspiration" class="form-control" value="4" min="2" max="10">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label fw-semibold">💨 Expiration (secondes)</label>
+                                    <input type="number" id="respirationExpiration" class="form-control" value="4" min="2" max="10">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label fw-semibold">⏸️ Pause (secondes)</label>
+                                    <input type="number" id="respirationPause" class="form-control" value="2" min="0" max="5">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label fw-semibold">🔄 Nombre de cycles</label>
+                                    <input type="number" id="respirationCycles" class="form-control" value="10" min="5" max="30">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label fw-semibold">🎵 Musique de fond</label>
+                                    <select id="respirationMusique" class="form-select">
+                                        <option value="none">Aucune</option>
+                                        <option value="pluie">Bruit de pluie</option>
+                                        <option value="ocean">Océan</option>
+                                        <option value="foret">Forêt</option>
+                                        <option value="silence">Silence</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Configuration HISTOIRE -->
+                        <div id="configHistoire" class="type-config" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">📖 Type d'histoire</label>
+                                    <select id="histoireType" class="form-select">
+                                        <option value="aventure">Aventure</option>
+                                        <option value="contes">Contes</option>
+                                        <option value="animaux">Animaux</option>
+                                        <option value="relaxation">Histoire de relaxation</option>
+                                        <option value="amitie">Amitié</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">🎤 Narrateur</label>
+                                    <select id="histoireVoix" class="form-select">
+                                        <option value="femme">Voix féminine</option>
+                                        <option value="homme">Voix masculine</option>
+                                        <option value="enfant">Voix enfant</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-semibold">📝 Texte de l'histoire</label>
+                                    <textarea id="histoireTexte" class="form-control" rows="8" placeholder="Écrivez l'histoire ici..."></textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-semibold">🎵 Musique de fond pour l'histoire</label>
+                                    <select id="histoireMusique" class="form-select">
+                                        <option value="none">Aucune</option>
+                                        <option value="doux">Musique douce</option>
+                                        <option value="nature">Sons de la nature</option>
+                                        <option value="piano">Piano</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Champ caché pour stocker la configuration JSON -->
+                    <input type="hidden" id="configData" name="config_data">
+                    
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="ti ti-device-floppy"></i> Enregistrer
+                            </button>
+                            <a href="{{ path('app_sessions_de_calme_index') }}" class="btn btn-secondary px-5 ms-2">
+                                <i class="ti ti-x"></i> Annuler
                             </a>
                         </div>
                     </div>
-                </div>
-                
-                <div class="card-body">
-                    <!-- Formulaire -->
-                    {{ include('sessions_de_calme/_form.html.twig', {'button_label': 'Créer la session'}) }}
-                </div>
-                
-                <div class="card-footer text-muted">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <small><i class="ti ti-info-circle"></i> Les champs marqués d'un * sont obligatoires</small>
-                        </div>
-                        <div class="col-md-6 text-end">
-                            <small><i class="ti ti-clock"></i> La durée est en minutes</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Informations supplémentaires -->
-            <div class="card mt-4">
-                <div class="card-header bg-info text-white">
-                    <i class="ti ti-tips"></i> Conseils pour une session réussie
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="text-center">
-                                <i class="ti ti-music" style="font-size: 2rem;"></i>
-                                <h6>Musique relaxante</h6>
-                                <small>Choisissez une musique douce et calme</small>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="text-center">
-                                <i class="ti ti-clock" style="font-size: 2rem;"></i>
-                                <h6>Durée adaptée</h6>
-                                <small>5-10 minutes pour les jeunes enfants</small>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="text-center">
-                                <i class="ti ti-heart" style="font-size: 2rem;"></i>
-                                <h6>Ambiance calme</h6>
-                                <small>Créez un environnement apaisant</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    
+                {{ form_end(form) }}
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Gestion du changement de type d'activité
+    const typeSelect = document.getElementById('sessions_de_calme_type_activite');
+    const configMusique = document.getElementById('configMusique');
+    const configColoriage = document.getElementById('configColoriage');
+    const configRespiration = document.getElementById('configRespiration');
+    const configHistoire = document.getElementById('configHistoire');
+    const typeBadge = document.getElementById('typeBadge');
+    
+    function updateConfigVisibility() {
+        let selectedType = typeSelect.value;
+        
+        const badgeClass = {
+            'musique': 'badge-musique',
+            'coloriage': 'badge-coloriage',
+            'respiration': 'badge-respiration',
+            'histoire': 'badge-histoire'
+        };
+        typeBadge.textContent = selectedType;
+        typeBadge.className = 'badge-type ms-2 ' + (badgeClass[selectedType] || 'badge-musique');
+        
+        // Cacher toutes les configs
+        if(configMusique) configMusique.style.display = 'none';
+        if(configColoriage) configColoriage.style.display = 'none';
+        if(configRespiration) configRespiration.style.display = 'none';
+        if(configHistoire) configHistoire.style.display = 'none';
+        
+        // Afficher la config correspondante
+        if(selectedType === 'musique' && configMusique) {
+            configMusique.style.display = 'block';
+        } else if(selectedType === 'coloriage' && configColoriage) {
+            configColoriage.style.display = 'block';
+        } else if(selectedType === 'respiration' && configRespiration) {
+            configRespiration.style.display = 'block';
+        } else if(selectedType === 'histoire' && configHistoire) {
+            configHistoire.style.display = 'block';
+        }
+    }
+    
+    // Gestion du volume
+    const musiqueVolume = document.getElementById('musiqueVolume');
+    const volumeValue = document.getElementById('volumeValue');
+    if(musiqueVolume && volumeValue) {
+        musiqueVolume.addEventListener('input', function() {
+            volumeValue.textContent = this.value + '%';
+        });
+    }
+    
+    // Écouter le changement de type
+    if(typeSelect) {
+        typeSelect.addEventListener('change', updateConfigVisibility);
+        updateConfigVisibility();
+    }
+    
+    // Construction et sauvegarde du JSON avant soumission
+    const form = document.getElementById('sessionForm');
+    if(form) {
+        form.addEventListener('submit', function(e) {
+            const type = typeSelect.value;
+            let configJson = {};
+            
+            if(type === 'musique') {
+                configJson = {
+                    type: 'musique',
+                    musiqueType: document.getElementById('musiqueType')?.value || 'classique',
+                    volume: parseInt(document.getElementById('musiqueVolume')?.value || 50),
+                    url: document.getElementById('musiqueUrl')?.value || ''
+                };
+            } 
+            else if(type === 'coloriage') {
+                configJson = {
+                    type: 'coloriage',
+                    theme: document.getElementById('coloriageTheme')?.value || 'animaux',
+                    difficulte: document.getElementById('coloriageDifficulte')?.value || 'facile'
+                };
+            } 
+            else if(type === 'respiration') {
+                configJson = {
+                    type: 'respiration',
+                    inspiration: parseInt(document.getElementById('respirationInspiration')?.value || 4),
+                    expiration: parseInt(document.getElementById('respirationExpiration')?.value || 4),
+                    pause: parseInt(document.getElementById('respirationPause')?.value || 2),
+                    cycles: parseInt(document.getElementById('respirationCycles')?.value || 10),
+                    musique: document.getElementById('respirationMusique')?.value || 'none'
+                };
+            } 
+            else if(type === 'histoire') {
+                configJson = {
+                    type: 'histoire',
+                    histoireType: document.getElementById('histoireType')?.value || 'aventure',
+                    voix: document.getElementById('histoireVoix')?.value || 'femme',
+                    texte: document.getElementById('histoireTexte')?.value || '',
+                    musique: document.getElementById('histoireMusique')?.value || 'none'
+                };
+            }
+            
+            // Stocker la configuration dans un champ caché (vous devrez ajouter ce champ dans le formulaire)
+            const configData = document.getElementById('configData');
+            if(configData) {
+                configData.value = JSON.stringify(configJson);
+            }
+            
+            console.log('Configuration sauvegardée:', configJson);
+        });
+    }
+</script>
 {% endblock %}

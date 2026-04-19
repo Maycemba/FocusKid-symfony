@@ -1,39 +1,80 @@
-{% extends 'base-back.html.twig' %}
+{% extends 'base-front.html.twig' %}
 
-{% block title %}Commentaire index{% endblock %}
+{% block title %}Mes commentaires{% endblock %}
 
 {% block body %}
-    <h1>Commentaire index</h1>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h1 class="display-5 fw-bold mb-0">💬 Commentaires</h1>
+        <a href="{{ path('app_carnet_educatif_index') }}" class="btn btn-outline-primary">← Retour aux carnets</a>
+    </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Date_commentaire</th>
-                <th>Texte_commentaire</th>
-                <th>Type_commentaire</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
+    {# Barre de filtre #}
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body p-4">
+            <form method="get" action="{{ path('app_commentaire_index') }}" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">🔍 Recherche</label>
+                    <input type="text" name="search" class="form-control" placeholder="Texte du commentaire..." value="{{ search|default('') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">🏷️ Type</label>
+                    <select name="type" class="form-select">
+                        <option value="">Tous</option>
+                        {% for t in types|default([]) %}
+                            <option value="{{ t }}" {% if selected_type == t %}selected{% endif %}>{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">📘 Carnet ID</label>
+                    <input type="number" name="carnet_id" class="form-control" placeholder="Numéro du carnet" value="{{ carnet_id|default('') }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                    <a href="{{ path('app_commentaire_index') }}" class="btn btn-outline-secondary w-100">Réinitialiser</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# Liste des commentaires #}
+    <div class="row">
         {% for commentaire in commentaires %}
-            <tr>
-                <td>{{ commentaire.id }}</td>
-                <td>{{ commentaire.dateCommentaire ? commentaire.dateCommentaire|date('Y-m-d') : '' }}</td>
-                <td>{{ commentaire.texteCommentaire }}</td>
-                <td>{{ commentaire.typeCommentaire }}</td>
-                <td>
-                    <a href="{{ path('app_commentaire_show', {'id': commentaire.id}) }}">show</a>
-                    <a href="{{ path('app_commentaire_edit', {'id': commentaire.id}) }}">edit</a>
-                </td>
-            </tr>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm border-0 rounded-4 hover-lift transition-all">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="badge bg-info rounded-pill px-3 py-2">
+                                {{ commentaire.typeCommentaire|capitalize }}
+                            </span>
+                            <small class="text-muted">{{ commentaire.dateCommentaire|date('d/m/Y H:i') }}</small>
+                        </div>
+                        <p class="mt-3">{{ commentaire.texteCommentaire|slice(0, 100) }}{% if commentaire.texteCommentaire|length > 100 %}...{% endif %}</p>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                {% if commentaire.carnetEducatif %}
+                                    Carnet #{{ commentaire.carnetEducatif.id }}
+                                {% else %}
+                                    Carnet supprimé
+                                {% endif %}
+                            </small>
+                            <div>
+                                {% if commentaire.carnetEducatif %}
+                                    <a href="{{ path('app_commentaire_show', {'id': commentaire.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                {% endif %}
+                                <a href="{{ path('app_commentaire_edit', {'id': commentaire.id}) }}" class="btn btn-sm btn-outline-warning">Modifier</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-info">Aucun commentaire trouvé pour ces critères.</div>
+            </div>
         {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_commentaire_new') }}">Create new</a>
+    </div>
+</div>
 {% endblock %}

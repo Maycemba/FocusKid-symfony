@@ -1,35 +1,88 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}HumeurJournaliere index{% endblock %}
+
+{% block title %}Humeur journalière{% endblock %}
 
 {% block body %}
-    <h1>HumeurJournaliere index</h1>
+    <div class="container mt-4">
+        <h1 class="mb-4">Gestion des humeurs journalières</h1>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>DateHeure</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for humeur_journaliere in humeur_journalieres %}
-            <tr>
-                <td>{{ humeur_journaliere.id }}</td>
-                <td>{{ humeur_journaliere.dateHeure ? humeur_journaliere.dateHeure|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_humeur_journaliere_show', {'id': humeur_journaliere.id}) }}">show</a>
-                    <a href="{{ path('app_humeur_journaliere_edit', {'id': humeur_journaliere.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="3">no records found</td>
-            </tr>
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
         {% endfor %}
-        </tbody>
-    </table>
 
-    <a href="{{ path('app_humeur_journaliere_new') }}">Create new</a>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Id</th>
+                        <th>Émotion</th>
+                        <th>Date et heure</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for humeur_journaliere in humeur_journalieres %}
+                    <tr>
+                        <td>{{ humeur_journaliere.id }}</td>
+                        <td>
+                            {% if humeur_journaliere.emotion %}
+                                <div class="d-flex align-items-center">
+                                    {% if humeur_journaliere.emotion.photo %}
+                                        <img src="data:image/png;base64,{{ humeur_journaliere.emotion.photo }}" 
+                                             alt="{{ humeur_journaliere.emotion.nom }}" 
+                                             style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%; margin-right: 10px;">
+                                    {% endif %}
+                                    <span>{{ humeur_journaliere.emotion.nom }}</span>
+                                </div>
+                            {% else %}
+                                <span class="text-muted">Non définie</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ humeur_journaliere.dateHeure ? humeur_journaliere.dateHeure|date('d/m/Y H:i:s') : 'Non définie' }}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ path('app_humeur_journaliere_show', {'id': humeur_journaliere.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                                <a href="{{ path('app_humeur_journaliere_edit', {'id': humeur_journaliere.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ humeur_journaliere.id }}">
+                                    Supprimer
+                                </button>
+                            </div>
+                            
+                            <!-- Modal de confirmation de suppression -->
+                            <div class="modal fade" id="deleteModal{{ humeur_journaliere.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Confirmer la suppression</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Êtes-vous sûr de vouloir supprimer cette humeur journalière ?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                            <form method="post" action="{{ path('app_humeur_journaliere_delete', {'id': humeur_journaliere.id}) }}" style="display: inline-block;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ humeur_journaliere.id) }}">
+                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">Aucune humeur journalière trouvée</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <a href="{{ path('app_humeur_journaliere_new') }}" class="btn btn-primary mt-3">Enregistrer une nouvelle humeur</a>
+    </div>
 {% endblock %}
