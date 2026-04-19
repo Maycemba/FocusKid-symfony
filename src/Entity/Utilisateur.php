@@ -11,12 +11,12 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use App\Repository\UtilisateurRepository;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
-#[ORM\Table(name: 'users')]
+#[ORM\Table(name: 'utilisateur')]
 class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'UserID', type: 'integer')]
+    #[ORM\Column(name: 'id', type: 'integer')]
     private ?int $id = null;
 
     public function getId(): ?int
@@ -100,19 +100,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    #[ORM\Column(name: 'LockUntil', type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $createdAt = null;
-
-    public function getCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(?\DateTimeInterface $createdAt): self
-    {
-        $this->createdAt = $createdAt;
-        return $this;
-    }
+  
 
     // #[ORM\Column(type: 'boolean', nullable: true)]
     // private ?bool $notifications_email = null;
@@ -177,122 +165,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         }
         return $this;
     }
-
-    public function removeReponseUserExercice(ReponseUserExercice $reponseUserExercice): self
-    {
-        $this->getReponseUserExercices()->removeElement($reponseUserExercice);
-        return $this;
-    }
-
-    #[ORM\OneToMany(targetEntity: ReponseUserQuiz::class, mappedBy: 'utilisateur')]
-    private Collection $reponseUserQuizs;
-
-    /**
-     * @return Collection<int, ReponseUserQuiz>
-     */
-    public function getReponseUserQuizs(): Collection
-    {
-        if (!$this->reponseUserQuizs instanceof Collection) {
-            $this->reponseUserQuizs = new ArrayCollection();
-        }
-        return $this->reponseUserQuizs;
-    }
-
-    public function addReponseUserQuiz(ReponseUserQuiz $reponseUserQuiz): self
-    {
-        if (!$this->getReponseUserQuizs()->contains($reponseUserQuiz)) {
-            $this->getReponseUserQuizs()->add($reponseUserQuiz);
-        }
-        return $this;
-    }
-
-    public function removeReponseUserQuiz(ReponseUserQuiz $reponseUserQuiz): self
-    {
-        $this->getReponseUserQuizs()->removeElement($reponseUserQuiz);
-        return $this;
-    }
-
-    #[ORM\OneToMany(targetEntity: Score::class, mappedBy: 'utilisateur')]
-    private Collection $scores;
-
-    /**
-     * @return Collection<int, Score>
-     */
-    public function getScores(): Collection
-    {
-        if (!$this->scores instanceof Collection) {
-            $this->scores = new ArrayCollection();
-        }
-        return $this->scores;
-    }
-
-    public function addScore(Score $score): self
-    {
-        if (!$this->getScores()->contains($score)) {
-            $this->getScores()->add($score);
-        }
-        return $this;
-    }
-
-    public function removeScore(Score $score): self
-    {
-        $this->getScores()->removeElement($score);
-        return $this;
-    }
-
-    #[ORM\OneToMany(targetEntity: SessionsDeCalme::class, mappedBy: 'utilisateur')]
-    private Collection $sessionsDeCalmes;
-
-    public function __construct()
-    {
-        $this->carnetEducatifs = new ArrayCollection();
-        $this->reponseUserExercices = new ArrayCollection();
-        $this->reponseUserQuizs = new ArrayCollection();
-        $this->scores = new ArrayCollection();
-        $this->sessionsDeCalmes = new ArrayCollection();
-    }
-
-    /**
-     * @return Collection<int, SessionsDeCalme>
-     */
-    public function getSessionsDeCalmes(): Collection
-    {
-        if (!$this->sessionsDeCalmes instanceof Collection) {
-            $this->sessionsDeCalmes = new ArrayCollection();
-        }
-        return $this->sessionsDeCalmes;
-    }
-
-    public function addSessionsDeCalme(SessionsDeCalme $sessionsDeCalme): self
-    {
-        if (!$this->getSessionsDeCalmes()->contains($sessionsDeCalme)) {
-            $this->getSessionsDeCalmes()->add($sessionsDeCalme);
-        }
-        return $this;
-    }
-
-    public function removeSessionsDeCalme(SessionsDeCalme $sessionsDeCalme): self
-    {
-        $this->getSessionsDeCalmes()->removeElement($sessionsDeCalme);
-        return $this;
-    }
-
-    public function isActive(): ?bool
-    {
-        return $this->isActive;
-    }
-
-    public function isNotificationsEmail(): ?bool
-    {
-        return $this->notifications_email;
-    }
-
-    public function setNotificationsEmail(?bool $notifications_email): static
-    {
-        $this->notifications_email = $notifications_email;
-
-        return $this;
-    }
+ 
+    
 
     // Méthodes pour UserInterface
     public function getUserIdentifier(): string

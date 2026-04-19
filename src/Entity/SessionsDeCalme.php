@@ -30,7 +30,7 @@ class SessionsDeCalme
     }
 
    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'sessionsDeCalmes')]
-#[ORM\JoinColumn(name: 'enfant_id', referencedColumnName: 'UserID')]   // ← corrigé
+#[ORM\JoinColumn(name: 'enfant_id', referencedColumnName: 'id')]   // ← corrigé
 private ?Utilisateur $utilisateur = null;
 
     public function getUtilisateur(): ?Utilisateur

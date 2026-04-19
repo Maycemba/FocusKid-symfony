@@ -98,27 +98,23 @@ class Emotion
         return $this;
     }
 
-  /**
-     * Retourne la photo sous forme de base64 (prête pour l'affichage)
+    /**
+     * Retourne la photo sous forme de base64 (prete pour l'affichage)
      */
     public function getPhotoBase64(): ?string
     {
         if (!$this->photo) {
             return null;
         }
-        
-        // Si déjà en base64, retourner directement
+
         if (preg_match('/^[A-Za-z0-9+\/=]+$/', $this->photo)) {
             return 'data:image/jpeg;base64,' . $this->photo;
         }
-        
+
         return null;
     }
 
-  
-    /**
-     * @return Collection<int, HumeurJournaliere>
-     */
+
 
     public function getHumeurJournalieres(): Collection
     {
