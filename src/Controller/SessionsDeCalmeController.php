@@ -14,7 +14,80 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/sessions/de/calme')]
 final class SessionsDeCalmeController extends AbstractController  // Changé: extends AbstractController au lieu de BaseController
 {
+    //////////////fonctions front office
+// Ajoutez ces routes au début du fichier, après le #[Route('/sessions/de/calme')]
 
+#[Route('/front', name: 'app_sessions_de_calme_front', methods: ['GET'])]
+public function frontIndex(): Response
+{
+    return $this->render('sessions_de_calme/front_index.html.twig', [
+        'carousel_slides' => [
+            [
+                'image' => 'base-front/img/carousel-1.jpg',
+                'title' => 'Sessions de calme pour enfants',
+                'description' => 'Des activités relaxantes pour aider votre enfant à se concentrer et à gérer son stress',
+                'learn_more_link' => '#',
+                'classes_link' => '#'
+            ]
+        ]
+    ]);
+}
+
+#[Route('/activite/{type}', name: 'app_session_calme_activite', methods: ['GET'])]
+public function activite(string $type): Response
+{
+    $template = match($type) {
+        'musique' => 'sessions_de_calme/activite_musique.html.twig',
+        'respiration' => 'sessions_de_calme/activite_respiration.html.twig',
+        'coloriage' => 'sessions_de_calme/activite_coloriage.html.twig',
+        'histoire' => 'sessions_de_calme/activite_histoire.html.twig',
+        default => throw $this->createNotFoundException('Activité non trouvée')
+    };
+    
+    return $this->render($template, [
+        'carousel_slides' => []
+    ]);
+}
+
+#[Route('/save-session', name: 'app_session_calme_save', methods: ['POST'])]
+public function saveSession(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $session = new SessionsDeCalme();
+    
+    // Récupérer l'utilisateur connecté (enfant)
+    // À adapter selon votre système d'authentification
+    // $user = $this->getUser();
+    // $session->setUtilisateur($user);
+    
+    $session->setTypeActivite($request->request->get('type_activite'));
+    $session->setDeclencheur('enfant'); // L'enfant a lancé la session
+    $session->setHorodatage(new \DateTime());
+    
+    if ($request->request->get('duree_prevue')) {
+        $session->setDureePrevue((int)$request->request->get('duree_prevue'));
+    }
+    
+    if ($request->request->get('duree_reelle')) {
+        $session->setDureeReelle((int)$request->request->get('duree_reelle'));
+    }
+    
+    if ($request->request->get('feedback_enfant')) {
+        $session->setFeedbackEnfant((int)$request->request->get('feedback_enfant'));
+    }
+    
+    if ($request->request->get('note_parent')) {
+        $session->setNoteParent($request->request->get('note_parent'));
+    }
+    
+    $entityManager->persist($session);
+    $entityManager->flush();
+    
+    $this->addFlash('success', 'Merci pour ta session de calme ! Bravo pour ce moment de détente 🎉');
+    
+    return $this->redirectToRoute('app_sessions_de_calme_front');
+}
+
+////fonction back office
 
    /* #[Route(name: 'app_sessions_de_calme_index', methods: ['GET'])]
     public function index(SessionsDeCalmeRepository $sessionsDeCalmeRepository): Response
@@ -214,4 +287,5 @@ public function index(Request $request, SessionsDeCalmeRepository $sessionsDeCal
         // Rediriger vers la liste
         return $this->redirectToRoute('app_sessions_de_calme_index', [], Response::HTTP_SEE_OTHER);
     }
+
 }
