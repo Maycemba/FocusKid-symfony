@@ -118,6 +118,35 @@
             display: inline-flex;
             align-items: center;
         }
+        /* Style bouton IA */
+        .btn-ia {
+            background: linear-gradient(135deg, #9C27B0, #E1BEE7);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+        .btn-ia:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+        }
+        .ia-loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #9C27B0;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 {% endblock %}
 
@@ -231,6 +260,18 @@
                                     <span class="slider"></span>
                                 </label>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <!-- BOUTON GÉNÉRATION IA -->
+                    <div class="row mt-3 mb-2">
+                        <div class="col-12">
+                            <button type="button" id="generateIABtn" class="btn-ia">
+                                <i class="ti ti-brain"></i> 🤖 Régénérer avec IA
+                            </button>
+                            <span id="iaLoading" style="display: none; margin-left: 15px;">
+                                <span class="ia-loading"></span> Génération en cours...
+                            </span>
                         </div>
                     </div>
                     
@@ -613,8 +654,52 @@
         }
     }
     
+    // Fonction pour remplir la configuration avec les données IA
+    function remplirConfigurationIA(type, config) {
+        if (type === 'MÉMOIRE') {
+            if (config.theme) document.getElementById('memoireTheme').value = config.theme;
+            if (config.taille) document.getElementById('memoireTaille').value = config.taille;
+            if (config.tempsAffichage) document.getElementById('memoireTemps').value = config.tempsAffichage;
+            if (config.pointsParPaire) document.getElementById('memoirePoints').value = config.pointsParPaire;
+        }
+        else if (type === 'ATTENTION') {
+            if (config.sousType) document.getElementById('attentionSousType').value = config.sousType;
+            if (config.tempsParQuestion) document.getElementById('attentionTemps').value = config.tempsParQuestion;
+            
+            if (config.questions && config.questions.length > 0) {
+                const container = document.getElementById('attentionQuestionsContainer');
+                container.innerHTML = '';
+                config.questions.forEach(q => {
+                    addAttentionQuestionRow(q.images || '', q.intrus || '', '');
+                });
+            }
+        }
+        else if (type === 'LOGIQUE') {
+            if (config.sousType) document.getElementById('logiqueSousType').value = config.sousType;
+            
+            if (config.sequences && config.sequences.length > 0) {
+                const container = document.getElementById('logiqueSequencesContainer');
+                container.innerHTML = '';
+                config.sequences.forEach(seq => {
+                    addLogiqueSequenceRow(seq.debut || '', seq.reponse || '', seq.regle || '');
+                });
+            }
+        }
+        else if (type === 'CHRONO') {
+            if (config.dureeTotale) document.getElementById('chronoDuree').value = config.dureeTotale;
+            
+            if (config.defis && config.defis.length > 0) {
+                const container = document.getElementById('chronoDefisContainer');
+                container.innerHTML = '';
+                config.defis.forEach(defi => {
+                    addChronoDefiRow(defi.question || '', defi.reponse || '', defi.points || 10);
+                });
+            }
+        }
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
-        // Ajouter les exemples par défaut (si nécessaire)
+        // Ajouter les exemples par défaut
         addAttentionQuestionRow('🐶,🐱,🐭,🐹,🐰,🦊', '🦊', '🦊');
         addAttentionQuestionRow('🍎,🍎,🍎,🍎,🍏', '🍏', '🍏');
         addLogiqueSequenceRow('2, 4, 6, 8, ?', '10', '+2');
@@ -700,6 +785,56 @@
             input.addEventListener('input', function() { removeInvalidClass(this); });
             input.addEventListener('change', function() { removeInvalidClass(this); });
         });
+        
+        // ========== GÉNÉRATION IA ==========
+        const generateBtn = document.getElementById('generateIABtn');
+        const iaLoading = document.getElementById('iaLoading');
+        
+        if (generateBtn) {
+            generateBtn.addEventListener('click', function() {
+                const titre = document.getElementById('exercice_titre').value;
+                const type = document.getElementById('exercice_type').value;
+                
+                if (!titre) {
+                    alert('Veuillez saisir un titre d\'abord');
+                    return;
+                }
+                
+                generateBtn.disabled = true;
+                generateBtn.style.opacity = '0.6';
+                iaLoading.style.display = 'inline-block';
+                
+                fetch('/exercice/api/generer-exercice-ia', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        titre: titre,
+                        type: type,
+                        nbQuestions: 5
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        remplirConfigurationIA(type, data.contenu);
+                        alert('✅ Configuration régénérée avec succès !');
+                    } else {
+                        alert('Erreur: ' + (data.error || 'Génération échouée'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors de la génération IA');
+                })
+                .finally(() => {
+                    generateBtn.disabled = false;
+                    generateBtn.style.opacity = '1';
+                    iaLoading.style.display = 'none';
+                });
+            });
+        }
         
         // Construction du JSON avant soumission
         const form = document.getElementById('exerciceForm');

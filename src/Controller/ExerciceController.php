@@ -7,7 +7,9 @@ use App\Entity\ExerciceEnfant;
 use App\Entity\Utilisateur;
 use App\Form\ExerciceType;
 use App\Repository\ExerciceRepository;
+use App\Service\QuestionGeneratorIA;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -129,4 +131,16 @@ final class ExerciceController extends AbstractController
         
         return $this->redirectToRoute('app_exercice_index');
     }
+    #[Route('/api/generer-exercice-ia', name: 'api_generer_exercice_ia', methods: ['POST'])]
+public function genererExerciceIA(Request $request, QuestionGeneratorIA $generatorIA): JsonResponse
+{
+    $data = json_decode($request->getContent(), true);
+    $titre = $data['titre'] ?? '';
+    $type = $data['type'] ?? 'MÉMOIRE';
+    $nbQuestions = $data['nbQuestions'] ?? 5;
+    
+    $contenu = $generatorIA->genererExercice($titre, $type, $nbQuestions);
+    
+    return $this->json(['success' => true, 'contenu' => $contenu]);
+}
 }

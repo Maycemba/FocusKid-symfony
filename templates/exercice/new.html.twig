@@ -233,7 +233,17 @@
                             </div>
                         </div>
                     </div>
-                    
+                    <!-- Ajouter après le champ consigne, avant la section configuration -->
+<div class="row">
+    <div class="col-12 mb-3">
+        <button type="button" id="generateIABtn" class="btn btn-warning">
+            <i class="ti ti-brain"></i> 🤖 Générer avec IA
+        </button>
+        <div id="iaLoading" style="display: none; margin-top: 10px;" class="text-muted">
+            <i class="ti ti-loader"></i> Génération en cours...
+        </div>
+    </div>
+</div>
                     <!-- Section Configuration par type -->
                     <div class="config-section">
                         <h5 class="mb-3">
@@ -697,5 +707,95 @@
             });
         }
     });
+    // Génération IA
+const generateBtn = document.getElementById('generateIABtn');
+const iaLoading = document.getElementById('iaLoading');
+
+if (generateBtn) {
+    generateBtn.addEventListener('click', function() {
+        const titre = document.getElementById('exercice_titre').value;
+        const type = document.getElementById('exercice_type').value;
+        
+        if (!titre) {
+            alert('Veuillez saisir un titre d\'abord');
+            return;
+        }
+        
+        generateBtn.disabled = true;
+        iaLoading.style.display = 'block';
+        
+        fetch('/exercice/api/generer-exercice-ia', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                titre: titre,
+                type: type,
+                nbQuestions: 5
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                remplirConfigurationIA(type, data.contenu);
+                alert('✅ Exercice généré avec succès !');
+            } else {
+                alert('Erreur: ' + (data.error || 'Génération échouée'));
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la génération IA');
+        })
+        .finally(() => {
+            generateBtn.disabled = false;
+            iaLoading.style.display = 'none';
+        });
+    });
+}
+
+function remplirConfigurationIA(type, config) {
+    if (type === 'MÉMOIRE') {
+        if (config.theme) document.getElementById('memoireTheme').value = config.theme;
+        if (config.taille) document.getElementById('memoireTaille').value = config.taille;
+        if (config.tempsAffichage) document.getElementById('memoireTemps').value = config.tempsAffichage;
+        if (config.pointsParPaire) document.getElementById('memoirePoints').value = config.pointsParPaire;
+    }
+    else if (type === 'ATTENTION') {
+        if (config.sousType) document.getElementById('attentionSousType').value = config.sousType;
+        if (config.tempsParQuestion) document.getElementById('attentionTemps').value = config.tempsParQuestion;
+        
+        if (config.questions && config.questions.length > 0) {
+            const container = document.getElementById('attentionQuestionsContainer');
+            container.innerHTML = '';
+            config.questions.forEach(q => {
+                addAttentionQuestionRow(q.images || '', q.intrus || '', '');
+            });
+        }
+    }
+    else if (type === 'LOGIQUE') {
+        if (config.sousType) document.getElementById('logiqueSousType').value = config.sousType;
+        
+        if (config.sequences && config.sequences.length > 0) {
+            const container = document.getElementById('logiqueSequencesContainer');
+            container.innerHTML = '';
+            config.sequences.forEach(seq => {
+                addLogiqueSequenceRow(seq.debut || '', seq.reponse || '', seq.regle || '');
+            });
+        }
+    }
+    else if (type === 'CHRONO') {
+        if (config.dureeTotale) document.getElementById('chronoDuree').value = config.dureeTotale;
+        
+        if (config.defis && config.defis.length > 0) {
+            const container = document.getElementById('chronoDefisContainer');
+            container.innerHTML = '';
+            config.defis.forEach(defi => {
+                addChronoDefiRow(defi.question || '', defi.reponse || '', defi.points || 10);
+            });
+        }
+    }
+}
 </script>
 {% endblock %}
