@@ -1,0 +1,194 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Session de calme - Musique apaisante{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="bg-light rounded p-5 wow fadeInUp">
+                    <div class="text-center mb-4">
+                        <div class="activity-icon bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-music fa-3x text-white"></i>
+                        </div>
+                        <h2>Musique apaisante</h2>
+                        <p class="text-muted">Ferme les yeux et écoute cette musique relaxante</p>
+                    </div>
+
+                    <!-- Lecteur audio -->
+                    <div class="audio-player text-center mb-5">
+                        <div class="bg-white rounded p-4">
+                            <div class="music-visualizer mb-4">
+                                <canvas id="visualizer" width="400" height="100" style="width: 100%; max-width: 400px; height: auto;"></canvas>
+                            </div>
+                            <audio id="musicAudio" controls class="w-100">
+                                <source src="{{ asset('audio/calm-music.mp3') }}" type="audio/mpeg">
+                                Ton navigateur ne supporte pas l'élément audio.
+                            </audio>
+                            <div class="mt-3">
+                                <p class="text-muted small">🎵 Musique douce pour se détendre</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timer de session -->
+                    <div class="timer-section text-center mb-5">
+                        <h4>⏱️ Durée de la session</h4>
+                        <div class="d-flex justify-content-center gap-3 mb-3">
+                            <button class="btn btn-outline-primary timer-btn" data-time="2">2 min</button>
+                            <button class="btn btn-outline-primary timer-btn" data-time="5">5 min</button>
+                            <button class="btn btn-outline-primary timer-btn" data-time="10">10 min</button>
+                            <button class="btn btn-outline-primary timer-btn" data-time="15">15 min</button>
+                        </div>
+                        <div class="timer-display bg-white rounded p-3 d-inline-block">
+                            <span id="timer" class="display-4 fw-bold">00:00</span>
+                        </div>
+                        <div class="mt-3">
+                            <button id="startTimer" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-play me-2"></i>Démarrer la session
+                            </button>
+                            <button id="stopTimer" class="btn btn-danger rounded-pill px-4" style="display: none;">
+                                <i class="fas fa-stop me-2"></i>Terminer
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Feedback après session -->
+                    <div id="feedbackSection" style="display: none;">
+                        <div class="feedback-form bg-white rounded p-4">
+                            <h4 class="text-center mb-4">Comment te sens-tu ?</h4>
+                            <form id="sessionFeedbackForm" method="post" action="{{ path('app_session_calme_save') }}">
+                                <input type="hidden" name="type_activite" value="musique">
+                                <input type="hidden" name="duree_prevue" id="dureePrevue">
+                                <input type="hidden" name="duree_reelle" id="dureeReelle">
+                                
+                                <div class="mb-4">
+                                    <label class="form-label d-block text-center mb-3">Donne une note à cette activité :</label>
+                                    <div class="feedback-stars text-center">
+                                        {% for i in 1..5 %}
+                                        <i class="far fa-star fa-2x star" data-value="{{ i }}"></i>
+                                        {% endfor %}
+                                    </div>
+                                    <input type="hidden" name="feedback_enfant" id="feedbackValue">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">Un petit mot pour tes parents ? (optionnel)</label>
+                                    <textarea name="note_parent" class="form-control" rows="3" placeholder="Ex: Je me sens mieux maintenant..."></textarea>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-success rounded-pill px-5 py-2">
+                                        Terminer et sauvegarder <i class="fas fa-check ms-2"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    let timerInterval;
+    let timeLeft = 0;
+    let startTime;
+    let endTime;
+
+    // Gestion des boutons de durée
+    document.querySelectorAll('.timer-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            timeLeft = parseInt(this.dataset.time) * 60;
+            updateTimerDisplay();
+        });
+    });
+
+    // Démarrer la session
+    document.getElementById('startTimer').addEventListener('click', function() {
+        if (timeLeft <= 0) {
+            alert('Veuillez choisir une durée');
+            return;
+        }
+        
+        startTime = Date.now();
+        document.getElementById('dureePrevue').value = timeLeft / 60;
+        
+        // Démarrer la musique
+        const audio = document.getElementById('musicAudio');
+        audio.play();
+        
+        // Démarrer le timer
+        timerInterval = setInterval(function() {
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                endSession();
+            } else {
+                timeLeft--;
+                updateTimerDisplay();
+            }
+        }, 1000);
+        
+        this.style.display = 'none';
+        document.getElementById('stopTimer').style.display = 'inline-block';
+    });
+
+    // Terminer manuellement
+    document.getElementById('stopTimer').addEventListener('click', function() {
+        if (confirm('Veux-tu vraiment terminer la session maintenant ?')) {
+            clearInterval(timerInterval);
+            endSession();
+        }
+    });
+
+    function endSession() {
+        endTime = Date.now();
+        const dureeReelle = Math.round((endTime - startTime) / 1000 / 60);
+        document.getElementById('dureeReelle').value = dureeReelle;
+        
+        // Arrêter la musique
+        const audio = document.getElementById('musicAudio');
+        audio.pause();
+        audio.currentTime = 0;
+        
+        // Afficher le formulaire de feedback
+        document.getElementById('feedbackSection').style.display = 'block';
+        document.getElementById('startTimer').style.display = 'none';
+        document.getElementById('stopTimer').style.display = 'none';
+    }
+
+    function updateTimerDisplay() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.getElementById('timer').textContent = 
+            `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    // Gestion des étoiles de feedback
+    document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', function() {
+            const value = this.dataset.value;
+            document.getElementById('feedbackValue').value = value;
+            
+            document.querySelectorAll('.star').forEach(s => {
+                if(s.dataset.value <= value) {
+                    s.classList.remove('far');
+                    s.classList.add('fas');
+                    s.style.color = '#ffc107';
+                } else {
+                    s.classList.remove('fas');
+                    s.classList.add('far');
+                    s.style.color = '#ddd';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
