@@ -1,0 +1,260 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Jeu d'Attention - FocusKid{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .game-container {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            min-height: 600px;
+            border-radius: 20px;
+            padding: 30px;
+        }
+        .attention-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 48px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .attention-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .attention-card.selected {
+            background: #C8E6C9;
+            border: 3px solid #4CAF50;
+        }
+        .score-board {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .progress-bar-custom {
+            height: 10px;
+            background: #E0E0E0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            width: 100%;
+            transition: width 0.3s;
+        }
+        .btn-game {
+            background: #FF9800;
+            color: white;
+            border-radius: 25px;
+            padding: 10px 25px;
+            border: none;
+        }
+        .btn-game:hover {
+            background: #F57C00;
+        }
+        .message-success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .message-error {
+            color: #F44336;
+            font-weight: bold;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="game-container">
+            <div class="score-board d-flex justify-content-between align-items-center">
+                <h3>🎯 Jeu d'Attention</h3>
+                <div>
+                    <span class="me-3">⭐ Score: <span id="score">0</span></span>
+                    <span>⏱️ Temps: <span id="timer">00:00</span></span>
+                </div>
+            </div>
+            
+            <div class="progress-bar-custom">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="text-center mt-3 mb-4">
+                <p id="message" class="message-success"></p>
+            </div>
+            
+            <div class="row" id="attentionGrid"></div>
+            
+            <div class="text-center mt-4">
+                <a href="{{ path('app_front_exercice_index') }}" class="btn-game">⬅️ Retour aux exercices</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        const exercice = {{ exercice|json_encode|raw }};
+        const config = JSON.parse(exercice.contenu);
+        
+        let images = [];
+        let currentTarget = null;
+        let score = 0;
+        let timer = 0;
+        let timerInterval = null;
+        let gameActive = true;
+        let progressTimer = null;
+        let timeLeft = 100;
+        
+        function initGame() {
+            const theme = config.theme || 'emojis';
+            const imagesList = {
+                emojis: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐸'],
+                animaux: ['🦁', '🐧', '🐦', '🐟', '🐠', '🐙', '🦋', '🐝', '🐞', '🐳'],
+                objets: ['📚', '✏️', '🔍', '💡', '🔑', '⌚', '📱', '💻', '🖱️', '📷']
+            };
+            const selectedList = imagesList[theme] || imagesList.emojis;
+            
+            images = [];
+            for (let i = 0; i < 12; i++) {
+                images.push({
+                    id: i,
+                    value: selectedList[i % selectedList.length],
+                    selected: false
+                });
+            }
+            
+            score = 0;
+            timeLeft = 100;
+            gameActive = true;
+            updateScore();
+            updateProgressBar();
+            setNewTarget();
+            renderGrid();
+            startTimer();
+            startProgressTimer();
+        }
+        
+        function setNewTarget() {
+            const randomIndex = Math.floor(Math.random() * images.length);
+            currentTarget = images[randomIndex].value;
+            document.getElementById('message').innerHTML = `🎯 Trouve l'image : <strong>${currentTarget}</strong>`;
+        }
+        
+        function renderGrid() {
+            const grid = document.getElementById('attentionGrid');
+            grid.innerHTML = '';
+            grid.style.display = 'grid';
+            grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            grid.style.gap = '15px';
+            
+            images.forEach((img, index) => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'attention-card';
+                if (img.selected) cardDiv.classList.add('selected');
+                cardDiv.textContent = img.value;
+                cardDiv.onclick = () => selectImage(index);
+                grid.appendChild(cardDiv);
+            });
+        }
+        
+        function selectImage(index) {
+            if (!gameActive) return;
+            
+            const selectedImage = images[index];
+            
+            if (selectedImage.value === currentTarget) {
+                score += config.pointsParClick || 10;
+                updateScore();
+                selectedImage.selected = true;
+                renderGrid();
+                document.getElementById('message').innerHTML = '✅ Bravo ! +10 points';
+                document.getElementById('message').className = 'message-success';
+                
+                setTimeout(() => {
+                    setNewTarget();
+                    setTimeout(() => renderGrid(), 100);
+                }, 500);
+            } else {
+                score = Math.max(0, score - (config.penalite || 5));
+                updateScore();
+                document.getElementById('message').innerHTML = '❌ Mauvaise image ! -5 points';
+                document.getElementById('message').className = 'message-error';
+                
+                setTimeout(() => {
+                    document.getElementById('message').innerHTML = `🎯 Trouve l'image : <strong>${currentTarget}</strong>`;
+                    document.getElementById('message').className = 'message-success';
+                }, 800);
+            }
+        }
+        
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+        }
+        
+        function updateProgressBar() {
+            const fill = document.getElementById('progressFill');
+            const percent = (timeLeft / 100) * 100;
+            fill.style.width = percent + '%';
+            if (timeLeft < 30) {
+                fill.style.background = '#F44336';
+            } else if (timeLeft < 60) {
+                fill.style.background = '#FF9800';
+            } else {
+                fill.style.background = '#4CAF50';
+            }
+        }
+        
+        function startProgressTimer() {
+            if (progressTimer) clearInterval(progressTimer);
+            progressTimer = setInterval(() => {
+                if (gameActive && timeLeft > 0) {
+                    timeLeft--;
+                    updateProgressBar();
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+                }
+            }, 1000);
+        }
+        
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timer = 0;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                if (gameActive) {
+                    timer++;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const m = Math.floor(timer / 60);
+            const s = timer % 60;
+            document.getElementById('timer').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+        
+        function endGame() {
+            gameActive = false;
+            if (timerInterval) clearInterval(timerInterval);
+            if (progressTimer) clearInterval(progressTimer);
+            document.getElementById('message').innerHTML = `🎉 Fin du jeu ! Score final : ${score} 🎉`;
+            document.getElementById('message').className = 'message-success';
+        }
+        
+        initGame();
+    </script>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Mes exercices - FocusKid{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .exercice-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        .exercice-card:hover {
+            transform: translateY(-5px);
+        }
+        .badge-type {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-memoire { background: #9C27B0; color: white; }
+        .badge-attention { background: #2196F3; color: white; }
+        .badge-logique { background: #FF9800; color: white; }
+        .badge-chrono { background: #F44336; color: white; }
+        .btn-play {
+            background: #4CAF50;
+            color: white;
+            border-radius: 25px;
+            padding: 10px 20px;
+            transition: all 0.3s;
+        }
+        .btn-play:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+        .etoiles {
+            color: #FFC107;
+        }
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+            <h1 class="mb-3">🎮 Mes Exercices</h1>
+            <p>Amuse-toi en apprenant !</p>
+        </div>
+
+        <div class="filter-section wow fadeInUp">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Chercher un exercice...">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <select id="typeFilter" class="form-select">
+                        <option value="all">📋 Tous les types</option>
+                        <option value="MÉMOIRE">🎴 MÉMOIRE</option>
+                        <option value="ATTENTION">👁️ ATTENTION</option>
+                        <option value="LOGIQUE">🧠 LOGIQUE</option>
+                        <option value="CHRONO">⏱️ CHRONO</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <button id="resetFilters" class="btn btn-secondary w-100">Réinitialiser</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" id="exercicesGrid">
+            {% for exercice in exercices %}
+            <div class="col-md-6 col-lg-4 mb-4 exercice-item" 
+                 data-titre="{{ exercice.titre|lower }}"
+                 data-type="{{ exercice.type }}">
+                <div class="exercice-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge-type 
+                            {% if exercice.type == 'MÉMOIRE' %}badge-memoire
+                            {% elseif exercice.type == 'ATTENTION' %}badge-attention
+                            {% elseif exercice.type == 'LOGIQUE' %}badge-logique
+                            {% else %}badge-chrono{% endif %}">
+                            {% if exercice.type == 'MÉMOIRE' %}🎴
+                            {% elseif exercice.type == 'ATTENTION' %}👁️
+                            {% elseif exercice.type == 'LOGIQUE' %}🧠
+                            {% else %}⏱️{% endif %}
+                            {{ exercice.type }}
+                        </span>
+                        <span class="etoiles">
+                            {% for i in 1..exercice.difficulte %}★{% endfor %}
+                            {% for i in exercice.difficulte+1..5 %}☆{% endfor %}
+                        </span>
+                    </div>
+                    
+                    <h5 class="fw-bold mb-2">{{ exercice.titre }}</h5>
+                    <p class="text-muted small mb-3">{{ exercice.consigne|length > 80 ? exercice.consigne|slice(0, 80) ~ '...' : exercice.consigne }}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">⏱️ {{ exercice.duree }}s</small>
+                        {% set jeuPath = '' %}
+                        {% if exercice.type == 'MÉMOIRE' %}
+    {% set jeuPath = path('app_front_jeu_memoire', {'id': exercice.id}) %}
+{% elseif exercice.type == 'ATTENTION' %}
+    {% set jeuPath = path('app_front_jeu_attention', {'id': exercice.id}) %}
+{% elseif exercice.type == 'LOGIQUE' %}
+    {% set jeuPath = path('app_front_jeu_logique', {'id': exercice.id}) %}
+{% elseif exercice.type == 'CHRONO' %}
+    {% set jeuPath = path('app_front_jeu_chrono', {'id': exercice.id}) %}
+{% endif %}
+                        <a href="{{ jeuPath }}" class="btn-play btn-sm">
+                            🎮 Jouer
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const typeFilter = document.getElementById('typeFilter');
+            const resetBtn = document.getElementById('resetFilters');
+            const items = document.querySelectorAll('.exercice-item');
+            
+            function normalizeString(str) {
+                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            }
+            
+            function filterExercices() {
+                const search = searchInput ? searchInput.value.toLowerCase() : '';
+                const type = typeFilter ? typeFilter.value : 'all';
+                
+                items.forEach(item => {
+                    const titre = item.dataset.titre || '';
+                    const itemType = item.dataset.type || '';
+                    const typeNormalized = normalizeString(itemType);
+                    const filterNormalized = normalizeString(type);
+                    
+                    let show = true;
+                    if (search && !titre.includes(search)) show = false;
+                    if (show && type !== 'all' && typeNormalized !== filterNormalized) show = false;
+                    
+                    item.style.display = show ? '' : 'none';
+                });
+            }
+            
+            if (searchInput) searchInput.addEventListener('keyup', filterExercices);
+            if (typeFilter) typeFilter.addEventListener('change', filterExercices);
+            if (resetBtn) resetBtn.addEventListener('click', () => {
+                if (searchInput) searchInput.value = '';
+                if (typeFilter) typeFilter.value = 'all';
+                filterExercices();
+            });
+        });
+    </script>
+{% endblock %}

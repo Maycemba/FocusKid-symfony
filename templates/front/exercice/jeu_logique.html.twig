@@ -1,0 +1,219 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Jeu Logique - FocusKid{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .game-container {
+            background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+            min-height: 600px;
+            border-radius: 20px;
+            padding: 30px;
+        }
+        .score-board {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .sequence-card {
+            background: #E3F2FD;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #1565C0;
+            margin-bottom: 30px;
+            letter-spacing: 15px;
+        }
+        .reponse-input {
+            border-radius: 25px;
+            padding: 15px 20px;
+            font-size: 18px;
+            border: 2px solid #E0E0E0;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            display: block;
+        }
+        .reponse-input:focus {
+            border-color: #FF9800;
+            outline: none;
+        }
+        .btn-verifier {
+            background: #4CAF50;
+            color: white;
+            border-radius: 25px;
+            padding: 12px 30px;
+            border: none;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+        .btn-verifier:hover {
+            background: #45a049;
+        }
+        .btn-game {
+            background: #FF9800;
+            color: white;
+            border-radius: 25px;
+            padding: 10px 25px;
+            border: none;
+        }
+        .btn-game:hover {
+            background: #F57C00;
+        }
+        .indice-card {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 20px;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="game-container">
+            <div class="score-board d-flex justify-content-between align-items-center">
+                <h3>🧠 Jeu Logique</h3>
+                <div>
+                    <span>⭐ Score: <span id="score">0</span></span>
+                </div>
+            </div>
+            
+            <div class="sequence-card" id="sequenceText">
+                Chargement...
+            </div>
+            
+            <div class="text-center">
+                <input type="text" id="reponseInput" class="reponse-input" placeholder="Tape le nombre manquant...">
+                <br>
+                <button id="verifierBtn" class="btn-verifier">✅ Vérifier</button>
+            </div>
+            
+            <div class="indice-card text-center" id="indiceText">
+                💡 Trouve la logique de la suite !
+            </div>
+            
+            <div class="text-center mt-4">
+                <p id="message" style="color: white;"></p>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{{ path('app_front_exercice_index') }}" class="btn-game">⬅️ Retour aux exercices</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        const exercice = {{ exercice|json_encode|raw }};
+        const config = JSON.parse(exercice.contenu);
+        
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let gameActive = true;
+        
+        function generateQuestions() {
+            const nbQuestions = config.nbQuestions || 10;
+            questions = [];
+            
+            const sequences = [
+                { pattern: 'add', value: 2, start: 2, steps: [2,4,6,8] },
+                { pattern: 'add', value: 3, start: 3, steps: [3,6,9,12] },
+                { pattern: 'add', value: 5, start: 5, steps: [5,10,15,20] },
+                { pattern: 'multiply', value: 2, start: 2, steps: [2,4,8,16] },
+                { pattern: 'multiply', value: 3, start: 3, steps: [3,9,27,81] },
+                { pattern: 'fibonacci', steps: [1,1,2,3,5] },
+                { pattern: 'square', steps: [1,4,9,16] }
+            ];
+            
+            for (let i = 0; i < nbQuestions; i++) {
+                const seq = sequences[Math.floor(Math.random() * sequences.length)];
+                const missingPos = Math.floor(Math.random() * 4);
+                let steps = [...seq.steps];
+                const correctAnswer = steps[missingPos];
+                steps[missingPos] = '?';
+                
+                questions.push({
+                    sequence: steps.join(' , '),
+                    reponse: correctAnswer.toString(),
+                    indice: getIndice(seq.pattern, seq.value)
+                });
+            }
+        }
+        
+        function getIndice(pattern, value) {
+            if (pattern === 'add') return `💡 Chaque nombre augmente de ${value}`;
+            if (pattern === 'multiply') return `💡 Chaque nombre est multiplié par ${value}`;
+            if (pattern === 'fibonacci') return `💡 Chaque nombre est la somme des deux précédents`;
+            if (pattern === 'square') return `💡 Ce sont des carrés parfaits`;
+            return `💡 Trouve la règle logique`;
+        }
+        
+        function loadQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                document.getElementById('sequenceText').innerHTML = questions[currentQuestionIndex].sequence;
+                document.getElementById('indiceText').innerHTML = questions[currentQuestionIndex].indice;
+                document.getElementById('reponseInput').value = '';
+                document.getElementById('reponseInput').focus();
+                document.getElementById('message').innerHTML = `Question ${currentQuestionIndex + 1}/${questions.length}`;
+            } else {
+                endGame();
+            }
+        }
+        
+        function verifierReponse() {
+            if (!gameActive) return;
+            
+            const reponseInput = document.getElementById('reponseInput');
+            const userReponse = reponseInput.value.trim();
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            if (userReponse === currentQuestion.reponse) {
+                score += config.pointsParQuestion || 15;
+                updateScore();
+                document.getElementById('message').innerHTML = '✅ Correct ! +15 points';
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                score = Math.max(0, score - (config.penalite || 5));
+                updateScore();
+                document.getElementById('message').innerHTML = `❌ Incorrect ! La bonne réponse était ${currentQuestion.reponse}. -5 points`;
+                currentQuestionIndex++;
+                loadQuestion();
+            }
+        }
+        
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+        }
+        
+        function endGame() {
+            gameActive = false;
+            document.getElementById('sequenceText').innerHTML = `🎉 Félicitations ! Score final : ${score} 🎉`;
+            document.getElementById('reponseInput').disabled = true;
+            document.getElementById('verifierBtn').disabled = true;
+            document.getElementById('indiceText').innerHTML = 'Bravo ! Tu as terminé le jeu logique.';
+            document.getElementById('message').innerHTML = 'Tu peux revenir à la liste des exercices.';
+        }
+        
+        generateQuestions();
+        loadQuestion();
+        
+        document.getElementById('verifierBtn').addEventListener('click', verifierReponse);
+        document.getElementById('reponseInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifierReponse();
+            }
+        });
+    </script>
+{% endblock %}

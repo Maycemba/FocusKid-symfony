@@ -1,0 +1,235 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Jeu Chrono - FocusKid{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .game-container {
+            background: linear-gradient(135deg, #F44336 0%, #D32F2F 100%);
+            min-height: 600px;
+            border-radius: 20px;
+            padding: 30px;
+        }
+        .score-board {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .defi-card {
+            background: #E3F2FD;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #1565C0;
+            margin-bottom: 30px;
+        }
+        .reponse-input {
+            border-radius: 25px;
+            padding: 15px 20px;
+            font-size: 18px;
+            border: 2px solid #E0E0E0;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            display: block;
+        }
+        .reponse-input:focus {
+            border-color: #FF9800;
+            outline: none;
+        }
+        .btn-valider {
+            background: #4CAF50;
+            color: white;
+            border-radius: 25px;
+            padding: 12px 30px;
+            border: none;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+        .btn-valider:hover {
+            background: #45a049;
+        }
+        .btn-game {
+            background: #FF9800;
+            color: white;
+            border-radius: 25px;
+            padding: 10px 25px;
+            border: none;
+        }
+        .btn-game:hover {
+            background: #F57C00;
+        }
+        .chrono-warning {
+            color: #F44336;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="game-container">
+            <div class="score-board d-flex justify-content-between align-items-center">
+                <h3>⏱️ Jeu Chrono</h3>
+                <div>
+                    <span class="me-3">⭐ Score: <span id="score">0</span></span>
+                    <span id="chronoTimer" class="chrono-warning">⏱️ 00:00</span>
+                </div>
+            </div>
+            
+            <div class="defi-card" id="defiText">
+                Chargement...
+            </div>
+            
+            <div class="text-center">
+                <input type="text" id="reponseInput" class="reponse-input" placeholder="Tape ta réponse ici...">
+                <br>
+                <button id="validerBtn" class="btn-valider">✅ Valider</button>
+            </div>
+            
+            <div class="text-center mt-4">
+                <p id="message" style="color: white;"></p>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{{ path('app_front_exercice_index') }}" class="btn-game">⬅️ Retour aux exercices</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        const exercice = {{ exercice|json_encode|raw }};
+        const config = JSON.parse(exercice.contenu);
+        
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer = 0;
+        let timerInterval = null;
+        let gameActive = true;
+        
+        const operations = ['+', '-', '*'];
+        
+        function generateQuestions() {
+            const nbQuestions = config.nbQuestions || 10;
+            questions = [];
+            
+            for (let i = 0; i < nbQuestions; i++) {
+                const operation = operations[Math.floor(Math.random() * operations.length)];
+                let a, b, reponse;
+                
+                if (operation === '+') {
+                    a = Math.floor(Math.random() * 50) + 1;
+                    b = Math.floor(Math.random() * 50) + 1;
+                    reponse = a + b;
+                } else if (operation === '-') {
+                    a = Math.floor(Math.random() * 50) + 20;
+                    b = Math.floor(Math.random() * a);
+                    reponse = a - b;
+                } else {
+                    a = Math.floor(Math.random() * 10) + 1;
+                    b = Math.floor(Math.random() * 10) + 1;
+                    reponse = a * b;
+                }
+                
+                questions.push({
+                    texte: `${a} ${operation} ${b} = ?`,
+                    reponse: reponse.toString()
+                });
+            }
+        }
+        
+        function loadQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                document.getElementById('defiText').innerHTML = questions[currentQuestionIndex].texte;
+                document.getElementById('reponseInput').value = '';
+                document.getElementById('reponseInput').focus();
+                document.getElementById('message').innerHTML = `Question ${currentQuestionIndex + 1}/${questions.length}`;
+            } else {
+                endGame();
+            }
+        }
+        
+        function verifierReponse() {
+            if (!gameActive) return;
+            
+            const reponseInput = document.getElementById('reponseInput');
+            const userReponse = reponseInput.value.trim();
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            if (userReponse === currentQuestion.reponse) {
+                score += config.pointsParQuestion || 10;
+                updateScore();
+                document.getElementById('message').innerHTML = '✅ Bonne réponse ! +10 points';
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                score = Math.max(0, score - (config.penalite || 5));
+                updateScore();
+                document.getElementById('message').innerHTML = `❌ Mauvaise réponse ! La bonne réponse était ${currentQuestion.reponse}. -5 points`;
+                currentQuestionIndex++;
+                loadQuestion();
+            }
+        }
+        
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+        }
+        
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timer = 0;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                if (gameActive) {
+                    timer++;
+                    updateTimerDisplay();
+                    if (timer >= (config.tempsMax || 120)) {
+                        endGame();
+                    }
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const m = Math.floor(timer / 60);
+            const s = timer % 60;
+            const timerElement = document.getElementById('chronoTimer');
+            timerElement.innerHTML = `⏱️ ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            
+            if (timer >= (config.tempsMax || 120)) {
+                timerElement.classList.add('chrono-warning');
+            }
+        }
+        
+        function endGame() {
+            gameActive = false;
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('defiText').innerHTML = `🎉 Jeu terminé ! Score final : ${score} 🎉`;
+            document.getElementById('reponseInput').disabled = true;
+            document.getElementById('validerBtn').disabled = true;
+            document.getElementById('message').innerHTML = 'Bravo ! Tu peux revenir à la liste des exercices.';
+        }
+        
+        generateQuestions();
+        loadQuestion();
+        startTimer();
+        
+        document.getElementById('validerBtn').addEventListener('click', verifierReponse);
+        document.getElementById('reponseInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifierReponse();
+            }
+        });
+    </script>
+{% endblock %}
