@@ -1,0 +1,292 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Session de calme - Histoire de calme{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="bg-light rounded p-5 wow fadeInUp">
+                    <div class="text-center mb-4">
+                        <div class="activity-icon bg-warning rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-book-open fa-3x text-white"></i>
+                        </div>
+                        <h2>Histoire de calme</h2>
+                        <p class="text-muted">Écoute cette histoire apaisante</p>
+                    </div>
+
+                    <!-- Sélection de l'histoire -->
+                    <div class="story-selection mb-4">
+                        <h4 class="text-center mb-3">Choisis ton histoire :</h4>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="story-card text-center p-3 border rounded h-100" data-story="1">
+                                    <i class="fas fa-cloud-moon fa-3x text-warning mb-2"></i>
+                                    <h5>Le petit nuage</h5>
+                                    <p class="small text-muted">Une histoire douce pour s'endormir</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="story-card text-center p-3 border rounded h-100" data-story="2">
+                                    <i class="fas fa-tree fa-3x text-success mb-2"></i>
+                                    <h5>La forêt enchantée</h5>
+                                    <p class="small text-muted">Un voyage magique dans les bois</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="story-card text-center p-3 border rounded h-100" data-story="3">
+                                    <i class="fas fa-star fa-3x text-primary mb-2"></i>
+                                    <h5>L'étoile filante</h5>
+                                    <p class="small text-muted">Fais un vœu en écoutant</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lecteur d'histoire -->
+                    <div id="storyPlayer" style="display: none;">
+                        <div class="bg-white rounded p-4">
+                            <div class="text-center mb-3">
+                                <div class="story-illustration mb-3">
+                                    <img id="storyImage" src="" alt="Illustration" class="img-fluid rounded" style="max-height: 200px;">
+                                </div>
+                                <h3 id="storyTitle"></h3>
+                            </div>
+                            
+                            <div class="story-content mb-4">
+                                <div id="storyText" class="p-3 bg-light rounded" style="height: 300px; overflow-y: auto; font-size: 1.1rem; line-height: 1.8;">
+                                </div>
+                            </div>
+                            
+                            <div class="audio-controls text-center">
+                                <div class="mb-3">
+                                    <audio id="storyAudio" controls style="width: 100%;">
+                                        <source src="" type="audio/mpeg">
+                                    </audio>
+                                </div>
+                                <div class="reading-controls">
+                                    <button id="readAloud" class="btn btn-primary rounded-pill me-2">
+                                        <i class="fas fa-volume-up me-2"></i>Lire à voix haute
+                                    </button>
+                                    <button id="pauseReading" class="btn btn-secondary rounded-pill" style="display: none;">
+                                        <i class="fas fa-pause me-2"></i>Pause
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timer et feedback -->
+                    <div class="text-center mt-4">
+                        <div class="timer-section">
+                            <h4>📖 Prends le temps d'écouter l'histoire</h4>
+                            <div class="timer-display bg-white rounded p-3 d-inline-block">
+                                <span id="timer" class="display-4 fw-bold">00:00</span>
+                            </div>
+                            <div class="mt-3">
+                                <button id="startStory" class="btn btn-primary rounded-pill px-4">
+                                    <i class="fas fa-play me-2"></i>Commencer l'histoire
+                                </button>
+                                <button id="stopStory" class="btn btn-success rounded-pill px-4" style="display: none;">
+                                    <i class="fas fa-check me-2"></i>Terminer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feedback après session -->
+                    <div id="feedbackSection" style="display: none;" class="mt-4">
+                        <div class="feedback-form bg-white rounded p-4">
+                            <h4 class="text-center mb-4">As-tu aimé cette histoire ?</h4>
+                            <form id="sessionFeedbackForm" method="post" action="{{ path('app_session_calme_save') }}">
+                                <input type="hidden" name="type_activite" value="histoire">
+                                <input type="hidden" name="duree_reelle" id="dureeReelle">
+                                
+                                <div class="mb-4">
+                                    <label class="form-label d-block text-center mb-3">Donne une note à cette activité :</label>
+                                    <div class="feedback-stars text-center">
+                                        {% for i in 1..5 %}
+                                        <i class="far fa-star fa-2x star" data-value="{{ i }}"></i>
+                                        {% endfor %}
+                                    </div>
+                                    <input type="hidden" name="feedback_enfant" id="feedbackValue">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">Raconte à tes parents ce que tu as aimé :</label>
+                                    <textarea name="note_parent" class="form-control" rows="3" placeholder="L'histoire du petit nuage m'a beaucoup apaisé..."></textarea>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-success rounded-pill px-5 py-2">
+                                        Terminer <i class="fas fa-check ms-2"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    let timerInterval;
+    let startTime;
+    let selectedStory = null;
+    let currentUtterance = null;
+    
+    const stories = {
+        1: {
+            title: "Le petit nuage",
+            text: "Il était une fois un petit nuage tout doux qui flottait dans le ciel. Il s'appelait Pluchette. Pluchette adorait regarder les enfants jouer dans le parc. Un jour, il vit un petit garçon tout triste assis seul sur un banc. Pluchette décida de se rapprocher doucement. Il se transforma en un joli cœur dans le ciel. Le petit garçon leva les yeux et sourit. Pluchette était si heureux d'avoir apporté un peu de joie. Depuis ce jour, chaque fois qu'un enfant est triste, Pluchette apparaît dans le ciel pour lui rappeler qu'il n'est jamais seul.",
+            image: "{{ asset('images/stories/cloud.png') }}",
+            audio: "{{ asset('audio/story-cloud.mp3') }}"
+        },
+        2: {
+            title: "La forêt enchantée",
+            text: "Au cœur d'une grande forêt vivait un petit écureuil nommé Noisette. Noisette était très nerveux car il devait traverser la forêt pour aller chercher des noisettes. En chemin, il rencontra une chouette sage qui lui dit : 'Prends une grande respiration, et écoute les bruits de la forêt.' Noisette ferma les yeux. Il entendit le vent dans les arbres, le chant des oiseaux, et le ruisseau qui courait. Il se sentit immédiatement plus calme. Il continua son chemin en respirant profondément et trouva plein de noisettes. Il comprit que la nature l'aidait toujours à se sentir mieux.",
+            image: "{{ asset('images/stories/forest.png') }}",
+            audio: "{{ asset('audio/story-forest.mp3') }}"
+        },
+        3: {
+            title: "L'étoile filante",
+            text: "Chaque soir, Lola regardait les étoiles avant de dormir. Une nuit, elle vit une étoile filante traverser le ciel. Elle fit un vœu : 'Je voudrais apprendre à me calmer quand je suis en colère.' L'étoile entendit son vœu et lui envoya une petite lumière dans son cœur. Désormais, chaque fois que Lola se sentait en colère, elle prenait trois grandes respirations et imaginait l'étoile filante. La colère s'en allait doucement, comme un nuage qui passe. Lola avait trouvé sa propre étoile de calme en elle.",
+            image: "{{ asset('images/stories/star.png') }}",
+            audio: "{{ asset('audio/story-star.mp3') }}"
+        }
+    };
+    
+    // Sélection de l'histoire
+    document.querySelectorAll('.story-card').forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.story-card').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedStory = this.dataset.story;
+        });
+    });
+    
+    function loadStory(storyId) {
+        const story = stories[storyId];
+        document.getElementById('storyTitle').textContent = story.title;
+        document.getElementById('storyText').innerHTML = story.text;
+        document.getElementById('storyImage').src = story.image;
+        
+        const audio = document.getElementById('storyAudio');
+        audio.src = story.audio;
+        audio.load();
+    }
+    
+    // Lecture à voix haute (Web Speech API)
+    function readStoryAloud() {
+        if (currentUtterance) {
+            window.speechSynthesis.cancel();
+        }
+        
+        const story = stories[selectedStory];
+        currentUtterance = new SpeechSynthesisUtterance(story.text);
+        currentUtterance.lang = 'fr-FR';
+        currentUtterance.rate = 0.9;
+        currentUtterance.pitch = 1.1;
+        currentUtterance.volume = 0.8;
+        
+        window.speechSynthesis.speak(currentUtterance);
+        
+        document.getElementById('readAloud').style.display = 'none';
+        document.getElementById('pauseReading').style.display = 'inline-block';
+    }
+    
+    function pauseReading() {
+        if (currentUtterance) {
+            window.speechSynthesis.cancel();
+            document.getElementById('readAloud').style.display = 'inline-block';
+            document.getElementById('pauseReading').style.display = 'none';
+        }
+    }
+    
+    document.getElementById('readAloud').addEventListener('click', readStoryAloud);
+    document.getElementById('pauseReading').addEventListener('click', pauseReading);
+    
+    // Gestion de la session
+    document.getElementById('startStory').addEventListener('click', function() {
+        if (!selectedStory) {
+            alert('Choisis une histoire d\'abord !');
+            return;
+        }
+        
+        loadStory(selectedStory);
+        document.getElementById('storyPlayer').style.display = 'block';
+        startTime = Date.now();
+        
+        timerInterval = setInterval(function() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timer').textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }, 1000);
+        
+        this.style.display = 'none';
+        document.getElementById('stopStory').style.display = 'inline-block';
+    });
+    
+    document.getElementById('stopStory').addEventListener('click', function() {
+        clearInterval(timerInterval);
+        window.speechSynthesis.cancel();
+        
+        const endTime = Date.now();
+        const dureeReelle = Math.round((endTime - startTime) / 1000 / 60);
+        document.getElementById('dureeReelle').value = dureeReelle || 1;
+        
+        document.getElementById('feedbackSection').style.display = 'block';
+        this.style.display = 'none';
+    });
+    
+    // Gestion des étoiles
+    document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', function() {
+            const value = this.dataset.value;
+            document.getElementById('feedbackValue').value = value;
+            
+            document.querySelectorAll('.star').forEach(s => {
+                if(s.dataset.value <= value) {
+                    s.classList.remove('far');
+                    s.classList.add('fas');
+                    s.style.color = '#ffc107';
+                } else {
+                    s.classList.remove('fas');
+                    s.classList.add('far');
+                    s.style.color = '#ddd';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .story-card {
+        cursor: pointer;
+        transition: all 0.3s;
+        background-color: white;
+    }
+    .story-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .story-card.selected {
+        border-color: #ffc107;
+        background-color: #fff8e7;
+    }
+    #storyText {
+        scroll-behavior: smooth;
+    }
+</style>
+{% endblock %}
