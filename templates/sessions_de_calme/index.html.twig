@@ -2,7 +2,7 @@
 
 {% block title %}Sessions de calme - FocusKids{% endblock %}
 
-{% block body %}
+{% block stylesheets %}
     {{ parent() }}
     <style>
         .stat-card {
@@ -300,19 +300,19 @@
                                     <span class="badge bg-secondary">Non renseigné</span>
                                 {% endif %}
                             </td>
-                          <td>
-    {% if session.noteParent %}
-        <span class="badge bg-info" 
-              data-bs-toggle="tooltip" 
-              data-bs-html="true" 
-              title="{{ session.noteParent|nl2br|escape('html') }}">
-            <i class="ti ti-message"></i> 
-            {{ session.noteParent|length > 30 ? session.noteParent|slice(0, 30) ~ '...' : session.noteParent }}
-        </span>
-    {% else %}
-        <span class="badge bg-secondary">Non renseigné</span>
-    {% endif %}
-</td>
+                            <td>
+                                {% if session.noteParent %}
+                                    <span class="badge bg-info" 
+                                          data-bs-toggle="tooltip" 
+                                          data-bs-html="true" 
+                                          title="{{ session.noteParent|nl2br|escape('html') }}">
+                                        <i class="ti ti-message"></i> 
+                                        {{ session.noteParent|length > 30 ? session.noteParent|slice(0, 30) ~ '...' : session.noteParent }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Non renseigné</span>
+                                {% endif %}
+                            </td>
                             <td class="table-actions">
                                 <a href="{{ path('app_sessions_de_calme_show', {'id': session.id}) }}" class="btn btn-sm btn-info" title="Voir">
                                     <i class="ti ti-eye"></i>
@@ -344,6 +344,7 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block javascripts %}
 {{ parent() }}
@@ -353,8 +354,8 @@ var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggl
 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl)
 })
+
 function resetFilters() {
-    // Rediriger vers la page sans paramètres
     window.location.href = "{{ path('app_sessions_de_calme_index') }}";
 }
 
@@ -371,6 +372,4 @@ document.querySelectorAll('select[name="type"], select[name="declencheur"]').for
     });
 });
 </script>
-{% endblock %}
-
 {% endblock %}
