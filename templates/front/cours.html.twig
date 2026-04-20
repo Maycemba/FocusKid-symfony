@@ -33,16 +33,16 @@
                 </div>
             </div>
 
-           <!-- Tri par niveau -->
-<div class="col-lg-3 col-md-6">
-    <select id="filterNiveau" class="form-select">
-        <option value="">🎯 Tous les niveaux</option>
-        <option value="1">Niveau 1</option>
-        <option value="2">Niveau 2</option>
-        <option value="3">Niveau 3</option>
-        <option value="4">Niveau 4</option>
-    </select>
-</div>
+            <!-- Tri par niveau -->
+            <div class="col-lg-3 col-md-6">
+                <select id="filterNiveau" class="form-select">
+                    <option value="">🎯 Tous les niveaux</option>
+                    <option value="1">Niveau 1</option>
+                    <option value="2">Niveau 2</option>
+                    <option value="3">Niveau 3</option>
+                    <option value="4">Niveau 4</option>
+                </select>
+            </div>
 
             <!-- Tri alphabétique -->
             <div class="col-lg-3 col-md-6">
@@ -80,14 +80,14 @@
                 <div class="card-body p-4">
 
                     {% if cour.niveau %}
-<span class="badge bg-primary rounded-pill px-3 py-2 mb-3">
-    🎯 Niveau {{ cour.niveau }}
-</span>
-{% else %}
-<span class="badge bg-secondary rounded-pill px-3 py-2 mb-3">
-    Niveau non défini
-</span>
-{% endif %}
+                    <span class="badge bg-primary rounded-pill px-3 py-2 mb-3">
+                        🎯 Niveau {{ cour.niveau }}
+                    </span>
+                    {% else %}
+                    <span class="badge bg-secondary rounded-pill px-3 py-2 mb-3">
+                        Niveau non défini
+                    </span>
+                    {% endif %}
 
                     <!-- Titre -->
                     <h4 class="text-primary fw-bold mb-3 cours-titre">{{ cour.titre }}</h4>
@@ -132,6 +132,11 @@
             <h4 class="text-muted">Aucun cours disponible.</h4>
         </div>
         {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center mt-5">
+        {{ knp_pagination_render(cours) }}
     </div>
 
     <!-- Message aucun résultat -->
@@ -221,7 +226,6 @@
     resetBtn.addEventListener('click', reset);
     resetBtn2.addEventListener('click', reset);
 
-    // Initialiser le compteur
     filterAndSort();
 </script>
 {% endblock %}

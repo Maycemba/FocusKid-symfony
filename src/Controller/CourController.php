@@ -6,6 +6,7 @@ use App\Entity\Cour;
 use App\Form\CourType;
 use App\Repository\CourRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,10 +16,23 @@ use Symfony\Component\Routing\Attribute\Route;
 final class CourController extends AbstractController
 {
     #[Route(name: 'app_cour_index', methods: ['GET'])]
-    public function index(CourRepository $courRepository): Response
-    {
+    public function index(
+        Request $request,
+        CourRepository $courRepository,
+        PaginatorInterface $paginator
+    ): Response {
+        $query = $courRepository->createQueryBuilder('c')
+            ->orderBy('c.titre', 'ASC')
+            ->getQuery();
+
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            6
+        );
+
         return $this->render('cour/index.html.twig', [
-            'cours' => $courRepository->findAll(),
+            'cours' => $pagination,
         ]);
     }
 

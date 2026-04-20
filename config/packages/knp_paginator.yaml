@@ -1,0 +1,9 @@
+knp_paginator:
+    page_range: 5
+    default_options:
+        page_name: page
+        distinct: true
+    template:
+        pagination: '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig'
+        sortable: '@KnpPaginator/Pagination/sortable_link.html.twig'
+        filtration: '@KnpPaginator/Pagination/bootstrap_v5_filtration.html.twig'

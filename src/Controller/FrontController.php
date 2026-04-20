@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Repository\CourRepository;
+use Knp\Component\Pager\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,10 +18,23 @@ final class FrontController extends AbstractController
     }
 
     #[Route('/enfant', name: 'app_enfant_cours', methods: ['GET'])]
-    public function listeCours(CourRepository $courRepository): Response
-    {
+    public function listeCours(
+        Request $request,
+        CourRepository $courRepository,
+        PaginatorInterface $paginator
+    ): Response {
+        $query = $courRepository->createQueryBuilder('c')
+            ->orderBy('c.titre', 'ASC')
+            ->getQuery();
+
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            6
+        );
+
         return $this->render('front/cours.html.twig', [
-            'cours' => $courRepository->findAll(),
+            'cours' => $pagination,
         ]);
     }
 
@@ -34,7 +48,7 @@ final class FrontController extends AbstractController
         }
 
         return $this->render('front/lecons.html.twig', [
-            'cour' => $cour,
+            'cour'   => $cour,
             'lecons' => $cour->getLecons(),
         ]);
     }
