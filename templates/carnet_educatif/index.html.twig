@@ -1,9 +1,12 @@
+
 {% extends 'base-front.html.twig' %}
+
 {% block title %}Carnets éducatifs{% endblock %}
 
 {% block stylesheets %}
+{{ parent() }}
 <style>
-/* ===== VOTRE STYLE EXISTANT (conservé intégralement) ===== */
+/* ===== VOTRE STYLE EXISTANT ===== */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@600;700;800&display=swap');
 :root {
   --primary:#1CC88A;--primary-light:#d4f7ec;--primary-dark:#0eae70;
@@ -11,6 +14,7 @@
   --warning:#F39C12;--warning-light:#fef3e0;
   --info:#3ABEF9;--info-light:#e7f7ff;
   --text:#2d3561;--muted:#8590a5;--surface:#f8faff;--border:#e8ecf5;
+  --danger:#e74c3c; --danger-light:#fdecea;
 }
 body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -62,7 +66,6 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
 .empty-wrap{text-align:center;padding:5rem 2rem;animation:fadeUp .6s ease both}
 .empty-icon{font-size:4rem;display:block;margin-bottom:1rem;animation:float 3s ease-in-out infinite}
 
-/* Badge pour travail terminé */
 .badge-status {
   display: inline-flex;
   align-items: center;
@@ -96,22 +99,16 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
         </div>
         <div class="hero-sub">Suivez et analysez vos sessions d'apprentissage</div>
       </div>
-      
-       <div class="d-flex gap-2">
-    <a href="{{ path('app_commentaire_index') }}" class="btn-new" style="background: linear-gradient(135deg, var(--info), #1484c0);">
-        💬 Tous les commentaires
-    </a>
-    <a href="{{ path('app_carnet_educatif_stats') }}" class="btn-new" style="background: linear-gradient(135deg, #6f42c1, #5932a8);">
-        📊 Statistiques
-    </a>
-    <a href="{{ path('app_carnet_educatif_new') }}" class="btn-new">➕ Nouveau carnet</a>
-
-       
+      <div class="d-flex gap-2">
+        <a href="{{ path('app_commentaire_index') }}" class="btn-new" style="background: linear-gradient(135deg, var(--info), #1484c0);">💬 Tous les commentaires</a>
+        <a href="{{ path('app_carnet_educatif_stats') }}" class="btn-new" style="background: linear-gradient(135deg, #6f42c1, #5932a8);">📊 Statistiques</a>
+        <a href="{{ path('app_carnet_educatif_new') }}" class="btn-new">➕ Nouveau carnet</a>
+      </div>
+    </div>
   </div>
 </div>
 
 <div class="container py-5">
-
   {# Barre de filtre #}
   <div class="card shadow-sm border-0 rounded-4 mb-4">
     <div class="card-body p-4">
@@ -186,7 +183,6 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
           </td>
         </tr>
         {% endfor %}
-       
       </tbody>
     </table>
   </div>
@@ -194,7 +190,6 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
   <div class="empty-wrap">
     <span class="empty-icon">📭</span>
     <p style="color:var(--muted);font-size:1.05rem">Aucun carnet trouvé.<br>Créez votre première session d'étude !</p>
-    
   </div>
   {% endif %}
 </div>

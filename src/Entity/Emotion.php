@@ -6,6 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\EmotionRepository;
 
 #[ORM\Entity(repositoryClass: EmotionRepository::class)]
@@ -94,6 +95,23 @@ class Emotion
         
         $this->photo = $photo;
         return $this;
+    }
+
+    /**
+     * Retourne la photo sous forme de base64 (prête pour l'affichage)
+     */
+    public function getPhotoBase64(): ?string
+    {
+        if (!$this->photo) {
+            return null;
+        }
+        
+        // Si déjà en base64, retourner directement
+        if (preg_match('/^[A-Za-z0-9+\/=]+$/', $this->photo)) {
+            return 'data:image/jpeg;base64,' . $this->photo;
+        }
+        
+        return null;
     }
 
     public function getHumeurJournalieres(): Collection

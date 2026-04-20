@@ -1,43 +1,129 @@
 {% extends 'base-front.html.twig' %}
 
-{% block title %}Cour index{% endblock %}
+{% block title %}Gestion des cours - FocusKids{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        .table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .table thead {
+            background: #2196F3;
+            color: white;
+        }
+        .btn-action {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin: 0 3px;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Cour index</h1>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold"><i class="ti ti-book"></i> Gestion des cours</h2>
+            <p class="text-muted">Gérez tous les cours pédagogiques</p>
+        </div>
+        <a href="{{ path('app_cour_new') }}" class="btn btn-primary">
+            <i class="ti ti-plus"></i> Nouveau cours
+        </a>
+    </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id_cours</th>
-                <th>Titre</th>
-                <th>Niveau</th>
-                <th>Description</th>
-                <th>Formateur</th>
-                <th>Statut</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for cour in cours %}
-            <tr>
-                <td>{{ cour.idCours }}</td>
-                <td>{{ cour.titre }}</td>
-                <td>{{ cour.niveau }}</td>
-                <td>{{ cour.description }}</td>
-                <td>{{ cour.formateur }}</td>
-                <td>{{ cour.statut }}</td>
-                <td>
-                    <a href="{{ path('app_cour_show', {'id_cours': cour.id_cours}) }}">show</a>
-                    <a href="{{ path('app_cour_edit', {'id_cours': cour.id_cours}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="7">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ cours|length }}</div>
+                <div class="stat-label">📚 Total cours</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ cours|filter(v => v.statut == 'publie' or v.statut == 'Publié')|length }}</div>
+                <div class="stat-label">✅ Publiés</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ cours|filter(v => v.statut == 'brouillon' or v.statut == 'Brouillon')|length }}</div>
+                <div class="stat-label">📝 Brouillons</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ cours|filter(v => v.formateur is not empty)|length }}</div>
+                <div class="stat-label">👨‍🏫 Formateurs</div>
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ path('app_cour_new') }}">Create new</a>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Titre</th>
+                    <th>Niveau</th>
+                    <th>Description</th>
+                    <th>Formateur</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for cour in cours %}
+                <tr>
+                    <td>{{ cour.idCours }}</td>
+                    <td>{{ cour.titre }}</td>
+                    <td>{{ cour.niveau }}</td>
+                    <td>{{ cour.description|length > 50 ? cour.description|slice(0, 50) ~ '...' : cour.description }}</td>
+                    <td>{{ cour.formateur }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if cour.statut == 'publie' or cour.statut == 'Publié' %}bg-success
+                            {% elseif cour.statut == 'brouillon' or cour.statut == 'Brouillon' %}bg-warning
+                            {% else %}bg-secondary{% endif %}">
+                            {{ cour.statut }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ path('app_cour_show', {'id_cours': cour.id_cours}) }}" class="btn btn-sm btn-info btn-action">
+                            <i class="ti ti-eye"></i>
+                        </a>
+                        <a href="{{ path('app_cour_edit', {'id_cours': cour.id_cours}) }}" class="btn btn-sm btn-warning btn-action">
+                            <i class="ti ti-edit"></i>
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">Aucun cours trouvé</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}
