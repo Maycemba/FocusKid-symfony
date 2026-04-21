@@ -45,8 +45,20 @@ final class FrontJeuController extends AbstractController
             foreach ($questions as $question) {
                 $id = $question->getId();
                 $chosen = $answers[$id] ?? null;
-                $bonneReponse = $question->getBonneReponse();
-                $isCorrect = ($chosen !== null && strtolower(trim($chosen)) === strtolower(trim($bonneReponse)));
+                $bonneReponseLettre = strtoupper(trim((string)$question->getBonneReponse()));
+                
+                $texteBonneReponse = '';
+                if ($bonneReponseLettre === 'A') {
+                    $texteBonneReponse = $question->getOptionA() ?? $question->getOption_a();
+                } elseif ($bonneReponseLettre === 'B') {
+                    $texteBonneReponse = $question->getOptionB() ?? $question->getOption_b();
+                } elseif ($bonneReponseLettre === 'C') {
+                    $texteBonneReponse = $question->getOptionC() ?? $question->getOption_c();
+                } else {
+                    $texteBonneReponse = $question->getBonneReponse();
+                }
+
+                $isCorrect = ($chosen !== null && strtolower(trim($chosen)) === strtolower(trim((string)$texteBonneReponse)));
 
                 if ($isCorrect) {
                     $score++;
@@ -55,7 +67,7 @@ final class FrontJeuController extends AbstractController
                 $details[] = [
                     'question' => $question->getQuestionText(),
                     'chosen' => $chosen,
-                    'bonne_reponse' => $bonneReponse,
+                    'bonne_reponse' => $texteBonneReponse,
                     'is_correct' => $isCorrect,
                 ];
             }
