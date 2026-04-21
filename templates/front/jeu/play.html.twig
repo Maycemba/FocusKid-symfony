@@ -1,0 +1,132 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}FocusKid - Jouer : {{ jeu.titre }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+
+    {# Titre du jeu #}
+    <div class="text-center mb-5 wow fadeInUp" data-wow-delay="0.1s">
+        <p class="d-inline-block bg-secondary text-primary py-1 px-4">
+            {% if jeu.type %}{{ jeu.type }}{% else %}Jeu{% endif %}
+        </p>
+        <h1 class="mb-2">🎮 {{ jeu.titre ?? 'Jeu' }}</h1>
+        {% if jeu.niveau %}
+            <span class="badge bg-success px-3 py-2 fs-6">Niveau : {{ jeu.niveau }}</span>
+        {% endif %}
+        <p class="mt-3 text-muted">Répondez à toutes les questions puis cliquez sur <strong>Valider mes réponses</strong>.</p>
+    </div>
+
+    {% if questions is empty %}
+        <div class="alert alert-warning text-center">
+            <i class="fa fa-exclamation-triangle me-2"></i>
+            Ce jeu n'a pas encore de questions.
+        </div>
+        <div class="text-center mt-3">
+            <a href="{{ path('app_front_jeu_list') }}" class="btn btn-secondary rounded-pill px-4">
+                <i class="fa fa-arrow-left me-2"></i>Retour aux jeux
+            </a>
+        </div>
+    {% else %}
+
+        <form method="post" action="{{ path('app_front_jeu_play', {'id': jeu.id}) }}">
+
+            {% for question in questions %}
+            <div class="card shadow-sm mb-4 wow fadeInUp" data-wow-delay="{{ (loop.index0 * 0.1) }}s">
+                <div class="card-header bg-primary text-white d-flex align-items-center">
+                    <span class="badge bg-white text-primary me-3 fs-6">Q{{ loop.index }}</span>
+                    <h5 class="mb-0">{{ question.questionText ?? question.question_text }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+
+                        {% if question.optionA ?? question.option_a %}
+                        <div class="col-12">
+                            <div class="form-check option-card p-3 rounded border">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="answers[{{ question.id }}]"
+                                       id="q{{ question.id }}_a"
+                                       value="{{ question.optionA ?? question.option_a }}"
+                                       required>
+                                <label class="form-check-label w-100" for="q{{ question.id }}_a">
+                                    <span class="badge bg-primary me-2">A</span>
+                                    {{ question.optionA ?? question.option_a }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if question.optionB ?? question.option_b %}
+                        <div class="col-12">
+                            <div class="form-check option-card p-3 rounded border">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="answers[{{ question.id }}]"
+                                       id="q{{ question.id }}_b"
+                                       value="{{ question.optionB ?? question.option_b }}">
+                                <label class="form-check-label w-100" for="q{{ question.id }}_b">
+                                    <span class="badge bg-success me-2">B</span>
+                                    {{ question.optionB ?? question.option_b }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if question.optionC ?? question.option_c %}
+                        <div class="col-12">
+                            <div class="form-check option-card p-3 rounded border">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="answers[{{ question.id }}]"
+                                       id="q{{ question.id }}_c"
+                                       value="{{ question.optionC ?? question.option_c }}">
+                                <label class="form-check-label w-100" for="q{{ question.id }}_c">
+                                    <span class="badge bg-warning text-dark me-2">C</span>
+                                    {{ question.optionC ?? question.option_c }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            {# Boutons #}
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ path('app_front_jeu_list') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="fa fa-arrow-left me-2"></i>Retour
+                </a>
+                <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fs-5">
+                    <i class="fa fa-check-circle me-2"></i>Valider mes réponses
+                </button>
+            </div>
+
+        </form>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .option-card {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .option-card:hover {
+        background-color: #f0f4ff;
+        border-color: #0d6efd !important;
+    }
+    .option-card .form-check-input:checked ~ label {
+        font-weight: 600;
+    }
+    .option-card:has(.form-check-input:checked) {
+        background-color: #e7f0ff;
+        border-color: #0d6efd !important;
+    }
+</style>
+{% endblock %}
