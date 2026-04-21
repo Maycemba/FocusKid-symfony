@@ -46,7 +46,6 @@ class Jeu
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
-    #[Assert\NotBlank(message: "Le type ne peut pas être vide.")]
     private ?string $type = null;
 
     public function getType(): ?string
