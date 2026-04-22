@@ -49,9 +49,22 @@
             border: none;
             font-size: 16px;
             margin-top: 15px;
+            cursor: pointer;
         }
         .btn-valider:hover {
             background: #45a049;
+        }
+        .btn-terminer {
+            background: #2196F3;
+            color: white;
+            border-radius: 25px;
+            padding: 10px 25px;
+            border: none;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .btn-terminer:hover {
+            background: #1976D2;
         }
         .btn-game {
             background: #FF9800;
@@ -59,9 +72,12 @@
             border-radius: 25px;
             padding: 10px 25px;
             border: none;
+            text-decoration: none;
+            display: inline-block;
         }
         .btn-game:hover {
             background: #F57C00;
+            color: white;
         }
         .chrono-warning {
             color: #F44336;
@@ -108,8 +124,9 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        const exercice = {{ exercice|json_encode|raw }};
-        const config = JSON.parse(exercice.contenu);
+        // Récupérer les données depuis Twig
+        const exerciceId = {{ exercice.id }};
+        const questionsData = {{ questions|default([])|json_encode|raw }};
         
         let questions = [];
         let currentQuestionIndex = 0;
@@ -117,73 +134,95 @@
         let timer = 0;
         let timerInterval = null;
         let gameActive = true;
+        let reponsesDonnees = [];
+        let gameFinished = false;  // Évite les doubles enregistrements
         
-        const operations = ['+', '-', '*'];
+        // Paramètres
+        let pointsParQuestion = 10;
+        let penalite = 5;
+        let tempsMax = 120;
         
-        function generateQuestions() {
-            const nbQuestions = config.nbQuestions || 10;
-            questions = [];
-            
-            for (let i = 0; i < nbQuestions; i++) {
-                const operation = operations[Math.floor(Math.random() * operations.length)];
-                let a, b, reponse;
-                
-                if (operation === '+') {
-                    a = Math.floor(Math.random() * 50) + 1;
-                    b = Math.floor(Math.random() * 50) + 1;
-                    reponse = a + b;
-                } else if (operation === '-') {
-                    a = Math.floor(Math.random() * 50) + 20;
-                    b = Math.floor(Math.random() * a);
-                    reponse = a - b;
-                } else {
-                    a = Math.floor(Math.random() * 10) + 1;
-                    b = Math.floor(Math.random() * 10) + 1;
-                    reponse = a * b;
-                }
-                
-                questions.push({
-                    texte: `${a} ${operation} ${b} = ?`,
-                    reponse: reponse.toString()
-                });
+        // Charger les questions
+        function loadQuestions() {
+            if (questionsData && questionsData.length > 0) {
+                questions = questionsData;
+                console.log('✅ ' + questions.length + ' questions chargées');
+                return true;
             }
+            console.log('❌ Aucune question trouvée');
+            return false;
         }
         
         function loadQuestion() {
+            if (!gameActive) return;
+            
             if (currentQuestionIndex < questions.length) {
-                document.getElementById('defiText').innerHTML = questions[currentQuestionIndex].texte;
-                document.getElementById('reponseInput').value = '';
-                document.getElementById('reponseInput').focus();
-                document.getElementById('message').innerHTML = `Question ${currentQuestionIndex + 1}/${questions.length}`;
+                const currentQ = questions[currentQuestionIndex];
+                const questionTexte = currentQ.question || currentQ.texte || 'Question';
+                
+                const defiDiv = document.getElementById('defiText');
+                if (defiDiv) defiDiv.innerHTML = questionTexte;
+                
+                const inputField = document.getElementById('reponseInput');
+                if (inputField) {
+                    inputField.value = '';
+                    inputField.disabled = false;
+                    inputField.focus();
+                }
+                
+                const validerBtn = document.getElementById('validerBtn');
+                if (validerBtn) validerBtn.disabled = false;
+                
+                const msgDiv = document.getElementById('message');
+                if (msgDiv) msgDiv.innerHTML = `Question ${currentQuestionIndex + 1}/${questions.length}`;
             } else {
-                endGame();
+                // Fin du jeu : toutes les questions ont été répondues
+                finishGame();
             }
         }
         
         function verifierReponse() {
-            if (!gameActive) return;
+            if (!gameActive || gameFinished) return;
             
             const reponseInput = document.getElementById('reponseInput');
+            if (!reponseInput || reponseInput.disabled) return;
+            
             const userReponse = reponseInput.value.trim();
             const currentQuestion = questions[currentQuestionIndex];
             
-            if (userReponse === currentQuestion.reponse) {
-                score += config.pointsParQuestion || 10;
+            if (!currentQuestion) return;
+            
+            const bonneReponse = currentQuestion.reponse || '';
+            
+            // Stocker la réponse
+            reponsesDonnees.push({
+                question: currentQuestion.question,
+                reponse_donnee: userReponse,
+                reponse_attendue: bonneReponse,
+                est_correcte: (userReponse === bonneReponse)
+            });
+            
+            if (userReponse === bonneReponse) {
+                const points = currentQuestion.points || pointsParQuestion;
+                score += points;
                 updateScore();
-                document.getElementById('message').innerHTML = '✅ Bonne réponse ! +10 points';
+                const msgDiv = document.getElementById('message');
+                if (msgDiv) msgDiv.innerHTML = '✅ Bonne réponse ! +' + points + ' points';
                 currentQuestionIndex++;
                 loadQuestion();
             } else {
-                score = Math.max(0, score - (config.penalite || 5));
+                score = Math.max(0, score - penalite);
                 updateScore();
-                document.getElementById('message').innerHTML = `❌ Mauvaise réponse ! La bonne réponse était ${currentQuestion.reponse}. -5 points`;
+                const msgDiv = document.getElementById('message');
+                if (msgDiv) msgDiv.innerHTML = `❌ Mauvaise réponse ! La bonne réponse était ${bonneReponse}. -${penalite} points`;
                 currentQuestionIndex++;
                 loadQuestion();
             }
         }
         
         function updateScore() {
-            document.getElementById('score').textContent = score;
+            const scoreSpan = document.getElementById('score');
+            if (scoreSpan) scoreSpan.textContent = score;
         }
         
         function startTimer() {
@@ -191,11 +230,12 @@
             timer = 0;
             updateTimerDisplay();
             timerInterval = setInterval(() => {
-                if (gameActive) {
+                if (gameActive && !gameFinished) {
                     timer++;
                     updateTimerDisplay();
-                    if (timer >= (config.tempsMax || 120)) {
-                        endGame();
+                    if (timer >= tempsMax) {
+                        // Temps écoulé
+                        finishGame();
                     }
                 }
             }, 1000);
@@ -205,30 +245,111 @@
             const m = Math.floor(timer / 60);
             const s = timer % 60;
             const timerElement = document.getElementById('chronoTimer');
-            timerElement.innerHTML = `⏱️ ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-            
-            if (timer >= (config.tempsMax || 120)) {
-                timerElement.classList.add('chrono-warning');
+            if (timerElement) {
+                timerElement.innerHTML = `⏱️ ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             }
         }
         
-        function endGame() {
-            gameActive = false;
-            if (timerInterval) clearInterval(timerInterval);
-            document.getElementById('defiText').innerHTML = `🎉 Jeu terminé ! Score final : ${score} 🎉`;
-            document.getElementById('reponseInput').disabled = true;
-            document.getElementById('validerBtn').disabled = true;
-            document.getElementById('message').innerHTML = 'Bravo ! Tu peux revenir à la liste des exercices.';
+        function saveGameResult() {
+            if (gameFinished) return Promise.resolve(false);
+            gameFinished = true;
+            
+            const reponsesData = {
+                type: 'chrono',
+                total_questions: questions.length,
+                questions_repondues: currentQuestionIndex,
+                reponses_utilisateur: reponsesDonnees,
+                temps_total: timer,
+                score_final: score
+            };
+            
+            console.log('📤 Sauvegarde des résultats...');
+            
+            return fetch('/exercice/api/exercice-complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    exercice_id: exerciceId,
+                    enfant_id: 1,
+                    score: score,
+                    temps_passe: timer,
+                    reponses: reponsesData,
+                    reussite: (currentQuestionIndex >= questions.length)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('✅ Résultat enregistré:', data);
+                return data.success;
+            })
+            .catch(error => {
+                console.error('❌ Erreur:', error);
+                return false;
+            });
         }
         
-        generateQuestions();
-        loadQuestion();
-        startTimer();
+        function finishGame() {
+            if (!gameActive || gameFinished) return;
+            
+            gameActive = false;
+            if (timerInterval) clearInterval(timerInterval);
+            
+            // Désactiver les champs
+            const inputField = document.getElementById('reponseInput');
+            if (inputField) inputField.disabled = true;
+            
+            const validerBtn = document.getElementById('validerBtn');
+            if (validerBtn) validerBtn.disabled = true;
+            
+            // Afficher le message de fin
+            const defiDiv = document.getElementById('defiText');
+            if (defiDiv) defiDiv.innerHTML = `🎉 Jeu terminé ! Score final : ${score} 🎉`;
+            
+            const msgDiv = document.getElementById('message');
+            if (msgDiv) msgDiv.innerHTML = '📝 Sauvegarde en cours...';
+            
+            // Sauvegarder et rediriger
+            saveGameResult().then(success => {
+                if (success) {
+                    alert('🎉 Exercice terminé et enregistré !');
+                } else {
+                    alert('⚠️ Exercice terminé mais erreur lors de l\'enregistrement.');
+                }
+                window.location.href = "{{ path('app_front_exercice_index') }}";
+            });
+        }
         
-        document.getElementById('validerBtn').addEventListener('click', verifierReponse);
-        document.getElementById('reponseInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                verifierReponse();
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            const hasQuestions = loadQuestions();
+            
+            if (hasQuestions && questions.length > 0) {
+                loadQuestion();
+                startTimer();
+            } else {
+                const defiDiv = document.getElementById('defiText');
+                if (defiDiv) defiDiv.innerHTML = '❌ Aucune question trouvée pour cet exercice.';
+                const inputField = document.getElementById('reponseInput');
+                if (inputField) inputField.disabled = true;
+                const validerBtn = document.getElementById('validerBtn');
+                if (validerBtn) validerBtn.disabled = true;
+            }
+            
+            // Écouteur pour le bouton Valider
+            const validerBtn = document.getElementById('validerBtn');
+            if (validerBtn) {
+                validerBtn.addEventListener('click', verifierReponse);
+            }
+            
+            // Écouteur pour la touche Entrée
+            const inputField = document.getElementById('reponseInput');
+            if (inputField) {
+                inputField.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        verifierReponse();
+                    }
+                });
             }
         });
     </script>

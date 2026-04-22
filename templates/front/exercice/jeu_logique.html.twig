@@ -50,6 +50,7 @@
             border: none;
             font-size: 16px;
             margin-top: 15px;
+            cursor: pointer;
         }
         .btn-verifier:hover {
             background: #45a049;
@@ -60,6 +61,8 @@
             border-radius: 25px;
             padding: 10px 25px;
             border: none;
+            text-decoration: none;
+            display: inline-block;
         }
         .btn-game:hover {
             background: #F57C00;
@@ -114,106 +117,191 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        const exercice = {{ exercice|json_encode|raw }};
-        const config = JSON.parse(exercice.contenu);
+        // Récupérer les données depuis Twig
+        const exerciceId = {{ exercice.id }};
+        const questionsData = {{ questions|default([])|json_encode|raw }};
         
         let questions = [];
         let currentQuestionIndex = 0;
         let score = 0;
         let gameActive = true;
+        let gameFinished = false;
+        let reponsesDonnees = [];
         
-        function generateQuestions() {
-            const nbQuestions = config.nbQuestions || 10;
-            questions = [];
-            
-            const sequences = [
-                { pattern: 'add', value: 2, start: 2, steps: [2,4,6,8] },
-                { pattern: 'add', value: 3, start: 3, steps: [3,6,9,12] },
-                { pattern: 'add', value: 5, start: 5, steps: [5,10,15,20] },
-                { pattern: 'multiply', value: 2, start: 2, steps: [2,4,8,16] },
-                { pattern: 'multiply', value: 3, start: 3, steps: [3,9,27,81] },
-                { pattern: 'fibonacci', steps: [1,1,2,3,5] },
-                { pattern: 'square', steps: [1,4,9,16] }
-            ];
-            
-            for (let i = 0; i < nbQuestions; i++) {
-                const seq = sequences[Math.floor(Math.random() * sequences.length)];
-                const missingPos = Math.floor(Math.random() * 4);
-                let steps = [...seq.steps];
-                const correctAnswer = steps[missingPos];
-                steps[missingPos] = '?';
-                
-                questions.push({
-                    sequence: steps.join(' , '),
-                    reponse: correctAnswer.toString(),
-                    indice: getIndice(seq.pattern, seq.value)
-                });
+        // Paramètres
+        let pointsParQuestion = 15;
+        let penalite = 5;
+        
+        function loadQuestions() {
+            if (questionsData && questionsData.length > 0) {
+                questions = questionsData;
+                console.log('✅ ' + questions.length + ' questions chargées');
+                return true;
             }
-        }
-        
-        function getIndice(pattern, value) {
-            if (pattern === 'add') return `💡 Chaque nombre augmente de ${value}`;
-            if (pattern === 'multiply') return `💡 Chaque nombre est multiplié par ${value}`;
-            if (pattern === 'fibonacci') return `💡 Chaque nombre est la somme des deux précédents`;
-            if (pattern === 'square') return `💡 Ce sont des carrés parfaits`;
-            return `💡 Trouve la règle logique`;
+            console.log('❌ Aucune question trouvée');
+            return false;
         }
         
         function loadQuestion() {
+            if (!gameActive || gameFinished) return;
+            
             if (currentQuestionIndex < questions.length) {
-                document.getElementById('sequenceText').innerHTML = questions[currentQuestionIndex].sequence;
-                document.getElementById('indiceText').innerHTML = questions[currentQuestionIndex].indice;
-                document.getElementById('reponseInput').value = '';
-                document.getElementById('reponseInput').focus();
-                document.getElementById('message').innerHTML = `Question ${currentQuestionIndex + 1}/${questions.length}`;
+                const currentQ = questions[currentQuestionIndex];
+                const sequenceTexte = currentQ.serie || currentQ.sequence || currentQ.question || '?';
+                const indiceTexte = currentQ.regle || currentQ.indice || 'Trouve la logique !';
+                
+                const sequenceDiv = document.getElementById('sequenceText');
+                if (sequenceDiv) sequenceDiv.innerHTML = sequenceTexte;
+                
+                const indiceDiv = document.getElementById('indiceText');
+                if (indiceDiv) indiceDiv.innerHTML = '💡 ' + indiceTexte;
+                
+                const inputField = document.getElementById('reponseInput');
+                if (inputField) {
+                    inputField.value = '';
+                    inputField.disabled = false;
+                    inputField.focus();
+                }
+                
+                const verifierBtn = document.getElementById('verifierBtn');
+                if (verifierBtn) verifierBtn.disabled = false;
+                
+                const msgDiv = document.getElementById('message');
+                if (msgDiv) msgDiv.innerHTML = `Question ${currentQuestionIndex + 1}/${questions.length}`;
             } else {
-                endGame();
+                finishGame();
             }
         }
         
         function verifierReponse() {
-            if (!gameActive) return;
+            if (!gameActive || gameFinished) return;
             
             const reponseInput = document.getElementById('reponseInput');
+            if (!reponseInput) return;
+            
             const userReponse = reponseInput.value.trim();
             const currentQuestion = questions[currentQuestionIndex];
             
-            if (userReponse === currentQuestion.reponse) {
-                score += config.pointsParQuestion || 15;
+            if (!currentQuestion) return;
+            
+            const bonneReponse = currentQuestion.reponse || currentQuestion.bonne_reponse || '';
+            
+            reponsesDonnees.push({
+                question: currentQuestion.serie || currentQuestion.sequence,
+                reponse_donnee: userReponse,
+                reponse_attendue: bonneReponse,
+                est_correcte: (userReponse === bonneReponse)
+            });
+            
+            if (userReponse === bonneReponse) {
+                score += pointsParQuestion;
                 updateScore();
-                document.getElementById('message').innerHTML = '✅ Correct ! +15 points';
+                const msgDiv = document.getElementById('message');
+                if (msgDiv) msgDiv.innerHTML = '✅ Correct ! +' + pointsParQuestion + ' points';
                 currentQuestionIndex++;
                 loadQuestion();
             } else {
-                score = Math.max(0, score - (config.penalite || 5));
+                score = Math.max(0, score - penalite);
                 updateScore();
-                document.getElementById('message').innerHTML = `❌ Incorrect ! La bonne réponse était ${currentQuestion.reponse}. -5 points`;
+                const msgDiv = document.getElementById('message');
+                if (msgDiv) msgDiv.innerHTML = `❌ Incorrect ! La bonne réponse était ${bonneReponse}. -${penalite} points`;
                 currentQuestionIndex++;
                 loadQuestion();
             }
         }
         
         function updateScore() {
-            document.getElementById('score').textContent = score;
+            const scoreSpan = document.getElementById('score');
+            if (scoreSpan) scoreSpan.textContent = score;
         }
         
-        function endGame() {
+        function saveGameResult() {
+            if (gameFinished) return Promise.resolve(false);
+            gameFinished = true;
+            
+            const reponsesData = {
+                type: 'logique',
+                total_questions: questions.length,
+                questions_repondues: currentQuestionIndex,
+                reponses: reponsesDonnees,
+                score_final: score
+            };
+            
+            return fetch('/exercice/api/exercice-complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    exercice_id: exerciceId,
+                    enfant_id: 1,
+                    score: score,
+                    temps_passe: 0,
+                    reponses: reponsesData,
+                    reussite: (currentQuestionIndex >= questions.length)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('✅ Enregistré:', data);
+                return data.success;
+            })
+            .catch(error => {
+                console.error('❌ Erreur:', error);
+                return false;
+            });
+        }
+        
+        function finishGame() {
+            if (!gameActive || gameFinished) return;
+            
             gameActive = false;
-            document.getElementById('sequenceText').innerHTML = `🎉 Félicitations ! Score final : ${score} 🎉`;
-            document.getElementById('reponseInput').disabled = true;
-            document.getElementById('verifierBtn').disabled = true;
-            document.getElementById('indiceText').innerHTML = 'Bravo ! Tu as terminé le jeu logique.';
-            document.getElementById('message').innerHTML = 'Tu peux revenir à la liste des exercices.';
+            
+            const sequenceDiv = document.getElementById('sequenceText');
+            if (sequenceDiv) sequenceDiv.innerHTML = `🎉 Jeu terminé ! Score final : ${score} 🎉`;
+            
+            const inputField = document.getElementById('reponseInput');
+            if (inputField) inputField.disabled = true;
+            
+            const verifierBtn = document.getElementById('verifierBtn');
+            if (verifierBtn) verifierBtn.disabled = true;
+            
+            const msgDiv = document.getElementById('message');
+            if (msgDiv) msgDiv.innerHTML = '📝 Sauvegarde en cours...';
+            
+            saveGameResult().then(success => {
+                if (success) {
+                    alert('🎉 Jeu terminé et enregistré !');
+                } else {
+                    alert('⚠️ Jeu terminé mais erreur lors de l\'enregistrement.');
+                }
+                window.location.href = "{{ path('app_front_exercice_index') }}";
+            });
         }
         
-        generateQuestions();
-        loadQuestion();
+        // Initialisation
+        const hasQuestions = loadQuestions();
         
-        document.getElementById('verifierBtn').addEventListener('click', verifierReponse);
-        document.getElementById('reponseInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                verifierReponse();
-            }
-        });
+        if (hasQuestions && questions.length > 0) {
+            loadQuestion();
+        } else {
+            const sequenceDiv = document.getElementById('sequenceText');
+            if (sequenceDiv) sequenceDiv.innerHTML = '❌ Aucune question trouvée pour cet exercice.';
+            const inputField = document.getElementById('reponseInput');
+            if (inputField) inputField.disabled = true;
+            const verifierBtn = document.getElementById('verifierBtn');
+            if (verifierBtn) verifierBtn.disabled = true;
+        }
+        
+        const verifierBtn = document.getElementById('verifierBtn');
+        if (verifierBtn) verifierBtn.addEventListener('click', verifierReponse);
+        
+        const inputField = document.getElementById('reponseInput');
+        if (inputField) {
+            inputField.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    verifierReponse();
+                }
+            });
+        }
     </script>
 {% endblock %}

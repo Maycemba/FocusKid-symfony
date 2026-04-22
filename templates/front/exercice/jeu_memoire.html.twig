@@ -1,4 +1,4 @@
-{% extends 'front/base-front.html.twig' %}
+{% extends 'base-front.html.twig' %}
 
 {% block title %}Jeu de mémoire - FocusKid{% endblock %}
 
@@ -28,7 +28,7 @@
         .memory-card.flipped { background: #C8E6C9; }
         .memory-card.matched { background: #81C784; cursor: default; opacity: 0.6; }
         .score-board { background: white; border-radius: 15px; padding: 15px; margin-bottom: 20px; }
-        .btn-game { background: #FF9800; color: white; border-radius: 25px; padding: 10px 25px; border: none; }
+        .btn-game { background: #FF9800; color: white; border-radius: 25px; padding: 10px 25px; border: none; text-decoration: none; display: inline-block; }
         .btn-game:hover { background: #F57C00; }
     </style>
 {% endblock %}
@@ -60,46 +60,79 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        const exercice = {{ exercice|json_encode|raw }};
-        const config = JSON.parse(exercice.contenu);
+        // Récupérer les données depuis Twig
+        const exerciceId = {{ exercice.id }};
+        const questionsData = {{ questions|default([])|json_encode|raw }};
         
-        let cards = [], flippedCards = [], matchedPairs = 0, score = 0, canFlip = true, timer = 0, timerInterval = null;
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let score = 0;
+        let canFlip = true;
+        let timer = 0;
+        let timerInterval = null;
+        let gameActive = true;
+        let gameFinished = false;
+        let reponsesDonnees = [];
+        
+        let pointsParPaire = 10;
         
         function initGame() {
-            const theme = config.theme || 'animaux';
-            const taille = config.taille || '4x4';
-            const images = { animaux: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'], fruits: ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓'], chiffres: ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣'] }[theme] || images.animaux;
-            const totalPairs = taille === '4x4' ? 8 : 18;
+            if (!questionsData || questionsData.length === 0) {
+                console.log('❌ Aucune donnée pour le jeu Mémoire');
+                return;
+            }
+            
+            // Construire les cartes à partir des données
             let cardsData = [];
-            for (let i = 0; i < totalPairs; i++) { const img = images[i % images.length]; cardsData.push({ id: i*2, value: img, matched: false, flipped: false }); cardsData.push({ id: i*2+1, value: img, matched: false, flipped: false }); }
+            for (let i = 0; i < questionsData.length; i++) {
+                const valeur = questionsData[i].valeur || questionsData[i].image || '?';
+                cardsData.push({ id: i*2, value: valeur, matched: false, flipped: false });
+                cardsData.push({ id: i*2+1, value: valeur, matched: false, flipped: false });
+            }
+            
             cards = shuffle(cardsData);
-            matchedPairs = 0; score = 0; updateScore();
+            matchedPairs = 0;
+            score = 0;
+            gameActive = true;
+            gameFinished = false;
+            updateScore();
             renderGrid();
             startTimer();
         }
         
-        function shuffle(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
         
         function renderGrid() {
             const grid = document.getElementById('memoryGrid');
+            if (!grid) return;
             grid.innerHTML = '';
-            const cols = config.taille === '4x4' ? 4 : 6;
+            const cols = 4;
             grid.style.display = 'grid';
             grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
             grid.style.gap = '15px';
+            
             cards.forEach((card, index) => {
                 const cardDiv = document.createElement('div');
                 cardDiv.className = 'memory-card';
                 if (card.flipped) cardDiv.classList.add('flipped');
                 if (card.matched) cardDiv.classList.add('matched');
-                cardDiv.textContent = card.flipped || card.matched ? card.value : '?';
+                cardDiv.textContent = (card.flipped || card.matched) ? card.value : '?';
                 cardDiv.onclick = () => flipCard(index);
                 grid.appendChild(cardDiv);
             });
         }
         
         function flipCard(index) {
+            if (!gameActive || gameFinished) return;
             if (!canFlip || cards[index].matched || cards[index].flipped || flippedCards.length >= 2) return;
+            
             cards[index].flipped = true;
             renderGrid();
             flippedCards.push(index);
@@ -107,43 +140,136 @@
         }
         
         function checkMatch() {
-            const card1 = cards[flippedCards[0]], card2 = cards[flippedCards[1]];
+            const card1 = cards[flippedCards[0]];
+            const card2 = cards[flippedCards[1]];
+            
             if (card1.value === card2.value) {
-                card1.matched = true; card2.matched = true;
-                matchedPairs++; score += config.pointsParPaire || 10;
+                card1.matched = true;
+                card2.matched = true;
+                matchedPairs++;
+                score += pointsParPaire;
                 updateScore();
+                
+                reponsesDonnees.push({
+                    paire: card1.value,
+                    reussie: true
+                });
+                
                 flippedCards = [];
                 renderGrid();
-                document.getElementById('message').innerHTML = '✅ Bravo ! Paire trouvée !';
-                setTimeout(() => document.getElementById('message').innerHTML = '', 1000);
-                if (matchedPairs === cards.length / 2) endGame(true);
+                const msg = document.getElementById('message');
+                if (msg) msg.innerHTML = '✅ Bravo ! Paire trouvée !';
+                setTimeout(() => { if(msg) msg.innerHTML = ''; }, 1000);
+                
+                if (matchedPairs === cards.length / 2) {
+                    finishGame(true);
+                }
             } else {
                 canFlip = false;
-                document.getElementById('message').innerHTML = '❌ Ce n\'est pas une paire...';
+                
+                reponsesDonnees.push({
+                    paire1: card1.value,
+                    paire2: card2.value,
+                    reussie: false
+                });
+                
+                const msg = document.getElementById('message');
+                if (msg) msg.innerHTML = '❌ Ce n\'est pas une paire...';
                 setTimeout(() => {
                     cards[flippedCards[0]].flipped = false;
                     cards[flippedCards[1]].flipped = false;
                     flippedCards = [];
                     renderGrid();
                     canFlip = true;
-                    document.getElementById('message').innerHTML = '';
+                    if(msg) msg.innerHTML = '';
                 }, 1000);
             }
         }
         
-        function updateScore() { document.getElementById('score').textContent = score; }
+        function updateScore() {
+            const scoreSpan = document.getElementById('score');
+            if (scoreSpan) scoreSpan.textContent = score;
+        }
         
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
             timer = 0;
             updateTimerDisplay();
-            timerInterval = setInterval(() => { timer++; updateTimerDisplay(); }, 1000);
+            timerInterval = setInterval(() => {
+                if (gameActive && !gameFinished) {
+                    timer++;
+                    updateTimerDisplay();
+                }
+            }, 1000);
         }
         
-        function updateTimerDisplay() { const m = Math.floor(timer / 60), s = timer % 60; document.getElementById('timer').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; }
+        function updateTimerDisplay() {
+            const m = Math.floor(timer / 60), s = timer % 60;
+            const timerSpan = document.getElementById('timer');
+            if (timerSpan) timerSpan.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }
         
-        function endGame(won) { if (timerInterval) clearInterval(timerInterval); if (won) document.getElementById('message').innerHTML = '🎉 Félicitations ! Tu as gagné ! 🎉'; }
+        function saveGameResult() {
+            if (gameFinished) return Promise.resolve(false);
+            gameFinished = true;
+            
+            const totalPairs = cards.length / 2;
+            const reussite = (matchedPairs === totalPairs);
+            
+            const reponsesData = {
+                type: 'memoire',
+                total_paires: totalPairs,
+                paires_trouvees: matchedPairs,
+                temps_total: timer,
+                score_final: score,
+                details: reponsesDonnees
+            };
+            
+            return fetch('/exercice/api/exercice-complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    exercice_id: exerciceId,
+                    enfant_id: 1,
+                    score: score,
+                    temps_passe: timer,
+                    reponses: reponsesData,
+                    reussite: reussite
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('✅ Enregistré:', data);
+                return data.success;
+            })
+            .catch(error => {
+                console.error('❌ Erreur:', error);
+                return false;
+            });
+        }
         
-        initGame();
+        function finishGame(won) {
+            if (!gameActive || gameFinished) return;
+            
+            gameActive = false;
+            if (timerInterval) clearInterval(timerInterval);
+            
+            const msg = document.getElementById('message');
+            if (msg) msg.innerHTML = '📝 Sauvegarde en cours...';
+            
+            saveGameResult().then(success => {
+                if (success) {
+                    alert('🎉 Jeu terminé et enregistré !');
+                } else {
+                    alert('⚠️ Jeu terminé mais erreur lors de l\'enregistrement.');
+                }
+                window.location.href = "{{ path('app_front_exercice_index') }}";
+            });
+        }
+        
+        // Démarrer le jeu
+        if (document.getElementById('memoryGrid')) {
+            initGame();
+        }
     </script>
 {% endblock %}

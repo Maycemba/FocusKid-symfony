@@ -234,4 +234,26 @@ public function enfantPlanning(int $id, UtilisateurRepository $utilisateurReposi
         'planning' => $planningParJour,
     ]);
 }
+#[Route('/enfant/{id}/reponses', name: 'app_suivi_enfant_reponses')]
+public function enfantReponses(int $id, EntityManagerInterface $em): Response
+{
+    $enfant = $em->getConnection()->fetchAssociative(
+        "SELECT * FROM utilisateur WHERE id = :id AND role = 'enfant'",
+        ['id' => $id]
+    );
+    
+    $reponses = $em->getConnection()->fetchAllAssociative(
+        "SELECT r.*, e.titre as exercice_titre, e.type as exercice_type 
+         FROM reponse_exercice r
+         JOIN exercice e ON e.id = r.exercice_id
+         WHERE r.enfant_id = :id
+         ORDER BY r.date_passage DESC",
+        ['id' => $id]
+    );
+    
+    return $this->render('suivi/enfant_reponses.html.twig', [
+        'enfant' => $enfant,
+        'reponses' => $reponses,
+    ]);
+}
 }

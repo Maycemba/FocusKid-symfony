@@ -109,7 +109,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-muted">⏱️ {{ exercice.duree }}s</small>
                         {% set jeuPath = '' %}
-                        {% if exercice.type == 'MÉMOIRE' %}
+                        {% if exercice.type == 'MEMOIRE' %}
     {% set jeuPath = path('app_front_jeu_memoire', {'id': exercice.id}) %}
 {% elseif exercice.type == 'ATTENTION' %}
     {% set jeuPath = path('app_front_jeu_attention', {'id': exercice.id}) %}

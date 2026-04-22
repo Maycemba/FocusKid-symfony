@@ -429,9 +429,8 @@
                         </div>
                     </div>
                     
-                    <!-- Champ JSON caché -->
-                    {{ form_widget(form.contenu, {'attr': {'id': 'contenuJson'}}) }}
-                    
+                    <!-- Champ JSON caché pour l'édition -->
+<input type="hidden" id="contenuJson" name="exercice[contenu]" value="{{ exercice.contenu|default('{}') }}">
                     <div class="row mt-4">
                         <div class="col-12 text-center">
                             <button type="submit" class="btn btn-primary px-5">

@@ -11,7 +11,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Doctrine\ORM\EntityRepository;
@@ -28,7 +27,7 @@ class ExerciceType extends AbstractType
             ->add('type', ChoiceType::class, [
                 'label' => 'Type',
                 'choices' => [
-                    'MÉMOIRE' => 'MÉMOIRE',
+                    'MÉMOIRE' => 'MEMOIRE',
                     'ATTENTION' => 'ATTENTION',
                     'LOGIQUE' => 'LOGIQUE',
                     'CHRONO' => 'CHRONO'
@@ -55,14 +54,11 @@ class ExerciceType extends AbstractType
                 'label' => 'Durée (secondes)',
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('contenu', HiddenType::class, [  // ← HiddenType
-                'required' => false,
-                'attr' => ['id' => 'contenuJson']
-            ])
+            // 🔥 SUPPRIMER le champ contenu d'ici - on va le gérer manuellement
             ->add('pour_tous_enfants', CheckboxType::class, [
                 'label' => 'Pour tous les enfants',
                 'required' => false,
-                'attr' => ['class' => 'form-check-input', 'id' => 'pourTousEnfants']
+                'attr' => ['class' => 'form-check-input', 'id' => 'tousEnfantsRadio']
             ])
             ->add('actif', CheckboxType::class, [
                 'label' => 'Actif',
@@ -74,7 +70,6 @@ class ExerciceType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-check-input']
             ])
-            // Champ pour sélectionner les enfants
             ->add('enfantsSelectionnes', EntityType::class, [
                 'class' => Utilisateur::class,
                 'choice_label' => 'username',
@@ -87,12 +82,10 @@ class ExerciceType extends AbstractType
                         ->setParameter('role', 'enfant')
                         ->orderBy('u.username', 'ASC');
                 },
-                'attr' => ['class' => 'form-select', 'size' => 5, 'id' => 'enfantsSelectionnes'],
+                'attr' => ['class' => 'form-select', 'size' => 5],
                 'label' => 'Enfants sélectionnés'
             ])
-            // Seulement cree_par en hidden (optionnel)
-            ->add('cree_par', HiddenType::class, ['required' => false])
-            // SUPPRIMER date_creation et complete
+            ->add('cree_par', \Symfony\Component\Form\Extension\Core\Type\HiddenType::class, ['required' => false])
         ;
     }
 
@@ -100,6 +93,9 @@ class ExerciceType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Exercice::class,
+            'allow_extra_fields' => true,  // 🔥 AJOUTE CETTE LIGNE
+
         ]);
     }
+    
 }

@@ -57,6 +57,8 @@
             border-radius: 25px;
             padding: 10px 25px;
             border: none;
+            text-decoration: none;
+            display: inline-block;
         }
         .btn-game:hover {
             background: #F57C00;
@@ -105,8 +107,9 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        const exercice = {{ exercice|json_encode|raw }};
-        const config = JSON.parse(exercice.contenu);
+        // Récupérer les données depuis Twig
+        const exerciceId = {{ exercice.id }};
+        const questionsData = {{ questions|default([])|json_encode|raw }};
         
         let images = [];
         let currentTarget = null;
@@ -116,28 +119,33 @@
         let gameActive = true;
         let progressTimer = null;
         let timeLeft = 100;
+        let gameFinished = false;
+        let reponsesDonnees = [];
+        
+        // Paramètres
+        let pointsParClick = 10;
+        let penalite = 5;
+        let tempsMax = 120;
         
         function initGame() {
-            const theme = config.theme || 'emojis';
-            const imagesList = {
-                emojis: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐸'],
-                animaux: ['🦁', '🐧', '🐦', '🐟', '🐠', '🐙', '🦋', '🐝', '🐞', '🐳'],
-                objets: ['📚', '✏️', '🔍', '💡', '🔑', '⌚', '📱', '💻', '🖱️', '📷']
-            };
-            const selectedList = imagesList[theme] || imagesList.emojis;
+            if (!questionsData || questionsData.length === 0) {
+                console.log('❌ Aucune donnée pour le jeu Attention');
+                return;
+            }
             
             images = [];
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < questionsData.length; i++) {
                 images.push({
                     id: i,
-                    value: selectedList[i % selectedList.length],
+                    value: questionsData[i].image || questionsData[i].valeur || '?',
                     selected: false
                 });
             }
             
             score = 0;
-            timeLeft = 100;
+            timeLeft = tempsMax;
             gameActive = true;
+            gameFinished = false;
             updateScore();
             updateProgressBar();
             setNewTarget();
@@ -149,11 +157,13 @@
         function setNewTarget() {
             const randomIndex = Math.floor(Math.random() * images.length);
             currentTarget = images[randomIndex].value;
-            document.getElementById('message').innerHTML = `🎯 Trouve l'image : <strong>${currentTarget}</strong>`;
+            const msgDiv = document.getElementById('message');
+            if (msgDiv) msgDiv.innerHTML = `🎯 Trouve l'image : <strong>${currentTarget}</strong>`;
         }
         
         function renderGrid() {
             const grid = document.getElementById('attentionGrid');
+            if (!grid) return;
             grid.innerHTML = '';
             grid.style.display = 'grid';
             grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
@@ -170,43 +180,58 @@
         }
         
         function selectImage(index) {
-            if (!gameActive) return;
+            if (!gameActive || gameFinished) return;
             
             const selectedImage = images[index];
             
+            reponsesDonnees.push({
+                image: selectedImage.value,
+                est_cible: (selectedImage.value === currentTarget)
+            });
+            
             if (selectedImage.value === currentTarget) {
-                score += config.pointsParClick || 10;
+                score += pointsParClick;
                 updateScore();
                 selectedImage.selected = true;
                 renderGrid();
-                document.getElementById('message').innerHTML = '✅ Bravo ! +10 points';
-                document.getElementById('message').className = 'message-success';
+                const msgDiv = document.getElementById('message');
+                if (msgDiv) {
+                    msgDiv.innerHTML = '✅ Bravo ! +' + pointsParClick + ' points';
+                    msgDiv.className = 'message-success';
+                }
                 
                 setTimeout(() => {
                     setNewTarget();
                     setTimeout(() => renderGrid(), 100);
                 }, 500);
             } else {
-                score = Math.max(0, score - (config.penalite || 5));
+                score = Math.max(0, score - penalite);
                 updateScore();
-                document.getElementById('message').innerHTML = '❌ Mauvaise image ! -5 points';
-                document.getElementById('message').className = 'message-error';
+                const msgDiv = document.getElementById('message');
+                if (msgDiv) {
+                    msgDiv.innerHTML = '❌ Mauvaise image ! -' + penalite + ' points';
+                    msgDiv.className = 'message-error';
+                }
                 
                 setTimeout(() => {
-                    document.getElementById('message').innerHTML = `🎯 Trouve l'image : <strong>${currentTarget}</strong>`;
-                    document.getElementById('message').className = 'message-success';
+                    if (msgDiv) {
+                        msgDiv.innerHTML = `🎯 Trouve l'image : <strong>${currentTarget}</strong>`;
+                        msgDiv.className = 'message-success';
+                    }
                 }, 800);
             }
         }
         
         function updateScore() {
-            document.getElementById('score').textContent = score;
+            const scoreSpan = document.getElementById('score');
+            if (scoreSpan) scoreSpan.textContent = score;
         }
         
         function updateProgressBar() {
             const fill = document.getElementById('progressFill');
-            const percent = (timeLeft / 100) * 100;
-            fill.style.width = percent + '%';
+            if (!fill) return;
+            const percent = (timeLeft / tempsMax) * 100;
+            fill.style.width = Math.max(0, percent) + '%';
             if (timeLeft < 30) {
                 fill.style.background = '#F44336';
             } else if (timeLeft < 60) {
@@ -219,11 +244,11 @@
         function startProgressTimer() {
             if (progressTimer) clearInterval(progressTimer);
             progressTimer = setInterval(() => {
-                if (gameActive && timeLeft > 0) {
+                if (gameActive && !gameFinished && timeLeft > 0) {
                     timeLeft--;
                     updateProgressBar();
                     if (timeLeft <= 0) {
-                        endGame();
+                        finishGame();
                     }
                 }
             }, 1000);
@@ -234,7 +259,7 @@
             timer = 0;
             updateTimerDisplay();
             timerInterval = setInterval(() => {
-                if (gameActive) {
+                if (gameActive && !gameFinished) {
                     timer++;
                     updateTimerDisplay();
                 }
@@ -244,17 +269,69 @@
         function updateTimerDisplay() {
             const m = Math.floor(timer / 60);
             const s = timer % 60;
-            document.getElementById('timer').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            const timerSpan = document.getElementById('timer');
+            if (timerSpan) timerSpan.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
         
-        function endGame() {
+        function saveGameResult() {
+            if (gameFinished) return Promise.resolve(false);
+            gameFinished = true;
+            
+            const reponsesData = {
+                type: 'attention',
+                total_images: images.length,
+                bonnes_reponses: images.filter(i => i.selected).length,
+                temps_total: timer,
+                score_final: score,
+                reponses: reponsesDonnees
+            };
+            
+            return fetch('/exercice/api/exercice-complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    exercice_id: exerciceId,
+                    enfant_id: 1,
+                    score: score,
+                    temps_passe: timer,
+                    reponses: reponsesData,
+                    reussite: (score > 50)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('✅ Enregistré:', data);
+                return data.success;
+            })
+            .catch(error => {
+                console.error('❌ Erreur:', error);
+                return false;
+            });
+        }
+        
+        function finishGame() {
+            if (!gameActive || gameFinished) return;
+            
             gameActive = false;
             if (timerInterval) clearInterval(timerInterval);
             if (progressTimer) clearInterval(progressTimer);
-            document.getElementById('message').innerHTML = `🎉 Fin du jeu ! Score final : ${score} 🎉`;
-            document.getElementById('message').className = 'message-success';
+            
+            const msgDiv = document.getElementById('message');
+            if (msgDiv) msgDiv.innerHTML = '📝 Sauvegarde en cours...';
+            
+            saveGameResult().then(success => {
+                if (success) {
+                    alert('🎉 Jeu terminé et enregistré !');
+                } else {
+                    alert('⚠️ Jeu terminé mais erreur lors de l\'enregistrement.');
+                }
+                window.location.href = "{{ path('app_front_exercice_index') }}";
+            });
         }
         
-        initGame();
+        // Initialisation
+        if (document.getElementById('attentionGrid')) {
+            initGame();
+        }
     </script>
 {% endblock %}
