@@ -2,9 +2,7 @@
 namespace App\Controller;
 
 use App\Repository\CourRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -13,7 +11,7 @@ final class FrontController extends AbstractController
     #[Route('/index', name: 'app_index')]
     public function index(): Response
     {
-        return $this->render('public/base-front/index.html');
+        return $this->render('front/index.html.twig');
     }
 
     #[Route('/enfant', name: 'app_enfant_cours', methods: ['GET'])]
@@ -37,10 +35,5 @@ final class FrontController extends AbstractController
             'cour' => $cour,
             'lecons' => $cour->getLecons(),
         ]);
-    }
-    #[Route('/index', name: 'app_index')]
-    public function index(): Response
-    {
-        return $this->render('front/index.html.twig');
     }
 }

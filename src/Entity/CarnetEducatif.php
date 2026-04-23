@@ -1,5 +1,4 @@
 <?php
-// src/Entity/CarnetEducatif.php
 
 namespace App\Entity;
 
@@ -19,10 +18,10 @@ class CarnetEducatif
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'carnetEducatifs')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
-    #[Assert\NotNull(message: 'L\'utilisateur est obligatoire.')]
-    private ?Utilisateur $utilisateur = null;
+    // Supprimez complètement cette section :
+    // #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'carnetEducatifs')]
+    // #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id', nullable: true)]
+    // private ?Utilisateur $utilisateur = null;
 
     #[ORM\Column(type: 'date', nullable: false)]
     #[Assert\NotNull(message: 'La date d\'étude est obligatoire.')]
@@ -35,11 +34,10 @@ class CarnetEducatif
 
     #[ORM\Column(type: 'time', nullable: false)]
     #[Assert\NotNull(message: 'L\'heure de fin est obligatoire.')]
-    #[Assert\GreaterThan(propertyPath: 'heure_debut', message: 'L\'heure de fin doit être postérieure à l\'heure de début.')]
     private ?\DateTimeInterface $heure_fin = null;
 
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $duree_totale = null;  // Calculé automatiquement
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $duree_totale = null;
 
     #[ORM\Column(type: 'string', length: 100, nullable: false)]
     #[Assert\NotNull(message: 'Le lieu est obligatoire.')]
@@ -114,13 +112,9 @@ class CarnetEducatif
         $this->created_at = new \DateTime();
     }
 
-    // --- Getters et setters (tous nécessaires) ---
+    // --- Getters et setters (sans utilisateur) ---
 
     public function getId(): ?int { return $this->id; }
-
-    public function getUtilisateur(): ?Utilisateur { return $this->utilisateur; }
-    public function setUtilisateur(?Utilisateur $utilisateur): self
-    { $this->utilisateur = $utilisateur; return $this; }
 
     public function getDateEtude(): ?\DateTimeInterface { return $this->date_etude; }
     public function setDateEtude(?\DateTimeInterface $date_etude): self
@@ -135,8 +129,6 @@ class CarnetEducatif
     { $this->heure_fin = $heure_fin; return $this; }
 
     public function getDureeTotale(): ?int { return $this->duree_totale; }
-    // Pas de setter public car calculé automatiquement (on garde un setter privé ou on le retire)
-    // Mais pour Doctrine, on laisse un setter (utilisé par le callback)
     public function setDureeTotale(?int $duree_totale): self
     { $this->duree_totale = $duree_totale; return $this; }
 
@@ -207,24 +199,28 @@ class CarnetEducatif
     public function calculateDureeTotale(): void
     {
         if ($this->heure_debut && $this->heure_fin) {
-            $diff = $this->heure_debut->diff($this->heure_fin);
-            // $diff->invert = 1 signifie que $this->heure_fin < $this->heure_debut
-            // Dans ce cas, on force une durée nulle ou on laisse la validation l'empêcher
-            if ($diff->invert === 1) {
-                // Si la validation n'a pas déjà bloqué, on met 0 pour éviter une valeur négative
-                $this->duree_totale = 0;
-            } else {
-                $minutes = $diff->h * 60 + $diff->i;
-                $this->duree_totale = $minutes;
+            $debut = clone $this->heure_debut;
+            $fin = clone $this->heure_fin;
+            
+            if ($fin < $debut) {
+                $fin->modify('+1 day');
             }
+            
+            $interval = $debut->diff($fin);
+            $minutes = ($interval->h * 60) + $interval->i;
+            $this->duree_totale = $minutes;
         }
     }
 
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        $this->created_at = new \DateTime();
+        if ($this->created_at === null) {
+            $this->created_at = new \DateTime();
+        }
     }
+
+    // --- Relations ---
 
     public function getCommentaires(): Collection
     {

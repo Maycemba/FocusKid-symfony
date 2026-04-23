@@ -15,23 +15,9 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use Twig\Environment;
 
-#[Route('/carnet_educatif')]
+#[Route('carnet_educatif')]
 final class CarnetEducatifController extends AbstractController
 {
-    #[Route('/stats', name: 'app_carnet_educatif_stats', methods: ['GET'])]
-    public function stats(
-        CarnetEducatifRepository $carnetRepo,
-        CommentaireRepository $commentaireRepo
-    ): Response {
-        $totalCarnets = $carnetRepo->count([]);
-        $totalCommentaires = $commentaireRepo->count([]);
-
-        return $this->render('carnet_educatif/stats.html.twig', [
-            'total_carnets' => $totalCarnets,
-            'total_commentaires' => $totalCommentaires,
-        ]);
-    }
-
     #[Route('/', name: 'app_carnet_educatif_index', methods: ['GET'])]
     public function index(Request $request, CarnetEducatifRepository $carnetEducatifRepository): Response
     {
@@ -76,11 +62,18 @@ final class CarnetEducatifController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $carnetEducatif = new CarnetEducatif();
+        
         $form = $this->createForm(CarnetEducatifType::class, $carnetEducatif);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $carnetEducatif->calculateDureeTotale();
+            $duree = $request->request->all()['carnet_educatif']['duree_totale'] ?? null;
+            if ($duree) {
+                $carnetEducatif->setDureeTotale((int)$duree);
+            } else {
+                $carnetEducatif->calculateDureeTotale();
+            }
+            
             $entityManager->persist($carnetEducatif);
             $entityManager->flush();
             $this->addFlash('success', 'Carnet créé avec succès.');
@@ -115,27 +108,37 @@ final class CarnetEducatifController extends AbstractController
     #[Route('/{id}/pdf', name: 'app_carnet_educatif_pdf', methods: ['GET'])]
     public function downloadPdf(CarnetEducatif $carnetEducatif, Environment $twig): Response
     {
-        $pdfOptions = new Options();
-        $pdfOptions->set('defaultFont', 'Arial');
-        $pdfOptions->set('isHtml5ParserEnabled', true);
-        $pdfOptions->set('isRemoteEnabled', true);
+        try {
+            // Configuration de Dompdf
+            $pdfOptions = new Options();
+            $pdfOptions->set('defaultFont', 'Arial');
+            $pdfOptions->set('isHtml5ParserEnabled', true);
+            $pdfOptions->set('isRemoteEnabled', false); // Désactivé pour éviter les problèmes
+            $pdfOptions->set('chroot', realpath(__DIR__ . '/../../')); // Définit la racine
+            $pdfOptions->set('logOutputFile', false);
+            $pdfOptions->set('isPhpEnabled', false);
 
-        $dompdf = new Dompdf($pdfOptions);
+            $dompdf = new Dompdf($pdfOptions);
 
-        $html = $twig->render('carnet_educatif/pdf.html.twig', [
-            'carnet_educatif' => $carnetEducatif,
-        ]);
+            // Rendu du template
+            $html = $twig->render('carnet_educatif/pdf.html.twig', [
+                'carnet_educatif' => $carnetEducatif,
+            ]);
 
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
+            $dompdf->loadHtml($html, 'UTF-8');
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
 
-        $filename = sprintf('carnet_%d_%s.pdf', $carnetEducatif->getId(), date('Y-m-d'));
+            $filename = sprintf('carnet_%d_%s.pdf', $carnetEducatif->getId(), date('Y-m-d'));
 
-        return new Response($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
-        ]);
+            return new Response($dompdf->output(), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+            ]);
+        } catch (\Exception $e) {
+            // En cas d'erreur, afficher l'erreur pour debug
+            return new Response('Erreur lors de la génération du PDF : ' . $e->getMessage(), 500);
+        }
     }
 
     #[Route('/{id}', name: 'app_carnet_educatif_show', methods: ['GET'])]

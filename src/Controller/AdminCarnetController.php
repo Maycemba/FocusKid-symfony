@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\CarnetEducatif;
 use App\Form\CarnetEducatifType;
 use App\Repository\CarnetEducatifRepository;
-use App\Repository\CommentaireRepository;   // ← à importer
+use App\Repository\CommentaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,18 +19,16 @@ class AdminCarnetController extends AbstractController
     public function index(
         Request $request,
         CarnetEducatifRepository $repository,
-        CommentaireRepository $commentaireRepository   // ← injection
+        CommentaireRepository $commentaireRepository
     ): Response {
         $search = $request->query->get('search');
         $matiere = $request->query->get('matiere');
         $travailTermine = $request->query->get('travail_termine');
 
-        $qb = $repository->createQueryBuilder('c')
-            ->leftJoin('c.utilisateur', 'u')
-            ->addSelect('u');
+        $qb = $repository->createQueryBuilder('c');
 
         if ($search) {
-            $qb->andWhere('c.matiere LIKE :search OR c.contenu LIKE :search OR c.lieu LIKE :search')
+            $qb->andWhere('c.matiere LIKE :search OR c.type_activite LIKE :search OR c.lieu LIKE :search')
                ->setParameter('search', '%'.$search.'%');
         }
         if ($matiere) {
@@ -38,7 +36,7 @@ class AdminCarnetController extends AbstractController
                ->setParameter('matiere', $matiere);
         }
         if ($travailTermine !== null && $travailTermine !== '') {
-            $qb->andWhere('c.travailTermine = :tt')
+            $qb->andWhere('c.travail_termine = :tt')
                ->setParameter('tt', (bool) $travailTermine);
         }
 
@@ -49,9 +47,8 @@ class AdminCarnetController extends AbstractController
             ->getQuery()
             ->getSingleColumnResult();
 
-        // --- Statistiques pour les graphiques ---
-        $totalCarnets = $repository->count([]);               // total des carnets
-        $totalCommentaires = $commentaireRepository->count([]); // total des commentaires
+        $totalCarnets = $repository->count([]);
+        $totalCommentaires = $commentaireRepository->count([]);
 
         return $this->render('AdminCarnet/indexAdmin.html.twig', [
             'carnets' => $carnets,
@@ -61,6 +58,56 @@ class AdminCarnetController extends AbstractController
             'travail_termine' => $travailTermine,
             'total_carnets' => $totalCarnets,
             'total_commentaires' => $totalCommentaires,
+        ]);
+    }
+
+    #[Route('/statistiques', name: 'stats', methods: ['GET'])]  // ← Route corrigée
+    public function stats(
+        CarnetEducatifRepository $carnetRepo,
+        CommentaireRepository $commentaireRepo
+    ): Response {
+        $totalCarnets = $carnetRepo->count([]);
+        $totalCommentaires = $commentaireRepo->count([]);
+        
+        $statsParMatiere = $carnetRepo->createQueryBuilder('c')
+            ->select('c.matiere, COUNT(c.id) as count')
+            ->groupBy('c.matiere')
+            ->getQuery()
+            ->getResult();
+        
+        $statsParMatiereArray = [];
+        foreach ($statsParMatiere as $stat) {
+            $statsParMatiereArray[$stat['matiere']] = $stat['count'];
+        }
+        
+        $statsConcentration = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $count = $carnetRepo->createQueryBuilder('c')
+                ->select('COUNT(c.id)')
+                ->where('c.niveau_concentration = :niveau')
+                ->setParameter('niveau', $i)
+                ->getQuery()
+                ->getSingleScalarResult();
+            $statsConcentration[$i] = $count;
+        }
+        
+        $totalTermine = $carnetRepo->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->where('c.travail_termine = :termine')
+            ->setParameter('termine', true)
+            ->getQuery()
+            ->getSingleScalarResult();
+        
+        $tauxTermine = $totalCarnets > 0 ? round(($totalTermine / $totalCarnets) * 100, 2) : 0;
+        
+        return $this->render('AdminCarnet/stats.html.twig', [
+            'total_carnets' => $totalCarnets,
+            'total_commentaires' => $totalCommentaires,
+            'stats_par_matiere' => $statsParMatiereArray,
+            'stats_concentration' => $statsConcentration,
+            'taux_termine' => $tauxTermine,
+            'total_termine' => $totalTermine,
+            'total_non_termine' => $totalCarnets - $totalTermine,
         ]);
     }
 

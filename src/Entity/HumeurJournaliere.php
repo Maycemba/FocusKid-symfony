@@ -16,9 +16,9 @@ class HumeurJournaliere
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Emotion::class, inversedBy: 'humeurJournalieres')]
+    /*#[ORM\ManyToOne(targetEntity: Emotion::class, inversedBy: 'humeurJournalieres')]
     #[ORM\JoinColumn(name: 'emotionId', referencedColumnName: 'id')]
-    private ?Emotion $emotion = null;
+    private ?Emotion $emotion = null;*/
 
     #[ORM\Column(type: 'datetime', nullable: true, name: 'dateHeure')]
     private ?\DateTimeInterface $dateHeure = null;

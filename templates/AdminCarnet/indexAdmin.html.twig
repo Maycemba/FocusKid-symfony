@@ -58,31 +58,7 @@
     align-items: center;
     gap: 0.3rem;
   }
-  /* Styles pour les cartes de statistiques */
-  .stats-card {
-    background: white;
-    border-radius: 24px;
-    padding: 1.5rem;
-    text-align: center;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.03);
-    transition: 0.2s;
-    border: 1px solid #eef2f8;
-  }
-  .stats-card .number {
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: #1e2a5e;
-  }
-  .stats-card .label {
-    font-size: 0.9rem;
-    color: #6c7a91;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .stats-card .icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-  }
+  
 </style>
 {% endblock %}
 
@@ -95,37 +71,22 @@
             <a href="{{ path('admin_commentaire_index') }}" class="btn btn-outline-info me-2">
                 💬 Commentaires
             </a>
+            <!-- URL CORRIGÉE - Utilisation du bon nom de route 'admin_carnet_stats' -->
+            <a href="{{ path('admin_carnet_stats') }}" class="btn btn-outline-success me-2">
+                📊 Statistiques
+            </a>
             <a href="{{ path('admin_carnet_index') }}" class="btn btn-outline-secondary">⟳ Actualiser</a>
         </div>
     </div>
 
-    <!-- ========== SECTION STATISTIQUES + GRAPHIQUE ========== -->
-    <div class="row mb-4">
-        <!-- Carte Total Carnets -->
-        <div class="col-md-3">
-            <div class="stats-card">
-                <div class="icon">📘</div>
-                <div class="number">{{ total_carnets|default(0) }}</div>
-                <div class="label">Carnets éducatifs</div>
-            </div>
-        </div>
-        <!-- Carte Total Commentaires -->
-        <div class="col-md-3">
-            <div class="stats-card">
-                <div class="icon">💬</div>
-                <div class="number">{{ total_commentaires|default(0) }}</div>
-                <div class="label">Commentaires</div>
-            </div>
-        </div>
-        
-    </div>
+    
 
     <!-- Filtres -->
     <div class="admin-filter-bar mb-4">
         <form method="get" class="row g-3">
             <div class="col-md-4">
                 <label class="form-label fw-semibold">🔍 Recherche</label>
-                <input type="text" name="search" class="form-control" placeholder="Matière, contenu, lieu..." value="{{ search|default('') }}">
+                <input type="text" name="search" class="form-control" placeholder="Matière, type activité, lieu..." value="{{ search|default('') }}">
             </div>
             <div class="col-md-3">
                 <label class="form-label fw-semibold">📚 Matière</label>
@@ -162,7 +123,6 @@
                         <th>Durée (min)</th>
                         <th>Concentration</th>
                         <th>Travail terminé</th>
-                        <th>Utilisateur</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -175,9 +135,9 @@
                         <td>{{ carnet.dureeTotale ?? '—' }}</td>
                         <td>
                             {% if carnet.niveauConcentration is defined %}
-                                {{ carnet.niveauConcentration }}/10
+                                {{ carnet.niveauConcentration }}/5
                                 <div class="progress mt-1" style="height: 4px;">
-                                    <div class="progress-bar bg-success" style="width: {{ carnet.niveauConcentration * 10 }}%"></div>
+                                    <div class="progress-bar bg-success" style="width: {{ carnet.niveauConcentration * 20 }}%"></div>
                                 </div>
                             {% else %}
                                 —
@@ -190,7 +150,6 @@
                                 <span class="badge-status no">⏳ Non terminé</span>
                             {% endif %}
                         </td>
-                        <td>{{ carnet.utilisateur ? carnet.utilisateur.email : 'N/A' }}</td>
                         <td>
                             <div class="d-flex justify-content-end gap-1">
                                 <a href="{{ path('admin_carnet_show', {id: carnet.id}) }}"
@@ -203,7 +162,7 @@
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="8" class="text-center py-5 text-muted">Aucun carnet trouvé.</td>
+                        <td colspan="7" class="text-center py-5 text-muted">Aucun carnet trouvé.</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -212,5 +171,3 @@
     </div>
 </div>
 {% endblock %}
-
-

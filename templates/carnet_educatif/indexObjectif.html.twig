@@ -1,0 +1,290 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Gestion des objectifs{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .objectif-card {
+        transition: transform 0.2s;
+        margin-bottom: 20px;
+    }
+    .objectif-card:hover {
+        transform: translateY(-5px);
+    }
+    .progress-bar-custom {
+        height: 8px;
+        border-radius: 4px;
+        background: #e8ecf5;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #1CC88A, #4E73DF);
+        border-radius: 4px;
+        transition: width 0.3s;
+    }
+    .stat-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .stat-en-cours { background: #e3f2fd; color: #1976d2; }
+    .stat-atteint { background: #d4f7ec; color: #0a7a52; }
+    .stat-non-atteint { background: #fdecea; color: #c0392b; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">🎯 Gestion des objectifs</h1>
+            
+            <!-- Statistiques -->
+            <div class="row mb-4" id="statsContainer">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 id="totalCount">0</h3>
+                            <p class="text-muted">Total objectifs</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 id="encoursCount" class="text-primary">0</h3>
+                            <p class="text-muted">En cours</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 id="atteintCount" class="text-success">0</h3>
+                            <p class="text-muted">Atteints</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 id="nonAtteintCount" class="text-danger">0</h3>
+                            <p class="text-muted">Non atteints</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Formulaire de création -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">➕ Créer un nouvel objectif</h5>
+                </div>
+                <div class="card-body">
+                    <form id="objectifForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Description</label>
+                                <input type="text" id="description" class="form-control" required 
+                                       placeholder="Ex: Lire 15 min chaque jour">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Date début</label>
+                                <input type="date" id="date_debut" class="form-control" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Date fin</label>
+                                <input type="date" id="date_fin" class="form-control" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Créer l'objectif
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Liste des objectifs -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">📋 Liste des objectifs</h5>
+                </div>
+                <div class="card-body">
+                    <div id="objectifsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Charger les statistiques
+    async function chargerStats() {
+        try {
+            const response = await fetch('/objectifs/api/stats');
+            const stats = await response.json();
+            
+            document.getElementById('totalCount').textContent = stats.total;
+            document.getElementById('encoursCount').textContent = stats.en_cours;
+            document.getElementById('atteintCount').textContent = stats.atteint;
+            document.getElementById('nonAtteintCount').textContent = stats.non_atteint;
+        } catch (error) {
+            console.error('Erreur stats:', error);
+        }
+    }
+    
+    // Charger les objectifs
+    async function chargerObjectifs() {
+        try {
+            const response = await fetch('/objectifs/api');
+            const objectifs = await response.json();
+            
+            const container = document.getElementById('objectifsList');
+            if (objectifs.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">Aucun objectif pour le moment. Créez-en un !</div>';
+                return;
+            }
+            
+            container.innerHTML = objectifs.map(obj => `
+                <div class="card objectif-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <h6 class="mb-1">${obj.description}</h6>
+                                <small class="text-muted">
+                                    📅 ${obj.date_debut} → ${obj.date_fin}
+                                </small>
+                                ${obj.jours_restants ? `<br><small>⏳ Plus que ${obj.jours_restants} jours</small>` : ''}
+                            </div>
+                            <div class="col-md-3">
+                                <div class="progress-bar-custom mb-2">
+                                    <div class="progress-fill" style="width: ${obj.progression}%"></div>
+                                </div>
+                                <small>Progression: ${obj.progression}%</small>
+                            </div>
+                            <div class="col-md-2">
+                                <span class="stat-badge stat-${obj.statut.toLowerCase().replace('_', '-')}">
+                                    ${obj.statut_label}
+                                </span>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                ${obj.statut === 'EN_COURS' ? `
+                                    <button onclick="updateStatut(${obj.id}, 'ATTEINT')" class="btn btn-success btn-sm me-2">
+                                        ✅ Atteint
+                                    </button>
+                                    <button onclick="updateStatut(${obj.id}, 'NON_ATTEINT')" class="btn btn-danger btn-sm">
+                                        ❌ Non atteint
+                                    </button>
+                                ` : `
+                                    <button onclick="supprimerObjectif(${obj.id})" class="btn btn-outline-danger btn-sm">
+                                        🗑️ Supprimer
+                                    </button>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Erreur chargement:', error);
+        }
+    }
+    
+    // Créer un objectif
+    document.getElementById('objectifForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const data = {
+            description: document.getElementById('description').value,
+            date_debut: document.getElementById('date_debut').value,
+            date_fin: document.getElementById('date_fin').value
+        };
+        
+        if (!data.description || !data.date_debut || !data.date_fin) {
+            alert('Veuillez remplir tous les champs');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/objectifs/api', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                alert('Objectif créé avec succès !');
+                document.getElementById('objectifForm').reset();
+                chargerObjectifs();
+                chargerStats();
+            } else {
+                const error = await response.json();
+                alert('Erreur: ' + (error.errors?.join(', ') || 'Problème lors de la création'));
+            }
+        } catch (error) {
+            alert('Erreur réseau: ' + error.message);
+        }
+    });
+    
+    // Mettre à jour le statut
+    async function updateStatut(id, statut) {
+        try {
+            const response = await fetch(`/objectifs/api/${id}/statut`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({statut: statut})
+            });
+            
+            if (response.ok) {
+                alert(`Objectif marqué comme ${statut === 'ATTEINT' ? 'atteint' : 'non atteint'} !`);
+                chargerObjectifs();
+                chargerStats();
+            } else {
+                alert('Erreur lors de la mise à jour du statut');
+            }
+        } catch (error) {
+            alert('Erreur réseau: ' + error.message);
+        }
+    }
+    
+    // Supprimer un objectif
+    async function supprimerObjectif(id) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer cet objectif ?')) return;
+        
+        try {
+            const response = await fetch(`/objectifs/api/${id}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                alert('Objectif supprimé avec succès !');
+                chargerObjectifs();
+                chargerStats();
+            } else {
+                alert('Erreur lors de la suppression');
+            }
+        } catch (error) {
+            alert('Erreur réseau: ' + error.message);
+        }
+    }
+    
+    // Initialiser les dates par défaut
+    const aujourdhui = new Date().toISOString().split('T')[0];
+    const dans7Jours = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
+    document.getElementById('date_debut').value = aujourdhui;
+    document.getElementById('date_fin').value = dans7Jours;
+    
+    // Charger au démarrage
+    chargerObjectifs();
+    chargerStats();
+    
+    // Rafraîchir toutes les 30 secondes
+    setInterval(() => {
+        chargerObjectifs();
+        chargerStats();
+    }, 30000);
+</script>
+{% endblock %}

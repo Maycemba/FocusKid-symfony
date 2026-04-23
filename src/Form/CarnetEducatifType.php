@@ -1,5 +1,4 @@
 <?php
-// src/Form/CarnetEducatifType.php
 
 namespace App\Form;
 
@@ -24,33 +23,37 @@ class CarnetEducatifType extends AbstractType
                 'label' => '📅 Date d\'étude',
                 'widget' => 'single_text',
                 'required' => true,
+                'data' => new \DateTime(),
                 'attr' => ['class' => 'form-control form-control-lg rounded-3'],
             ])
             ->add('heure_debut', TimeType::class, [
                 'label' => '⏰ Heure de début',
                 'widget' => 'single_text',
                 'required' => true,
+                'data' => new \DateTime('09:00'),
                 'attr' => [
                     'class' => 'form-control form-control-lg rounded-3',
-                    'id' => 'heure_debut'   // ID fixe
+                    'id' => 'carnet_educatif_heure_debut'
                 ],
             ])
             ->add('heure_fin', TimeType::class, [
                 'label' => '⏰ Heure de fin',
                 'widget' => 'single_text',
                 'required' => true,
+                'data' => new \DateTime('10:00'),
                 'attr' => [
                     'class' => 'form-control form-control-lg rounded-3',
-                    'id' => 'heure_fin'     // ID fixe
+                    'id' => 'carnet_educatif_heure_fin'
                 ],
             ])
             ->add('duree_totale', IntegerType::class, [
                 'label' => '⏱️ Durée totale (minutes)',
                 'required' => false,
+                'mapped' => false,
                 'attr' => [
                     'class' => 'form-control form-control-lg rounded-3',
                     'readonly' => true,
-                    'id' => 'duree_totale'  // ID fixe
+                    'id' => 'carnet_educatif_duree_totale'
                 ],
             ])
             ->add('lieu', TextType::class, [
@@ -63,10 +66,18 @@ class CarnetEducatifType extends AbstractType
                 'required' => true,
                 'attr' => ['class' => 'form-control form-control-lg rounded-3'],
             ])
-            ->add('type_activite', TextareaType::class, [
+            ->add('type_activite', ChoiceType::class, [
                 'label' => '🎯 Type d\'activité',
                 'required' => true,
-                'attr' => ['class' => 'form-control rounded-3', 'rows' => 3],
+                'choices' => [
+                    'Jeu' => 'jeu',
+                    'Quiz' => 'quiz',
+                    'Exercice' => 'exercice',
+                    'Cours' => 'cours',
+                    'Question' => 'question'
+                ],
+                'placeholder' => '-- Choisissez un type --',
+                'attr' => ['class' => 'form-select form-select-lg rounded-3'],
             ])
             ->add('niveau_difficulte', ChoiceType::class, [
                 'label' => '⚡ Niveau de difficulté',
@@ -109,10 +120,17 @@ class CarnetEducatifType extends AbstractType
                 'required' => true,
                 'attr' => ['class' => 'form-control form-control-lg rounded-3', 'min' => 1, 'max' => 5],
             ])
-            ->add('travail_termine', CheckboxType::class, [
-                'label' => '✅ Travail terminé',
-                'required' => false,
-                'attr' => ['class' => 'form-check-input'],
+            ->add('travail_termine', ChoiceType::class, [
+                'label' => '✅ Statut du travail',
+                'required' => true,
+                'choices' => [
+                    '✔️ Terminé' => '1',
+                    '❌ Non terminé' => '0',
+                ],
+                'expanded' => true,
+                'multiple' => false,
+                'data' => '1',
+                'attr' => ['class' => 'travail-statut-radio'],
             ])
             ->add('difficultes', TextareaType::class, [
                 'label' => '⚠️ Difficultés rencontrées',
