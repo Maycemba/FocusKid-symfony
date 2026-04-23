@@ -6,7 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\SessionsDeCalmeRepository;
 
 #[ORM\Entity(repositoryClass: SessionsDeCalmeRepository::class)]
@@ -29,9 +29,9 @@ class SessionsDeCalme
         return $this;
     }
 
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'sessionsDeCalmes')]
-    #[ORM\JoinColumn(name: 'enfant_id', referencedColumnName: 'id')]
-    private ?Utilisateur $utilisateur = null;
+   #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'sessionsDeCalmes')]
+#[ORM\JoinColumn(name: 'enfant_id', referencedColumnName: 'id')]   // ← corrigé
+private ?Utilisateur $utilisateur = null;
 
     public function getUtilisateur(): ?Utilisateur
     {
@@ -44,9 +44,13 @@ class SessionsDeCalme
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $type_activite = null;
-
+   #[Assert\NotBlank(message: "Le type d'activité est obligatoire")]
+#[Assert\Choice(
+    choices: ["musique", "coloriage", "respiration", "histoire"],
+    message: "Choisissez une activité valide"
+)]
+#[ORM\Column(type: 'string', nullable: true)]
+private ?string $type_activite = null;
     public function getType_activite(): ?string
     {
         return $this->type_activite;
@@ -58,9 +62,13 @@ class SessionsDeCalme
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $declencheur = null;
-
+    #[Assert\NotBlank(message: "Le déclencheur est obligatoire")]
+#[Assert\Choice(
+    choices: ["enfant", "parent"],
+    message: "Choisissez 'enfant' ou 'parent'"
+)]
+#[ORM\Column(type: 'string', nullable: true)]
+private ?string $declencheur = null;
     public function getDeclencheur(): ?string
     {
         return $this->declencheur;
@@ -71,10 +79,10 @@ class SessionsDeCalme
         $this->declencheur = $declencheur;
         return $this;
     }
-
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $duree_prevue = null;
-
+#[Assert\NotNull(message: "La durée prévue est obligatoire")]
+#[Assert\Positive(message: "La durée doit être positive")]
+#[ORM\Column(type: 'integer', nullable: true)]
+private ?int $duree_prevue = null;
     public function getDuree_prevue(): ?int
     {
         return $this->duree_prevue;
@@ -85,10 +93,9 @@ class SessionsDeCalme
         $this->duree_prevue = $duree_prevue;
         return $this;
     }
-
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $duree_reelle = null;
-
+#[Assert\PositiveOrZero(message: "La durée réelle doit être positive ou zéro")]
+#[ORM\Column(type: 'integer', nullable: true)]
+private ?int $duree_reelle = null;
     public function getDuree_reelle(): ?int
     {
         return $this->duree_reelle;
@@ -100,9 +107,10 @@ class SessionsDeCalme
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
-    private ?\DateTimeInterface $horodatage = null;
-
+   #[Assert\NotNull(message: "La date est obligatoire")]
+#[Assert\Type(\DateTimeInterface::class, message: "Date invalide")]
+#[ORM\Column(type: 'datetime', nullable: false)]
+private ?\DateTimeInterface $horodatage = null;
     public function getHorodatage(): ?\DateTimeInterface
     {
         return $this->horodatage;
@@ -113,10 +121,13 @@ class SessionsDeCalme
         $this->horodatage = $horodatage;
         return $this;
     }
-
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $feedback_enfant = null;
-
+#[Assert\Range(
+    min: 1,
+    max: 5,
+    notInRangeMessage: "Le feedback doit être entre 1 et 5"
+)]
+#[ORM\Column(type: 'integer', nullable: true)]
+private ?int $feedback_enfant = null;
     public function getFeedback_enfant(): ?int
     {
         return $this->feedback_enfant;
@@ -127,10 +138,12 @@ class SessionsDeCalme
         $this->feedback_enfant = $feedback_enfant;
         return $this;
     }
-
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $note_parent = null;
-
+#[Assert\Length(
+    max: 255,
+    maxMessage: "La note ne doit pas dépasser 255 caractères"
+)]
+#[ORM\Column(type: 'text', nullable: true)]
+private ?string $note_parent = null;
     public function getNote_parent(): ?string
     {
         return $this->note_parent;

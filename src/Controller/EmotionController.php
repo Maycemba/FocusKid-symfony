@@ -30,9 +30,14 @@ final class EmotionController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $file = $form->get('photo')->getData();
+            if ($file) {
+                $emotion->setPhoto($file);
+            }
             $entityManager->persist($emotion);
             $entityManager->flush();
 
+            $this->addFlash('success', 'Émotion créée avec succès !');
             return $this->redirectToRoute('app_emotion_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -57,8 +62,15 @@ final class EmotionController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $file = $form->get('photo')->getData();
+            
+            if ($file) {
+                $emotion->setPhoto($file);
+            }
+            
             $entityManager->flush();
 
+            $this->addFlash('success', 'Émotion modifiée avec succès !');
             return $this->redirectToRoute('app_emotion_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -74,6 +86,7 @@ final class EmotionController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$emotion->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($emotion);
             $entityManager->flush();
+            $this->addFlash('success', 'Émotion supprimée avec succès !');
         }
 
         return $this->redirectToRoute('app_emotion_index', [], Response::HTTP_SEE_OTHER);

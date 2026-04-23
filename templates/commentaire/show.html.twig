@@ -1,34 +1,44 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-front.html.twig' %}
 
-{% block title %}Commentaire{% endblock %}
+{% block title %}Commentaire #{{ commentaire.id }}{% endblock %}
 
 {% block body %}
-    <h1>Commentaire</h1>
-
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ commentaire.id }}</td>
-            </tr>
-            <tr>
-                <th>Date_commentaire</th>
-                <td>{{ commentaire.dateCommentaire ? commentaire.dateCommentaire|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Texte_commentaire</th>
-                <td>{{ commentaire.texteCommentaire }}</td>
-            </tr>
-            <tr>
-                <th>Type_commentaire</th>
-                <td>{{ commentaire.typeCommentaire }}</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_commentaire_index') }}">back to list</a>
-
-    <a href="{{ path('app_commentaire_edit', {'id': commentaire.id}) }}">edit</a>
-
-    {{ include('commentaire/_delete_form.html.twig') }}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-gradient-info text-white rounded-top-4">
+                    <h3 class="mb-0">💬 Détail du commentaire</h3>
+                </div>
+                <div class="card-body p-4">
+                    <dl class="row">
+                        <dt class="col-sm-4">Date</dt>
+                        <dd class="col-sm-8">{{ commentaire.dateCommentaire|date('d/m/Y H:i') }}</dd>
+                        <dt class="col-sm-4">Type</dt>
+                        <dd class="col-sm-8"><span class="badge bg-secondary">{{ commentaire.typeCommentaire|capitalize }}</span></dd>
+                        <dt class="col-sm-4">Commentaire</dt>
+                        <dd class="col-sm-8">{{ commentaire.texteCommentaire|nl2br }}</dd>
+                        <dt class="col-sm-4">Carnet lié</dt>
+                        <dd class="col-sm-8">
+                            {% if commentaire.carnetEducatif %}
+                                <a href="{{ path('app_carnet_educatif_show', {'id': commentaire.carnetEducatif.id}) }}" class="text-decoration-none">
+                                    Carnet #{{ commentaire.carnetEducatif.id }} - {{ commentaire.carnetEducatif.matiere }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Carnet non trouvé (supprimé)</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+                <div class="card-footer bg-light d-flex justify-content-between">
+                    <a href="{{ path('app_commentaire_index') }}" class="btn btn-outline-secondary">← Retour</a>
+                    <div>
+                        <a href="{{ path('app_commentaire_edit', {'id': commentaire.id}) }}" class="btn btn-warning">Modifier</a>
+                        {{ include('commentaire/_delete_form.html.twig') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

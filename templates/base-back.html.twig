@@ -4,10 +4,38 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Fokuskid Admin - Dashboard{% endblock %}</title>
-    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/favicon.png') }}" />
+    <title>{% block title %}FocusKids Admin - Dashboard{% endblock %}</title>
+    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/logo.png') }}" />
     <link rel="stylesheet" href="{{ asset('base-back/assets/css/styles.min.css') }}" />
     {% block stylesheets %}{% endblock %}
+    <style>
+        /* Style pour minimiser le logo */
+        .brand-logo img {
+            height: 60px !important;
+            width: auto !important;
+            max-width: 150px !important;
+            object-fit: contain;
+        }
+        .brand-logo a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        .brand-logo span {
+            font-size: 18px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        /* Cacher le header (app-header) */
+        .app-header {
+            display: none !important;
+        }
+        /* Ajuster le body-wrapper pour qu'il prenne toute la place */
+        .body-wrapper {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -15,18 +43,21 @@
     <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
         data-sidebar-position="fixed" data-header-position="fixed">
 
-       
         <div class="app-topstrip bg-dark py-3 px-4 w-100 d-lg-flex align-items-center justify-content-between">
-           
+            <div class="text-white">
+                <small>🌟 FocusKids - Plateforme éducative pour enfants</small>
+            </div>
+            <div class="text-white-50">
+                <small>📅 {{ 'now'|date('d/m/Y') }}</small>
+            </div>
         </div>
 
-      
         <aside class="left-sidebar">
-           
             <div>
-                <div class="brand-logo d-flex align-items-center justify-content-between">
-                    <a  class="text-nowrap logo-img">
-                        <img src="{{ asset('base-back/assets/images/logos/logo.svg') }}" alt="" />
+                <div class="brand-logo d-flex align-items-center justify-content-between px-3 py-2">
+                    <a class="text-nowrap logo-img d-flex align-items-center" href="#">
+                        <img src="{{ asset('base-back/assets/images/logos/logo.png') }}" alt="FocusKids" />
+                        <span class="fw-bold text-primary">FocusKids</span>
                     </a>
                     <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
                         <i class="ti ti-x fs-8"></i>
@@ -35,164 +66,110 @@
                 
                 <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
                     <ul id="sidebarnav">
+                        <!-- Dashboard -->
                         <li class="nav-small-cap">
                             <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
-                            <span class="hide-menu">Home</span>
+                            <span class="hide-menu">Navigation</span>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg" aria-expanded="false">
-                                <iconify-icon icon="solar:atom-line-duotone"></iconify-icon>
-                                <span class="hide-menu">Dashboard</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg justify-content-between" href="#" aria-expanded="false">
-                                <div class="d-flex align-items-center gap-6">
-                                    <span class="d-flex">
-                                        <iconify-icon icon="solar:screencast-2-line-duotone" class=""></iconify-icon>
-                                    </span>
-                                    <span class="hide-menu">Dashboard 1</span>
-                                </div>
-                                <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg justify-content-between" href="#" aria-expanded="false">
-                                <div class="d-flex align-items-center gap-6">
-                                    <span class="d-flex">
-                                        <iconify-icon icon="solar:chart-line-duotone" class=""></iconify-icon>
-                                    </span>
-                                    <span class="hide-menu">Dashboard 2</span>
-                                </div>
-                                <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg justify-content-between has-arrow" href="javascript:void(0)" aria-expanded="false">
-                                <div class="d-flex align-items-center gap-6">
-                                    <span class="d-flex">
-                                        <iconify-icon icon="solar:home-angle-line-duotone"></iconify-icon>
-                                    </span>
-                                    <span class="hide-menu">Front Pages</span>
-                                </div>
-                            </a>
-                            <ul aria-expanded="false" class="collapse first-level">
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">Homepage</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">About Us</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">Blog</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">Blog Details</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">Contact Us</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">Portfolio</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">Pricing</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        
-                        <li class="nav-small-cap">
-                            <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
-                            <span class="hide-menu">UI</span>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg" href="#" aria-expanded="false">
-                                <iconify-icon icon="solar:layers-minimalistic-bold-duotone"></iconify-icon>
-                                <span class="hide-menu">Buttons</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg" href="#" aria-expanded="false">
-                                <iconify-icon icon="solar:danger-circle-line-duotone"></iconify-icon>
-                                <span class="hide-menu">Alerts</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg" href="#" aria-expanded="false">
-                                <iconify-icon icon="solar:bookmark-square-minimalistic-line-duotone"></iconify-icon>
-                                <span class="hide-menu">Card</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg" href="#" aria-expanded="false">
-                                <iconify-icon icon="solar:file-text-line-duotone"></iconify-icon>
-                                <span class="hide-menu">Forms</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg" href="#" aria-expanded="false">
-                                <iconify-icon icon="solar:text-field-focus-line-duotone"></iconify-icon>
-                                <span class="hide-menu">Typography</span>
+                            <a href="#" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                                <iconify-icon icon="solar:home-2-line-duotone"></iconify-icon>
+                                <span class="hide-menu">Tableau de bord</span>
                             </a>
                         </li>
                         
+<<<<<<< HEAD
+=======
+                        <!-- Module 1: EXERCICES -->
+                        <li class="nav-small-cap">
+                            <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+                            <span class="hide-menu">Gestion Pédagogique</span>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="{{ path('app_exercice_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                                <iconify-icon icon="solar:notebook-bookmark-line-duotone"></iconify-icon>
+                                <span class="hide-menu">Exercices</span>
+                            </a>
+                        </li>
+                        
+                        <!-- Module 2: JEUX -->
+                        <li class="sidebar-item">
+                            <a href="{{ path('app_jeu_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                                <iconify-icon icon="solar:gamepad-line-duotone"></iconify-icon>
+                                <span class="hide-menu">Jeux</span>
+                            </a>
+                        </li>
+                        
+                        <!-- Module 3: SESSIONS DE CALME -->
+                        <li class="sidebar-item">
+                            <a href="{{ path('app_sessions_de_calme_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                                <iconify-icon icon="solar:meditation-line-duotone"></iconify-icon>
+                                <span class="hide-menu">Session calme</span>
+                            </a>
+                        </li>
+                        
+                        <!-- Module 4: COURS / LEÇONS -->
+                        <li class="sidebar-item">
+    <a href="{{ path('app_cour_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+        <iconify-icon icon="solar:notebook-line-duotone"></iconify-icon>
+        <span class="hide-menu">Cours</span>
+    </a>
+</li>
+                        
+                        <!-- Module 5: CARNET ÉDUCATIF -->
+                        <li class="sidebar-item">
+                            <a href="{{ path('app_carnet_educatif_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                                <iconify-icon icon="solar:diploma-line-duotone"></iconify-icon>
+                                <span class="hide-menu">Carnet éducatif</span>
+                            </a>
+                        </li>
+                        
+                        <!-- Module 6: ÉMOTIONS -->
+                        <li class="sidebar-item">
+                            <a href="{{ path('app_emotion_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                                <iconify-icon icon="solar:emoji-funny-square-line-duotone"></iconify-icon>
+                                <span class="hide-menu">Émotions</span>
+                            </a>
+                        </li>
+                        
+                        <!-- Module 7: SCÉNARIOS -->
+                        <li class="sidebar-item">
+                            <a href="{{ path('app_scenario_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                             <iconify-icon icon="solar:clapperboard-line-duotone"></iconify-icon>
+                                <span class="hide-menu">Scénarios</span>
+                            </a>
+                        </li>
+                        
+<!-- Module 8: HUMEUR JOURNALIÈRE -->
+<li class="sidebar-item">
+    <a href="{{ path('app_humeur_journaliere_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+        <iconify-icon icon="solar:smile-circle-line-duotone"></iconify-icon>
+        <span class="hide-menu">Humeur journalière</span>
+    </a>
+</li>
+                        
+                        <!-- Module 9: UTILISATEURS -->
+                        <li class="nav-small-cap">
+                            <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+                            <span class="hide-menu">Administration</span>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="{{ path('app_utilisateur_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                                <iconify-icon icon="solar:users-group-rounded-line-duotone"></iconify-icon>
+                                <span class="hide-menu">Utilisateurs</span>
+                            </a>
+                        </li>
+                        
+                        <div class="unlimited-access d-flex align-items-center hide-menu bg-secondary-subtle position-relative mb-7 mt-4 p-3 rounded-3">
+                            <div class="flex-shrink-0">
+                                <h6 class="fw-semibold fs-4 mb-6 text-dark w-75 lh-sm">FocusKids</h6>
+                                <p class="small text-muted">Version 1.0</p>
+                            </div>
+                            <div class="unlimited-access-img">
+                                <img src="{{ asset('assets/images/backgrounds/sidebar-buynow-bg.png') }}" alt="" class="img-fluid">
+                            </div>
+                        </div>
+>>>>>>> df43c5a6cc765f9b57be2fe1e217ce72be42d22e
                     </ul>
                 </nav>
             </div>
@@ -201,6 +178,7 @@
         <div class="body-wrapper">
             <div class="body-wrapper-inner">
                 <div class="container-fluid">
+<<<<<<< HEAD
                   <header class="app-header">
                         <nav class="navbar navbar-expand-lg navbar-light">
                             <ul class="navbar-nav">
@@ -251,100 +229,17 @@
                         </nav>
                     </header>
                    
+=======
+                    <!-- Header complètement supprimé -->
+                    
+>>>>>>> df43c5a6cc765f9b57be2fe1e217ce72be42d22e
                     {% block body %}
-                    <div class="row">
-                        <div class="col-lg-8 d-flex align-items-strech">
-                            <div class="card w-100">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center justify-content-between mb-1">
-                                        <div class="">
-                                            <h5 class="card-title fw-semibold">Profit Expenses</h5>
-                                        </div>
-                                        <div class="dropdown">
-                                            <button id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" class="rounded-circle btn-transparent rounded-circle btn-sm px-1 btn shadow-none">
-                                                <i class="ti ti-dots-vertical fs-7 d-block"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton1">
-                                                <li><a class="dropdown-item" href="#">Action</a></li>
-                                                <li><a class="dropdown-item" href="#">Another action</a></li>
-                                                <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div id="profit"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="row">
-                                <div class="col-lg-12 col-sm-6">
-                                    <div class="card overflow-hidden">
-                                        <div class="card-body p-4">
-                                            <h5 class="card-title mb-10 fw-semibold">Traffic Distribution</h5>
-                                            <div class="row align-items-center">
-                                                <div class="col-7">
-                                                    <h4 class="fw-semibold mb-3">36,358</h4>
-                                                    <div class="d-flex align-items-center mb-2">
-                                                        <span class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
-                                                            <i class="ti ti-arrow-up-left text-success"></i>
-                                                        </span>
-                                                        <p class="text-dark me-1 fs-3 mb-0">+9%</p>
-                                                        <p class="fs-3 mb-0">last year</p>
-                                                    </div>
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="me-3">
-                                                            <span class="round-8 bg-primary rounded-circle me-2 d-inline-block"></span>
-                                                            <span class="fs-2">Organic</span>
-                                                        </div>
-                                                        <div>
-                                                            <span class="round-8 bg-danger rounded-circle me-2 d-inline-block"></span>
-                                                            <span class="fs-2">Referral</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-5">
-                                                    <div class="d-flex justify-content-center">
-                                                        <div id="grade"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-12 col-sm-6">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="row align-items-start">
-                                                <div class="col-8">
-                                                    <h5 class="card-title mb-10 fw-semibold">Product Sales</h5>
-                                                    <h4 class="fw-semibold mb-3">6,820</h4>
-                                                    <div class="d-flex align-items-center pb-1">
-                                                        <span class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                                                            <i class="ti ti-arrow-down-right text-danger"></i>
-                                                        </span>
-                                                        <p class="text-dark me-1 fs-3 mb-0">+9%</p>
-                                                        <p class="fs-3 mb-0">last year</p>
-                                                    </div>
-                                                </div>
-                                                <div class="col-4">
-                                                    <div class="d-flex justify-content-end">
-                                                        <div class="text-white bg-danger rounded-circle p-6 d-flex align-items-center justify-content-center">
-                                                            <i class="ti ti-currency-dollar fs-6"></i>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div id="earning"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                  
+                           
                     {% endblock %}
 
                     <div class="py-6 px-6 text-center">
-                        <p class="mb-0 fs-4">Design and Developed by <a href="https://www.wrappixel.com/" target="_blank" class="pe-1 text-primary text-decoration-underline">wrappixel.com</a></p>
+                        <p class="mb-0 fs-4">© {{ 'now'|date('Y') }} FocusKids - Plateforme éducative pour enfants</p>
                     </div>
                 </div>
             </div>
@@ -358,7 +253,7 @@
     <script src="{{ asset('assets/libs/apexcharts/dist/apexcharts.min.js') }}"></script>
     <script src="{{ asset('assets/libs/simplebar/dist/simplebar.js') }}"></script>
     <script src="{{ asset('assets/js/dashboard.js') }}"></script>
-   <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
     
     {% block javascripts %}{% endblock %}
 </body>

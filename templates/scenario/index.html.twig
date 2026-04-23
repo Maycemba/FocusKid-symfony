@@ -1,37 +1,91 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
+
 
 {% block title %}Scenario index{% endblock %}
 
 {% block body %}
-    <h1>Scenario index</h1>
+    <div class="container mt-4">
+        <h1 class="mb-4">Gestion des scénarios</h1>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Description</th>
-                <th>Animation</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for scenario in scenarios %}
-            <tr>
-                <td>{{ scenario.id }}</td>
-                <td>{{ scenario.description }}</td>
-                <td>{{ scenario.animation }}</td>
-                <td>
-                    <a href="{{ path('app_scenario_show', {'id': scenario.id}) }}">show</a>
-                    <a href="{{ path('app_scenario_edit', {'id': scenario.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
         {% endfor %}
-        </tbody>
-    </table>
 
-    <a href="{{ path('app_scenario_new') }}">Create new</a>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Id</th>
+                        <th>Description</th>
+                        <th>Animation</th>
+                        <th>Émotion</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for scenario in scenarios %}
+                    <tr>
+                        <td>{{ scenario.id }}</td>
+                        <td>{{ scenario.description|slice(0, 100) }}{% if scenario.description|length > 100 %}...{% endif %}</td>
+                        <td>
+                            {% if scenario.animation %}
+                                {% set animation = scenario.animation %}
+                                {% if animation starts with 'GIF' or animation starts with 'gif' %}
+                                    <img src="data:image/gif;base64,{{ animation }}" 
+                                         alt="Animation" 
+                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
+                                {% else %}
+                                    <video width="100" height="60" controls style="border-radius: 5px;">
+                                        <source src="data:video/mp4;base64,{{ animation }}" type="video/mp4">
+                                        Votre navigateur ne supporte pas la vidéo.
+                                    </video>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">Aucune animation</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ scenario.emotion ? scenario.emotion.nom : 'Non associée' }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ path('app_scenario_show', {'id': scenario.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                                <a href="{{ path('app_scenario_edit', {'id': scenario.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ scenario.id }}">
+                                    Supprimer
+                                </button>
+                            </div>
+                            
+                            <!-- Modal de confirmation de suppression -->
+                            <div class="modal fade" id="deleteModal{{ scenario.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Confirmer la suppression</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Êtes-vous sûr de vouloir supprimer ce scénario ?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                            <form method="post" action="{{ path('app_scenario_delete', {'id': scenario.id}) }}" style="display: inline-block;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ scenario.id) }}">
+                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">Aucun scénario trouvé</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <a href="{{ path('app_scenario_new') }}" class="btn btn-primary mt-3">Créer un nouveau scénario</a>
+    </div>
 {% endblock %}

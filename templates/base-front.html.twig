@@ -8,7 +8,7 @@
     <meta content="" name="keywords">
     <meta content="" name="description">
 
-    <link href="{{ asset('base-front/img/favicon.ico') }}" rel="icon">
+    <link href="{{ asset('base-front/img/logo.png') }}" rel="icon">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,8 +37,9 @@
         </div>
 
         <nav class="navbar navbar-expand-lg bg-white navbar-light sticky-top px-4 px-lg-5 py-lg-0">
-            <a href="#" class="navbar-brand">
-                <h1 class="m-0 text-primary"><i class="fa fa-book-reader me-3"></i>Kider</h1>
+            <a href="index.html" class="navbar-brand">
+                   <img src="{{ asset('base-front/img/logo.png') }}" alt="Logo" height="80" class="me-2">
+    <h1 class="m-0 text-primary">FocusKid</h1>
             </a>
             <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                 <span class="navbar-toggler-icon"></span>
@@ -46,81 +47,77 @@
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav mx-auto">
                     <a href="#" class="nav-item nav-link">Home</a>
-                    <a href="#" class="nav-item nav-link">About Us</a>
-                    <a href="#" class="nav-item nav-link">Classes</a>
+                    <a href="{{ path('app_sessions_de_calme_front') }}" class="nav-item nav-link">Session de calme</a>
+                    <a href="#" class="nav-item nav-link">cours</a>
+                    <a href="#" class="nav-item nav-link">exercice</a>
+                     <a href="#" class="nav-item nav-link">carnet educatif</a>
+                    <a href="{{ path('app_games_index') }}" class="nav-item nav-link">Jeu</a>
                     <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Session de calme</a>
                         <div class="dropdown-menu rounded-0 rounded-bottom border-0 shadow-sm m-0">
-                            <a href="#" class="dropdown-item">School Facilities</a>
-                            <a href="#" class="dropdown-item">Popular Teachers</a>
-                            <a href="#" class="dropdown-item">Become A Teachers</a>
-                            <a href="#" class="dropdown-item">Make Appointment</a>
-                            <a href="#" class="dropdown-item">Testimonial</a>
-                            <a href="#" class="dropdown-item">404 Error</a>
+                            <a href="facility.html" class="dropdown-item">School Facilities</a>
+                            <a href="team.html" class="dropdown-item">Popular Teachers</a>
+                            <a href="call-to-action.html" class="dropdown-item">Become A Teachers</a>
+                            <a href="appointment.html" class="dropdown-item">Make Appointment</a>
+                            <a href="testimonial.html" class="dropdown-item">Testimonial</a>
+                            <a href="404.html" class="dropdown-item">404 Error</a>
                         </div>
                     </div>
+<<<<<<< HEAD
+                    <a href="contact.html" class="nav-item nav-link">Gamification</a>
+                    <a href="contact.html" class="nav-item nav-link">Mes Emotions</a>
+                    <a href="contact.html" class="nav-item nav-link">Espace Parent</a>
+=======
                     <a href="#" class="nav-item nav-link">Contact Us</a>
                     <a href="{{ path('app_front_jeu_list') }}" class="nav-item nav-link fw-bold text-primary">🎮 Jeu</a>
+>>>>>>> jeu
                 </div>
-                <a href="#" class="btn btn-primary rounded-pill px-3 d-none d-lg-block">Join Us<i class="fa fa-arrow-right ms-3"></i></a>
+                <a href="" class="btn btn-primary rounded-pill px-3 d-none d-lg-block">Mon compte<i class="fa fa-arrow-right ms-3"></i></a>
             </div>
         </nav>
       
         {% block body %}
     
-        <div class="container-fluid p-0 mb-5">
-            <div class="owl-carousel header-carousel position-relative">
-                {% for slide in carousel_slides|default([]) %}
-                <div class="owl-carousel-item position-relative">
-                    <img class="img-fluid" src="{{ asset(slide.image) }}" alt="{{ slide.title }}">
-                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(0, 0, 0, .2);">
-                        <div class="container">
-                            <div class="row justify-content-start">
-                                <div class="col-10 col-lg-8">
-                                    <h1 class="display-2 text-white animated slideInDown mb-4">{{ slide.title }}</h1>
-                                    <p class="fs-5 fw-medium text-white mb-4 pb-2">{{ slide.description }}</p>
-                                    <a href="{{ slide.learn_more_link|default('#') }}" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft">Learn More</a>
-                                    <a href="{{ slide.classes_link|default('#') }}" class="btn btn-dark rounded-pill py-sm-3 px-sm-5 animated slideInRight">Our Classes</a>
-                                </div>
+       <div class="container-fluid p-0 mb-5">
+    <div class="owl-carousel header-carousel position-relative">
+        {% if carousel_slides is defined and carousel_slides|length > 0 %}
+            {% for slide in carousel_slides %}
+            <div class="owl-carousel-item position-relative">
+                <img class="img-fluid" src="{{ asset(slide.image) }}" alt="{{ slide.title }}">
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(0, 0, 0, .2);">
+                    <div class="container">
+                        <div class="row justify-content-start">
+                            <div class="col-10 col-lg-8">
+                                <h1 class="display-2 text-white animated slideInDown mb-4">{{ slide.title }}</h1>
+                                <p class="fs-5 fw-medium text-white mb-4 pb-2">{{ slide.description }}</p>
+                                <a href="{{ slide.learn_more_link|default('#') }}" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft">Learn More</a>
+                                <a href="{{ slide.classes_link|default('#') }}" class="btn btn-dark rounded-pill py-sm-3 px-sm-5 animated slideInRight">Our Classes</a>
                             </div>
                         </div>
                     </div>
                 </div>
-                {% else %}
-                <div class="owl-carousel-item position-relative">
-                    <img class="img-fluid" src="{{ asset('base-front/img/carousel-1.jpg') }}" alt="">
-                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(0, 0, 0, .2);">
-                        <div class="container">
-                            <div class="row justify-content-start">
-                                <div class="col-10 col-lg-8">
-                                    <h1 class="display-2 text-white animated slideInDown mb-4">The Best Kindergarten School For Your Child</h1>
-                                    <p class="fs-5 fw-medium text-white mb-4 pb-2">Vero elitr justo clita lorem. Ipsum dolor at sed stet sit diam no. Kasd rebum ipsum et diam justo clita et kasd rebum sea elitr.</p>
-                                    <a href="#" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft">Learn More</a>
-                                    <a href="#" class="btn btn-dark rounded-pill py-sm-3 px-sm-5 animated slideInRight">Our Classes</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="owl-carousel-item position-relative">
-                    <img class="img-fluid" src="{{ asset('base-front/img/carousel-2.jpg') }}" alt="">
-                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(0, 0, 0, .2);">
-                        <div class="container">
-                            <div class="row justify-content-start">
-                                <div class="col-10 col-lg-8">
-                                    <h1 class="display-2 text-white animated slideInDown mb-4">Make A Brighter Future For Your Child</h1>
-                                    <p class="fs-5 fw-medium text-white mb-4 pb-2">Vero elitr justo clita lorem. Ipsum dolor at sed stet sit diam no. Kasd rebum ipsum et diam justo clita et kasd rebum sea elitr.</p>
-                                    <a href="#" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft">Learn More</a>
-                                    <a href="#" class="btn btn-dark rounded-pill py-sm-3 px-sm-5 animated slideInRight">Our Classes</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
             </div>
-        </div>
-       
+            {% endfor %}
+        {% else %}
+            {# Fallback si aucune donnée n'est passée #}
+            <div class="owl-carousel-item position-relative">
+                <img class="img-fluid" src="{{ asset('base-front/img/carousel-1.jpg') }}" alt="">
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(0, 0, 0, .2);">
+                    <div class="container">
+                        <div class="row justify-content-start">
+                            <div class="col-10 col-lg-8">
+                                <h1 class="display-2 text-white animated slideInDown mb-4">The Best Kindergarten School For Your Child</h1>
+                                <p class="fs-5 fw-medium text-white mb-4 pb-2">Vero elitr justo clita lorem. Ipsum dolor at sed stet sit diam no.</p>
+                                <a href="#" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft">Learn More</a>
+                                <a href="#" class="btn btn-dark rounded-pill py-sm-3 px-sm-5 animated slideInRight">Our Classes</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
         <div class="container-xxl py-5">
             <div class="container">
                 <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">

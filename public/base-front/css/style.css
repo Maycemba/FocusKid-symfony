@@ -184,27 +184,70 @@ h6,
     background: url(../img/bg-header-bottom.png) center center repeat-x;
 }
 
+/* STYLES CORRIGÉS POUR RÉDUIRE LA HAUTEUR */
+/* Version desktop - hauteur réduite */
+.header-carousel .owl-carousel-item {
+    position: relative;
+    min-height: 300px; /* Réduit de la hauteur par défaut */
+    height: 300px; /* Hauteur fixe réduite */
+}
+
+.header-carousel .owl-carousel-item img {
+    width: 100%;
+    height: 300px; /* Hauteur fixe réduite */
+    object-fit: cover;
+}
+
+/* Version mobile */
 @media (max-width: 768px) {
     .header-carousel .owl-carousel-item {
         position: relative;
-        min-height: 500px;
+        min-height: 200px; /* Hauteur réduite sur mobile */
+        height: 200px;
     }
     
     .header-carousel .owl-carousel-item img {
         position: absolute;
         width: 100%;
-        height: 100%;
+        height: 200px; /* Hauteur réduite sur mobile */
         object-fit: cover;
     }
 
     .header-carousel .owl-carousel-item p {
-        font-size: 16px !important;
+        font-size: 14px !important; /* Texte plus petit */
         font-weight: 400 !important;
+        margin-bottom: 5px;
     }
 
     .header-carousel .owl-carousel-item h1 {
-        font-size: 30px;
+        font-size: 24px; /* Titre plus petit */
         font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    /* Ajuster le contenu textuel pour mieux s'adapter */
+    .header-carousel .owl-carousel-item .container {
+        padding-top: 20px;
+    }
+}
+
+/* Version très petits écrans */
+@media (max-width: 480px) {
+    .header-carousel .owl-carousel-item {
+        height: 180px;
+        min-height: 180px;
+    }
+    
+    .header-carousel .owl-carousel-item img {
+        height: 180px;
+    }
+    
+    .header-carousel .owl-carousel-item h1 {
+        font-size: 20px;
+    }
+    
+    .header-carousel .owl-carousel-item p {
+        font-size: 12px !important;
     }
 }
 
@@ -219,17 +262,17 @@ h6,
 
 .header-carousel .owl-nav .owl-prev,
 .header-carousel .owl-nav .owl-next {
-    margin: 7px 0;
-    width: 45px;
-    height: 45px;
+    margin: 5px 0; /* Réduit la marge */
+    width: 35px; /* Boutons plus petits */
+    height: 35px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #FFFFFF;
-    background: transparent;
+    background: rgba(0, 0, 0, 0.5); /* Fond semi-transparent pour meilleure visibilité */
     border: 1px solid #FFFFFF;
-    border-radius: 45px;
-    font-size: 22px;
+    border-radius: 35px;
+    font-size: 18px; /* Icônes plus petites */
     transition: .5s;
 }
 
@@ -239,14 +282,63 @@ h6,
     border-color: var(--primary);
 }
 
+/* Page Header - hauteur réduite */
 .page-header {
-    background: linear-gradient(rgba(0, 0, 0, .2), rgba(0, 0, 0, .2)), url(../img/carousel-1.jpg) center center no-repeat;
+    background: linear-gradient(rgba(0, 0, 0, .2), rgba(0, 0, 0, .2)), url(base-front/img/carousel-1.jpg) center center no-repeat;
     background-size: cover;
+    min-height: 250px; /* Hauteur minimale réduite */
+    height: 250px; /* Hauteur fixe réduite */
+    padding: 40px 0; /* Padding réduit */
+    display: flex;
+    align-items: center; /* Centrer le contenu verticalement */
+}
+
+/* Ajuster le contenu du page-header */
+.page-header .container {
+    padding: 0 15px;
+}
+
+.page-header h1 {
+    font-size: 36px; /* Titre plus petit */
+    margin-bottom: 10px;
+}
+
+.page-header .breadcrumb {
+    margin-bottom: 0;
+    font-size: 14px;
+}
+
+/* Version mobile pour page-header */
+@media (max-width: 768px) {
+    .page-header {
+        min-height: 200px;
+        height: 200px;
+        padding: 30px 0;
+    }
+    
+    .page-header h1 {
+        font-size: 28px;
+    }
+    
+    .page-header .breadcrumb {
+        font-size: 12px;
+    }
 }
 
 .breadcrumb-item + .breadcrumb-item::before {
     color: rgba(255, 255, 255, .5);
 }
+
+/* Option supplémentaire : Supprimer ou réduire les décorations du header */
+/* Décommentez si vous voulez supprimer les bandes décoratives */
+/*
+.header-carousel::before,
+.header-carousel::after,
+.page-header::before,
+.page-header::after {
+    display: none;
+}
+*/
 
 
 /*** Facility ***/

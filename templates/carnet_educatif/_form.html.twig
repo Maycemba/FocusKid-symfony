@@ -1,4 +1,34 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_start(form, {'attr': {'class': 'carnet-form'}}) }}
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="mb-3">{{ form_row(form.date_etude) }}</div>
+        <div class="mb-3">{{ form_row(form.heure_debut) }}</div>
+        <div class="mb-3">{{ form_row(form.heure_fin) }}</div>
+        <div class="mb-3">{{ form_row(form.duree_totale) }}</div>
+        <div class="mb-3">{{ form_row(form.lieu) }}</div>
+        <div class="mb-3">{{ form_row(form.matiere) }}</div>
+        <div class="mb-3">{{ form_row(form.type_activite) }}</div>
+        <div class="mb-3">{{ form_row(form.niveau_difficulte) }}</div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">{{ form_row(form.niveau_concentration) }}</div>
+        <div class="mb-3">{{ form_row(form.niveau_agitation) }}</div>
+        <div class="mb-3">{{ form_row(form.nombre_interruptions) }}</div>
+        <div class="mb-3">{{ form_row(form.temps_avant_perte_concentration) }}</div>
+        
+        <div class="form-check mb-2">{{ form_row(form.travaille_seul) }}</div>
+        <div class="form-check mb-2">{{ form_row(form.demande_aide) }}</div>
+        <div class="mb-3">{{ form_row(form.niveau_autonomie) }}</div>
+        <div class="form-check mb-2">{{ form_row(form.travail_termine) }}</div>
+    </div>
+</div>
+
+<div class="mb-3">{{ form_row(form.difficultes) }}</div>
+<div class="mb-3">{{ form_row(form.points_positifs) }}</div>
+
+<div class="d-grid gap-2 mt-4">
+    <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow-sm">{{ button_label|default('💾 Enregistrer le carnet') }}</button>
+</div>
+
 {{ form_end(form) }}

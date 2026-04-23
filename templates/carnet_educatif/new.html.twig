@@ -1,11 +1,24 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}New CarnetEducatif{% endblock %}
+{% block title %}Nouveau carnet éducatif{% endblock %}
 
 {% block body %}
-    <h1>Create new CarnetEducatif</h1>
-
-    {{ include('carnet_educatif/_form.html.twig') }}
-
-    <a href="{{ path('app_carnet_educatif_index') }}">back to list</a>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-gradient-success text-white rounded-top-4">
+                    <h3 class="mb-0">📘 Ajouter un carnet éducatif</h3>
+                    <p class="mb-0 small">Remplissez les informations de la séance</p>
+                </div>
+                <div class="card-body p-4">
+                    {{ include('carnet_educatif/_form.html.twig') }}
+                </div>
+                <div class="card-footer bg-light">
+                    <a href="{{ path('app_carnet_educatif_index') }}" class="btn btn-outline-secondary">← Annuler</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
