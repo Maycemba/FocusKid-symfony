@@ -38,4 +38,9 @@ final class FrontController extends AbstractController
             'lecons' => $cour->getLecons(),
         ]);
     }
+    #[Route('/index', name: 'app_index')]
+    public function index(): Response
+    {
+        return $this->render('front/index.html.twig');
+    }
 }

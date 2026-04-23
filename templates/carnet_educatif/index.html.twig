@@ -1,4 +1,3 @@
-
 {% extends 'base-front.html.twig' %}
 
 {% block title %}Carnets éducatifs{% endblock %}
@@ -6,7 +5,6 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
-/* ===== VOTRE STYLE EXISTANT ===== */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@600;700;800&display=swap');
 :root {
   --primary:#1CC88A;--primary-light:#d4f7ec;--primary-dark:#0eae70;
@@ -99,6 +97,7 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
         </div>
         <div class="hero-sub">Suivez et analysez vos sessions d'apprentissage</div>
       </div>
+
       <div class="d-flex gap-2">
         <a href="{{ path('app_commentaire_index') }}" class="btn-new" style="background: linear-gradient(135deg, var(--info), #1484c0);">💬 Tous les commentaires</a>
         <a href="{{ path('app_carnet_educatif_stats') }}" class="btn-new" style="background: linear-gradient(135deg, #6f42c1, #5932a8);">📊 Statistiques</a>
@@ -109,6 +108,7 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
 </div>
 
 <div class="container py-5">
+
   {# Barre de filtre #}
   <div class="card shadow-sm border-0 rounded-4 mb-4">
     <div class="card-body p-4">
@@ -147,6 +147,7 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
     <table>
       <thead>
         <tr>
+          <th>#</th>
           <th>Date</th>
           <th>Matière</th>
           <th>Durée</th>
@@ -158,6 +159,7 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
       <tbody>
         {% for carnet in carnet_educatifs %}
         <tr style="animation-delay:{{ loop.index * 0.05 }}s">
+          <td><span class="id-chip">{{ carnet.id }}</span></td>
           <td><strong>{{ carnet.dateEtude ? carnet.dateEtude|date('d/m/Y') : '—' }}</strong></td>
           <td><span class="subject-tag">{{ carnet.matiere }}</span></td>
           <td><span class="duration-tag">⏱ {{ carnet.dureeTotale }} min</span></td>
@@ -179,6 +181,7 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
           <td>
             <div class="d-flex gap-2">
               <a href="{{ path('app_carnet_educatif_show', {'id': carnet.id}) }}" class="btn-sm-see">👁 Voir</a>
+              <a href="{{ path('app_carnet_educatif_edit', {'id': carnet.id}) }}" class="btn-sm-edit">✏️ Modifier</a>
             </div>
           </td>
         </tr>

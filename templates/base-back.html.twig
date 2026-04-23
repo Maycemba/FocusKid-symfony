@@ -11,7 +11,7 @@
     <style>
         /* Style pour minimiser le logo */
         .brand-logo img {
-            height: 40px !important;
+            height: 60px !important;
             width: auto !important;
             max-width: 150px !important;
             object-fit: contain;
@@ -86,7 +86,7 @@
                         <li class="sidebar-item">
                             <a href="{{ path('app_exercice_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
                                 <iconify-icon icon="solar:notebook-bookmark-line-duotone"></iconify-icon>
-                                <span class="hide-menu">📚 Exercices</span>
+                                <span class="hide-menu">Exercices</span>
                             </a>
                         </li>
                         
@@ -94,7 +94,7 @@
                         <li class="sidebar-item">
                             <a href="{{ path('app_jeu_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
                                 <iconify-icon icon="solar:gamepad-line-duotone"></iconify-icon>
-                                <span class="hide-menu">🎮 Jeux</span>
+                                <span class="hide-menu">Jeux</span>
                             </a>
                         </li>
                         
@@ -102,23 +102,23 @@
                         <li class="sidebar-item">
                             <a href="{{ path('app_sessions_de_calme_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
                                 <iconify-icon icon="solar:meditation-line-duotone"></iconify-icon>
-                                <span class="hide-menu">🧘 Sessions calmes</span>
+                                <span class="hide-menu">Session calme</span>
                             </a>
                         </li>
                         
                         <!-- Module 4: COURS / LEÇONS -->
                         <li class="sidebar-item">
-                            <a href="{{ path('app_cour_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
-                                <iconify-icon icon="solar:book-open-line-duotone"></iconify-icon>
-                                <span class="hide-menu">📖 Cours / Leçons</span>
-                            </a>
-                        </li>
+    <a href="{{ path('app_cour_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+        <iconify-icon icon="solar:notebook-line-duotone"></iconify-icon>
+        <span class="hide-menu">Cours</span>
+    </a>
+</li>
                         
                         <!-- Module 5: CARNET ÉDUCATIF -->
                         <li class="sidebar-item">
                             <a href="{{ path('app_carnet_educatif_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
                                 <iconify-icon icon="solar:diploma-line-duotone"></iconify-icon>
-                                <span class="hide-menu">📝 Carnet éducatif</span>
+                                <span class="hide-menu">Carnet éducatif</span>
                             </a>
                         </li>
                         
@@ -126,15 +126,15 @@
                         <li class="sidebar-item">
                             <a href="{{ path('app_emotion_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
                                 <iconify-icon icon="solar:emoji-funny-square-line-duotone"></iconify-icon>
-                                <span class="hide-menu">😊 Émotions</span>
+                                <span class="hide-menu">Émotions</span>
                             </a>
                         </li>
                         
                         <!-- Module 7: SCÉNARIOS -->
                         <li class="sidebar-item">
                             <a href="{{ path('app_scenario_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
-                                <iconify-icon icon="solar:film-line-duotone"></iconify-icon>
-                                <span class="hide-menu">🎬 Scénarios</span>
+                             <iconify-icon icon="solar:clapperboard-line-duotone"></iconify-icon>
+                                <span class="hide-menu">Scénarios</span>
                             </a>
                         </li>
                         
@@ -142,7 +142,7 @@
 <li class="sidebar-item">
     <a href="{{ path('app_humeur_journaliere_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
         <iconify-icon icon="solar:smile-circle-line-duotone"></iconify-icon>
-        <span class="hide-menu">😊 Humeur journalière</span>
+        <span class="hide-menu">Humeur journalière</span>
     </a>
 </li>
                         
@@ -154,7 +154,7 @@
                         <li class="sidebar-item">
                             <a href="{{ path('app_utilisateur_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
                                 <iconify-icon icon="solar:users-group-rounded-line-duotone"></iconify-icon>
-                                <span class="hide-menu">👥 Utilisateurs</span>
+                                <span class="hide-menu">Utilisateurs</span>
                             </a>
                         </li>
                         
@@ -178,51 +178,8 @@
                     <!-- Header complètement supprimé -->
                     
                     {% block body %}
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body text-center py-5">
-                                    <i class="ti ti-school fs-1" style="font-size: 64px;"></i>
-                                    <h3 class="mt-3">Bienvenue sur FocusKids</h3>
-                                    <p class="text-muted">Plateforme éducative pour le développement des enfants</p>
-                                    <div class="row mt-4">
-                                        <div class="col-md-3 col-sm-6 mb-3">
-                                            <div class="card bg-primary text-white">
-                                                <div class="card-body text-center">
-                                                    <h2>0</h2>
-                                                    <p>Exercices</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 col-sm-6 mb-3">
-                                            <div class="card bg-success text-white">
-                                                <div class="card-body text-center">
-                                                    <h2>0</h2>
-                                                    <p>Jeux</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 col-sm-6 mb-3">
-                                            <div class="card bg-info text-white">
-                                                <div class="card-body text-center">
-                                                    <h2>0</h2>
-                                                    <p>Leçons</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 col-sm-6 mb-3">
-                                            <div class="card bg-warning text-white">
-                                                <div class="card-body text-center">
-                                                    <h2>0</h2>
-                                                    <p>Utilisateurs</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                  
+                           
                     {% endblock %}
 
                     <div class="py-6 px-6 text-center">

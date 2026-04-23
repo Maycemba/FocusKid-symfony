@@ -1,0 +1,354 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Session de calme - Coloriage relaxant{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="bg-light rounded p-5 wow fadeInUp">
+                    <div class="text-center mb-4">
+                        <div class="activity-icon bg-success rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-paint-brush fa-3x text-white"></i>
+                        </div>
+                        <h2>Coloriage relaxant</h2>
+                        <p class="text-muted">Choisis un dessin et colorie-le à ton rythme</p>
+                    </div>
+
+                    <!-- Sélection du dessin -->
+                    <div class="drawing-selection text-center mb-4">
+                        <h4>Choisis ton dessin :</h4>
+                        <div class="row g-3 mt-2">
+                            <div class="col-3">
+                                <div class="drawing-thumbnail border rounded p-2 text-center" data-drawing="mandala1">
+                                    <img src="{{ asset('images/coloring/mandala1-thumb.jpg') }}" alt="Mandala" class="img-fluid rounded mb-2" style="height: 100px; object-fit: cover;">
+                                    <p class="mb-0 small">Mandala</p>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="drawing-thumbnail border rounded p-2 text-center" data-drawing="animal1">
+                                    <img src="{{ asset('images/coloring/animal1-thumb.jpg') }}" alt="Animal" class="img-fluid rounded mb-2" style="height: 100px; object-fit: cover;">
+                                    <p class="mb-0 small">Licorne</p>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="drawing-thumbnail border rounded p-2 text-center" data-drawing="nature1">
+                                    <img src="{{ asset('images/coloring/nature1-thumb.jpg') }}" alt="Nature" class="img-fluid rounded mb-2" style="height: 100px; object-fit: cover;">
+                                    <p class="mb-0 small">Forêt magique</p>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="drawing-thumbnail border rounded p-2 text-center" data-drawing="emotion1">
+                                    <img src="{{ asset('images/coloring/emotion1-thumb.jpg') }}" alt="Émotions" class="img-fluid rounded mb-2" style="height: 100px; object-fit: cover;">
+                                    <p class="mb-0 small">Mes émotions</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Zone de coloriage -->
+                    <div id="coloringArea" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="coloring-canvas-container bg-white rounded p-3 text-center">
+                                    <canvas id="coloringCanvas" width="500" height="500" style="max-width: 100%; height: auto; border: 2px solid #ddd; border-radius: 10px;"></canvas>
+                                    <div class="mt-3">
+                                        <button id="clearCanvas" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-trash-alt"></i> Effacer
+                                        </button>
+                                        <button id="downloadDrawing" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-download"></i> Télécharger
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="color-palette bg-white rounded p-3">
+                                    <h5 class="text-center mb-3">🎨 Mes couleurs</h5>
+                                    <div class="color-options d-flex flex-wrap justify-content-center gap-2 mb-3">
+                                        <div class="color-btn" style="background-color: #FF6B6B;" data-color="#FF6B6B"></div>
+                                        <div class="color-btn" style="background-color: #4ECDC4;" data-color="#4ECDC4"></div>
+                                        <div class="color-btn" style="background-color: #45B7D1;" data-color="#45B7D1"></div>
+                                        <div class="color-btn" style="background-color: #96CEB4;" data-color="#96CEB4"></div>
+                                        <div class="color-btn" style="background-color: #FFEAA7;" data-color="#FFEAA7"></div>
+                                        <div class="color-btn" style="background-color: #DDA0DD;" data-color="#DDA0DD"></div>
+                                        <div class="color-btn" style="background-color: #F7B731;" data-color="#F7B731"></div>
+                                        <div class="color-btn" style="background-color: #A55D35;" data-color="#A55D35"></div>
+                                        <div class="color-btn" style="background-color: #000000;" data-color="#000000"></div>
+                                        <div class="color-btn" style="background-color: #FFFFFF; border: 2px solid #ddd;" data-color="#FFFFFF"></div>
+                                    </div>
+                                    <div class="brush-size mb-3">
+                                        <label class="form-label">Taille du pinceau</label>
+                                        <input type="range" id="brushSize" min="2" max="20" value="5" class="form-range">
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="small text-muted mb-0">Clique et glisse pour colorier !</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timer et feedback -->
+                    <div class="text-center mt-4">
+                        <div class="timer-section">
+                            <h4>⏱️ Prends ton temps pour colorier</h4>
+                            <div class="timer-display bg-white rounded p-3 d-inline-block">
+                                <span id="timer" class="display-4 fw-bold">00:00</span>
+                            </div>
+                            <div class="mt-3">
+                                <button id="startColoring" class="btn btn-primary rounded-pill px-4">
+                                    <i class="fas fa-play me-2"></i>Commencer à colorier
+                                </button>
+                                <button id="stopColoring" class="btn btn-success rounded-pill px-4" style="display: none;">
+                                    <i class="fas fa-check me-2"></i>Terminer la session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feedback après session -->
+                    <div id="feedbackSection" style="display: none;" class="mt-4">
+                        <div class="feedback-form bg-white rounded p-4">
+                            <h4 class="text-center mb-4">As-tu aimé colorier ?</h4>
+                            <form id="sessionFeedbackForm" method="post" action="{{ path('app_session_calme_save') }}">
+                                <input type="hidden" name="type_activite" value="coloriage">
+                                <input type="hidden" name="duree_reelle" id="dureeReelle">
+                                
+                                <div class="mb-4">
+                                    <label class="form-label d-block text-center mb-3">Donne une note à cette activité :</label>
+                                    <div class="feedback-stars text-center">
+                                        {% for i in 1..5 %}
+                                        <i class="far fa-star fa-2x star" data-value="{{ i }}"></i>
+                                        {% endfor %}
+                                    </div>
+                                    <input type="hidden" name="feedback_enfant" id="feedbackValue">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">Montre ton chef-d'œuvre à tes parents !</label>
+                                    <textarea name="note_parent" class="form-control" rows="3" placeholder="J'ai colorié un magnifique dessin ! 🎨"></textarea>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-success rounded-pill px-5 py-2">
+                                        Terminer <i class="fas fa-check ms-2"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    let timerInterval;
+    let startTime;
+    let canvas = document.getElementById('coloringCanvas');
+    let ctx = canvas.getContext('2d');
+    let drawing = false;
+    let currentColor = '#FF6B6B';
+    let currentSize = 5;
+    let selectedDrawing = null;
+
+    // Initialisation du canvas
+    canvas.width = 500;
+    canvas.height = 500;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Sélection du dessin
+    document.querySelectorAll('.drawing-thumbnail').forEach(thumb => {
+        thumb.addEventListener('click', function() {
+            document.querySelectorAll('.drawing-thumbnail').forEach(t => t.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedDrawing = this.dataset.drawing;
+            loadDrawing(selectedDrawing);
+        });
+    });
+
+    function loadDrawing(drawingName) {
+        const img = new Image();
+        img.onload = function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.globalCompositeOperation = 'source-over';
+        };
+        img.src = "{{ asset('images/coloring/') }}" + drawingName + ".png";
+    }
+
+    // Colorier
+    function startDrawing(e) {
+        drawing = true;
+        draw(e);
+    }
+
+    function endDrawing() {
+        drawing = false;
+        ctx.beginPath();
+    }
+
+    function draw(e) {
+        if (!drawing) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        
+        const x = (clientX - rect.left) * scaleX;
+        const y = (clientY - rect.top) * scaleY;
+        
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.lineWidth = currentSize;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = currentColor;
+        
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mouseup', endDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('touchstart', startDrawing);
+    canvas.addEventListener('touchend', endDrawing);
+    canvas.addEventListener('touchmove', draw);
+
+    // Sélection des couleurs
+    document.querySelectorAll('.color-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentColor = this.dataset.color;
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // Taille du pinceau
+    document.getElementById('brushSize').addEventListener('input', function(e) {
+        currentSize = e.target.value;
+    });
+
+    // Effacer le canvas
+    document.getElementById('clearCanvas').addEventListener('click', function() {
+        if (selectedDrawing) {
+            loadDrawing(selectedDrawing);
+        } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+    });
+
+    // Télécharger le dessin
+    document.getElementById('downloadDrawing').addEventListener('click', function() {
+        const link = document.createElement('a');
+        link.download = 'mon-coloriage.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    });
+
+    // Gestion de la session
+    document.getElementById('startColoring').addEventListener('click', function() {
+        if (!selectedDrawing) {
+            alert('Choisis un dessin d\'abord !');
+            return;
+        }
+        
+        document.getElementById('coloringArea').style.display = 'block';
+        startTime = Date.now();
+        
+        timerInterval = setInterval(function() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timer').textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }, 1000);
+        
+        this.style.display = 'none';
+        document.getElementById('stopColoring').style.display = 'inline-block';
+    });
+
+    document.getElementById('stopColoring').addEventListener('click', function() {
+        clearInterval(timerInterval);
+        const endTime = Date.now();
+        const dureeReelle = Math.round((endTime - startTime) / 1000 / 60);
+        document.getElementById('dureeReelle').value = dureeReelle || 1;
+        
+        document.getElementById('feedbackSection').style.display = 'block';
+        this.style.display = 'none';
+    });
+
+    // Gestion des étoiles
+    document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', function() {
+            const value = this.dataset.value;
+            document.getElementById('feedbackValue').value = value;
+            
+            document.querySelectorAll('.star').forEach(s => {
+                if(s.dataset.value <= value) {
+                    s.classList.remove('far');
+                    s.classList.add('fas');
+                    s.style.color = '#ffc107';
+                } else {
+                    s.classList.remove('fas');
+                    s.classList.add('far');
+                    s.style.color = '#ddd';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .drawing-thumbnail {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .drawing-thumbnail:hover {
+        transform: scale(1.05);
+    }
+    .drawing-thumbnail.selected {
+        border: 3px solid #28a745;
+        background-color: #e8f5e9;
+    }
+    .color-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.2s;
+        border: 2px solid transparent;
+    }
+    .color-btn:hover {
+        transform: scale(1.1);
+    }
+    .color-btn.active {
+        border-color: #333;
+        transform: scale(1.1);
+    }
+</style>
+{% endblock %}

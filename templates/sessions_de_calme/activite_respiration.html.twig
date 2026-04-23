@@ -1,0 +1,189 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Session de calme - Respiration guidée{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="bg-light rounded p-5 wow fadeInUp">
+                    <div class="text-center mb-4">
+                        <div class="activity-icon bg-info rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-lungs fa-3x text-white"></i>
+                        </div>
+                        <h2>Respiration guidée</h2>
+                        <p class="text-muted">Suis le guide pour une respiration relaxante</p>
+                    </div>
+
+                    <!-- Animation respiration -->
+                    <div class="breathing-animation text-center mb-5">
+                        <div class="breathing-circle mx-auto d-flex align-items-center justify-content-center" 
+                             style="width: 200px; height: 200px; background: linear-gradient(135deg, #6c5ce7, #a8e6cf); border-radius: 50%; transition: transform 4s ease-in-out;">
+                            <div class="text-white text-center">
+                                <h4 id="breathText" class="mb-0">Inspire</h4>
+                                <small id="breathCounter" class="text-white">0</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contrôles -->
+                    <div class="text-center mb-5">
+                        <div class="d-flex justify-content-center gap-3">
+                            <button id="startBreathing" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-play me-2"></i>Commencer
+                            </button>
+                            <button id="stopBreathing" class="btn btn-danger rounded-pill px-4" style="display: none;">
+                                <i class="fas fa-stop me-2"></i>Terminer
+                            </button>
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-muted">🌬️ Inspire par le nez, expire par la bouche</p>
+                        </div>
+                    </div>
+
+                    <!-- Timer -->
+                    <div class="timer-section text-center mb-5">
+                        <h4>Durée recommandée : 5 minutes</h4>
+                        <div class="timer-display bg-white rounded p-3 d-inline-block">
+                            <span id="timer" class="display-4 fw-bold">00:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Feedback -->
+                    <div id="feedbackSection" style="display: none;">
+                        <div class="feedback-form bg-white rounded p-4">
+                            <h4 class="text-center mb-4">Comment te sens-tu après cette respiration ?</h4>
+                            <form id="sessionFeedbackForm" method="post" action="{{ path('app_session_calme_save') }}">
+                                <input type="hidden" name="type_activite" value="respiration">
+                                <input type="hidden" name="duree_reelle" id="dureeReelle">
+                                
+                                <div class="mb-4">
+                                    <label class="form-label d-block text-center mb-3">Note cette activité :</label>
+                                    <div class="feedback-stars text-center">
+                                        {% for i in 1..5 %}
+                                        <i class="far fa-star fa-2x star" data-value="{{ i }}"></i>
+                                        {% endfor %}
+                                    </div>
+                                    <input type="hidden" name="feedback_enfant" id="feedbackValue">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">Message pour tes parents :</label>
+                                    <textarea name="note_parent" class="form-control" rows="3"></textarea>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-success rounded-pill px-5 py-2">
+                                        Terminer <i class="fas fa-check ms-2"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    let breathingInterval;
+    let timerInterval;
+    let startTime;
+    let cycleCount = 0;
+    let isBreathing = false;
+    let phase = 'inspire'; // inspire ou expire
+    
+    const breathingCircle = document.querySelector('.breathing-circle');
+    const breathText = document.getElementById('breathText');
+    const breathCounter = document.getElementById('breathCounter');
+    
+    function startBreathing() {
+        isBreathing = true;
+        startTime = Date.now();
+        
+        // Démarrer le timer (5 minutes)
+        let timeLeft = 5 * 60;
+        timerInterval = setInterval(function() {
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                stopBreathing();
+            } else {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timer').textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+        }, 1000);
+        
+        // Animation de respiration
+        breathingInterval = setInterval(() => {
+            if (phase === 'inspire') {
+                breathingCircle.style.transform = 'scale(1.5)';
+                breathText.textContent = 'Inspire...';
+                breathText.style.opacity = '1';
+                phase = 'expire';
+                cycleCount++;
+                breathCounter.textContent = cycleCount;
+            } else {
+                breathingCircle.style.transform = 'scale(1)';
+                breathText.textContent = 'Expire...';
+                breathText.style.opacity = '0.7';
+                phase = 'inspire';
+            }
+        }, 4000);
+    }
+    
+    function stopBreathing() {
+        isBreathing = false;
+        clearInterval(breathingInterval);
+        clearInterval(timerInterval);
+        
+        const endTime = Date.now();
+        const dureeReelle = Math.round((endTime - startTime) / 1000 / 60);
+        document.getElementById('dureeReelle').value = dureeReelle;
+        
+        breathingCircle.style.transform = 'scale(1)';
+        document.getElementById('feedbackSection').style.display = 'block';
+        document.getElementById('startBreathing').style.display = 'none';
+        document.getElementById('stopBreathing').style.display = 'none';
+    }
+    
+    document.getElementById('startBreathing').addEventListener('click', function() {
+        startBreathing();
+        this.style.display = 'none';
+        document.getElementById('stopBreathing').style.display = 'inline-block';
+    });
+    
+    document.getElementById('stopBreathing').addEventListener('click', function() {
+        if (confirm('Terminer la session de respiration ?')) {
+            stopBreathing();
+        }
+    });
+    
+    // Gestion des étoiles
+    document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', function() {
+            const value = this.dataset.value;
+            document.getElementById('feedbackValue').value = value;
+            
+            document.querySelectorAll('.star').forEach(s => {
+                if(s.dataset.value <= value) {
+                    s.classList.remove('far');
+                    s.classList.add('fas');
+                    s.style.color = '#ffc107';
+                } else {
+                    s.classList.remove('fas');
+                    s.classList.add('far');
+                    s.style.color = '#ddd';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

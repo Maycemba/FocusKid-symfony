@@ -1,0 +1,102 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Sessions de calme - FocusKid{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+            <h1 class="mb-3">Sessions de calme</h1>
+            <p>Choisis une activité pour te détendre et retrouver ton calme</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Musique -->
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="activity-card bg-light rounded text-center p-4 h-100">
+                    <div class="activity-icon bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 100px; height: 100px;">
+                        <i class="fas fa-music fa-4x text-white"></i>
+                    </div>
+                    <h3 class="mb-3">Musique apaisante</h3>
+                    <p class="mb-4">Écoute des mélodies douces pour te relaxer</p>
+                    <a href="{{ path('app_session_calme_activite', {type: 'musique'}) }}" class="btn btn-primary rounded-pill py-2 px-4">
+                        Lancer la session <i class="fas fa-play ms-2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Coloriage -->
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.2s">
+                <div class="activity-card bg-light rounded text-center p-4 h-100">
+                    <div class="activity-icon bg-success rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 100px; height: 100px;">
+                        <i class="fas fa-paint-brush fa-4x text-white"></i>
+                    </div>
+                    <h3 class="mb-3">Coloriage</h3>
+                    <p class="mb-4">Colorie des dessins relaxants</p>
+                    <a href="{{ path('app_session_calme_activite', {type: 'coloriage'}) }}" class="btn btn-success rounded-pill py-2 px-4">
+                        Lancer la session <i class="fas fa-play ms-2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Respiration -->
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="activity-card bg-light rounded text-center p-4 h-100">
+                    <div class="activity-icon bg-info rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 100px; height: 100px;">
+                        <i class="fas fa-lungs fa-4x text-white"></i>
+                    </div>
+                    <h3 class="mb-3">Respiration guidée</h3>
+                    <p class="mb-4">Apprends à respirer pour te calmer</p>
+                    <a href="{{ path('app_session_calme_activite', {type: 'respiration'}) }}" class="btn btn-info rounded-pill py-2 px-4 text-white">
+                        Lancer la session <i class="fas fa-play ms-2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Histoire -->
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.4s">
+                <div class="activity-card bg-light rounded text-center p-4 h-100">
+                    <div class="activity-icon bg-warning rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 100px; height: 100px;">
+                        <i class="fas fa-book-open fa-4x text-white"></i>
+                    </div>
+                    <h3 class="mb-3">Histoire de calme</h3>
+                    <p class="mb-4">Écoute une histoire apaisante</p>
+                    <a href="{{ path('app_session_calme_activite', {type: 'histoire'}) }}" class="btn btn-warning rounded-pill py-2 px-4 text-white">
+                        Lancer la session <i class="fas fa-play ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message de bienvenue -->
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <div class="bg-light rounded p-4">
+                    <h4 class="text-primary mb-2">✨ Prends soin de toi ✨</h4>
+                    <p class="mb-0">Chaque session t'aide à te sentir mieux. N'oublie pas de partager tes ressentis avec tes parents !</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .activity-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+    .activity-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .activity-icon {
+        transition: transform 0.3s ease;
+    }
+    .activity-card:hover .activity-icon {
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}

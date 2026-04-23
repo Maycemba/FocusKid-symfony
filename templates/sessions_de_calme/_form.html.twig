@@ -1,4 +1,74 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form_label(form.type_activite) }}
+                    {{ form_widget(form.type_activite, {'attr': {'class': 'form-control', 'id': 'sessionType'}}) }}
+                    {{ form_errors(form.type_activite) }}
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    {{ form_label(form.declencheur) }}
+                    {{ form_widget(form.declencheur, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.declencheur) }}
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    {{ form_label(form.duree_prevue) }}
+                    {{ form_widget(form.duree_prevue, {'attr': {'class': 'form-control', 'placeholder': 'Durée en minutes'}}) }}
+                    {{ form_errors(form.duree_prevue) }}
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    {{ form_label(form.duree_reelle) }}
+                    {{ form_widget(form.duree_reelle, {'attr': {'class': 'form-control', 'placeholder': 'Durée en minutes'}}) }}
+                    {{ form_errors(form.duree_reelle) }}
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    {{ form_label(form.horodatage) }}
+                    {{ form_widget(form.horodatage, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.horodatage) }}
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form_label(form.feedback_enfant) }}
+                    {{ form_widget(form.feedback_enfant, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.feedback_enfant) }}
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    {{ form_label(form.note_parent) }}
+                    {{ form_widget(form.note_parent, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                    {{ form_errors(form.note_parent) }}
+                </div>
+            </div>
+            
+            {% if form.utilisateur is defined %}
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    {{ form_label(form.utilisateur) }}
+                    {{ form_widget(form.utilisateur, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.utilisateur) }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="card-footer">
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-device-floppy"></i> {{ button_label|default('Enregistrer') }}
+                </button>
+                <a href="{{ path('app_sessions_de_calme_index') }}" class="btn btn-secondary">
+                    <i class="ti ti-arrow-left"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+    </div>
 {{ form_end(form) }}

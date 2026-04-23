@@ -1,13 +1,72 @@
-{% extends 'base-front.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}Edit SessionsDeCalme{% endblock %}
+{% block title %}Modifier la session - FocusKids{% endblock %}
 
 {% block body %}
-    <h1>Edit SessionsDeCalme</h1>
-
-    {{ include('sessions_de_calme/_form.html.twig', {'button_label': 'Update'}) }}
-
-    <a href="{{ path('app_sessions_de_calme_index') }}">back to list</a>
-
-    {{ include('sessions_de_calme/_delete_form.html.twig') }}
+<div class="container-fluid px-4">
+    <div class="row">
+        <div class="col-12">
+        
+            <!-- Navigation breadcrumb -->
+            <nav aria-label="breadcrumb" class="mt-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('app_sessions_de_calme_index') }}">Sessions de calme</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('app_sessions_de_calme_show', {'id': sessions_de_calme.id}) }}">
+                            Session #{{ sessions_de_calme.id }}
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+                </ol>
+            </nav>
+            
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h4 class="mb-0">
+                                <i class="ti ti-edit"></i> Modifier la session
+                            </h4>
+                            <small>Session du {{ sessions_de_calme.horodatage ? sessions_de_calme.horodatage|date('d/m/Y H:i') : '' }}</small>
+                        </div>
+                        <div>
+                            <a href="{{ path('app_sessions_de_calme_index') }}" class="btn btn-light">
+                                <i class="ti ti-arrow-left"></i> Retour à la liste
+                            </a>
+                            <a href="{{ path('app_sessions_de_calme_show', {'id': sessions_de_calme.id}) }}" 
+                               class="btn btn-info text-white">
+                                <i class="ti ti-eye"></i> Voir
+                            </a>
+                        </div>
+                        
+                    </div>
+                </div>
+                     <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">
+                                <i class="ti ti-calendar"></i> Dernière modification : 
+                                {{ sessions_de_calme.horodatage ? sessions_de_calme.horodatage|date('d/m/Y H:i:s') : 'N/A' }}
+                            </small>
+                        </div>
+                    
+<div class="modal-footer">
+    {{ include('sessions_de_calme/_delete_form.html.twig', {'sessions_de_calme': sessions_de_calme}) }}
+</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {{ include('sessions_de_calme/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+                </div>
+                
+           
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
+</div>
 {% endblock %}
