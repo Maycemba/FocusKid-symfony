@@ -11,6 +11,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
 #[Route('/suivi')]
 class SuiviController extends AbstractController
@@ -83,14 +85,19 @@ class SuiviController extends AbstractController
         ]);
     }
     
-    #[Route('/enfant/{id}/stats', name: 'app_suivi_enfant_stats')]
-    public function enfantStats(int $id, UtilisateurRepository $utilisateurRepository, ReponseExerciceRepository $reponseRepository, ExerciceRepository $exerciceRepository): Response
+   #[Route('/enfant/{id}/stats', name: 'app_suivi_enfant_stats')]
+    public function enfantStats(int $id, ChartBuilderInterface $chartBuilder, UtilisateurRepository $utilisateurRepository, ReponseExerciceRepository $reponseRepository, ExerciceRepository $exerciceRepository): Response
     {
         $enfant = $utilisateurRepository->find($id);
+        
+        if (!$enfant) {
+            throw $this->createNotFoundException('Enfant non trouvé');
+        }
+        
         $reponses = $reponseRepository->findBy(['enfant_id' => $id]);
         $exercices = $exerciceRepository->findAll();
         
-        // Statistiques générales
+        // ========== STATISTIQUES GÉNÉRALES ==========
         $totalExercices = count($exercices);
         $exercicesFaits = count($reponses);
         $tauxReussite = $totalExercices > 0 ? round(($exercicesFaits / $totalExercices) * 100, 1) : 0;
@@ -107,13 +114,14 @@ class SuiviController extends AbstractController
         
         $tauxReussiteReel = count($reponses) > 0 ? round(($reussites / count($reponses)) * 100, 1) : 0;
         $tempsMoyen = count($reponses) > 0 ? round($tempsTotal / count($reponses), 1) : 0;
+        $scoreMoyen = count($reponses) > 0 ? round($scoreTotal / count($reponses), 1) : 0;
         
-        // Statistiques par type d'exercice
+        // ========== STATISTIQUES PAR TYPE ==========
         $statsParType = [
-            'MÉMOIRE' => ['total' => 0, 'faits' => 0],
-            'ATTENTION' => ['total' => 0, 'faits' => 0],
-            'LOGIQUE' => ['total' => 0, 'faits' => 0],
-            'CHRONO' => ['total' => 0, 'faits' => 0],
+            'MÉMOIRE' => ['total' => 0, 'faits' => 0, 'scores' => []],
+            'ATTENTION' => ['total' => 0, 'faits' => 0, 'scores' => []],
+            'LOGIQUE' => ['total' => 0, 'faits' => 0, 'scores' => []],
+            'CHRONO' => ['total' => 0, 'faits' => 0, 'scores' => []],
         ];
         
         foreach ($exercices as $exo) {
@@ -126,20 +134,25 @@ class SuiviController extends AbstractController
             $exercice = $exerciceRepository->find($r->getExerciceId());
             if ($exercice && isset($statsParType[$exercice->getType()])) {
                 $statsParType[$exercice->getType()]['faits']++;
+                $statsParType[$exercice->getType()]['scores'][] = $r->getScore();
             }
         }
         
-        // Évolution des scores
-        $evolution = [];
-        foreach ($reponses as $r) {
-            $date = $r->getDatePassage()->format('d/m');
-            if (!isset($evolution[$date])) {
-                $evolution[$date] = 0;
-            }
-            $evolution[$date] += $r->getScore();
+        // Calcul des moyennes par type
+        $moyennesParType = [];
+        foreach ($statsParType as $type => $data) {
+            $moyennesParType[$type] = !empty($data['scores']) ? round(array_sum($data['scores']) / count($data['scores']), 1) : 0;
         }
         
-        // Performances par jour
+        // ========== ÉVOLUTION DES SCORES ==========
+        $evolutionLabels = [];
+        $evolutionData = [];
+        foreach (array_reverse($reponses) as $r) {
+            $evolutionLabels[] = $r->getDatePassage()->format('d/m');
+            $evolutionData[] = $r->getScore();
+        }
+        
+        // ========== PERFORMANCES PAR JOUR ==========
         $jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
         $perfParJour = array_fill(0, 7, 0);
         $countParJour = array_fill(0, 7, 0);
@@ -157,7 +170,7 @@ class SuiviController extends AbstractController
             $tauxParJour[$i] = $countParJour[$i] > 0 ? round(($perfParJour[$i] / $countParJour[$i]) * 100, 1) : 0;
         }
         
-        // Progression
+        // ========== PROGRESSION ==========
         $progression = 0;
         if (count($reponses) >= 2) {
             $premierScore = $reponses[count($reponses) - 1]->getScore();
@@ -165,21 +178,148 @@ class SuiviController extends AbstractController
             $progression = $dernierScore - $premierScore;
         }
         
+        // ========== GRAPHIQUE ÉVOLUTION ==========
+        $evolutionChart = $chartBuilder->createChart(Chart::TYPE_LINE)
+            ->setData([
+                'labels' => $evolutionLabels,
+                'datasets' => [
+                    [
+                        'label' => 'Score',
+                        'backgroundColor' => 'rgba(255, 152, 0, 0.2)',
+                        'borderColor' => '#FF9800',
+                        'data' => $evolutionData,
+                        'tension' => 0.3,
+                        'fill' => true,
+                        'pointBackgroundColor' => '#FF9800',
+                        'pointBorderColor' => '#fff',
+                        'pointRadius' => 5,
+                        'pointHoverRadius' => 7,
+                    ],
+                ],
+            ])
+            ->setOptions([
+                'responsive' => true,
+                'maintainAspectRatio' => false,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Évolution des scores dans le temps',
+                        'font' => ['size' => 16],
+                    ],
+                    'tooltip' => [
+                        'callbacks' => [
+                            'label' => 'function(context) { return "Score: " + context.raw + " points"; }',
+                        ],
+                    ],
+                ],
+                'scales' => [
+                    'y' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Score (points)',
+                        ],
+                    ],
+                    'x' => [
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Date',
+                        ],
+                    ],
+                ],
+            ]);
+        
+        // ========== GRAPHIQUE PAR TYPE (CAMEMBERT) ==========
+        $typeLabels = [];
+        $typeData = [];
+        $typeColors = ['#9C27B0', '#2196F3', '#FF9800', '#F44336'];
+        foreach ($statsParType as $type => $data) {
+            if ($data['total'] > 0) {
+                $typeLabels[] = $type;
+                $typeData[] = $data['faits'];
+            }
+        }
+        
+        $typeChart = $chartBuilder->createChart(Chart::TYPE_PIE)
+            ->setData([
+                'labels' => $typeLabels,
+                'datasets' => [
+                    [
+                        'data' => $typeData,
+                        'backgroundColor' => $typeColors,
+                        'borderWidth' => 0,
+                    ],
+                ],
+            ])
+            ->setOptions([
+                'responsive' => true,
+                'maintainAspectRatio' => false,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Répartition des exercices complétés par type',
+                        'font' => ['size' => 16],
+                    ],
+                    'legend' => [
+                        'position' => 'bottom',
+                    ],
+                ],
+            ]);
+        
+        // ========== GRAPHIQUE PERFORMANCE PAR JOUR (BARRES) ==========
+        $weekdayChart = $chartBuilder->createChart(Chart::TYPE_BAR)
+            ->setData([
+                'labels' => $jours,
+                'datasets' => [
+                    [
+                        'label' => 'Taux de réussite (%)',
+                        'data' => $tauxParJour,
+                        'backgroundColor' => '#FF9800',
+                        'borderRadius' => 10,
+                        'barPercentage' => 0.7,
+                    ],
+                ],
+            ])
+            ->setOptions([
+                'responsive' => true,
+                'maintainAspectRatio' => false,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Performance par jour de la semaine',
+                        'font' => ['size' => 16],
+                    ],
+                ],
+                'scales' => [
+                    'y' => [
+                        'beginAtZero' => true,
+                        'max' => 100,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Taux de réussite (%)',
+                        ],
+                    ],
+                ],
+            ]);
+        
         return $this->render('suivi/enfant_stats.html.twig', [
             'enfant' => $enfant,
+            'evolutionChart' => $evolutionChart,
+            'typeChart' => $typeChart,
+            'weekdayChart' => $weekdayChart,
             'totalExercices' => $totalExercices,
             'exercicesFaits' => $exercicesFaits,
             'tauxReussite' => $tauxReussite,
             'tauxReussiteReel' => $tauxReussiteReel,
             'scoreTotal' => $scoreTotal,
+            'scoreMoyen' => $scoreMoyen,
             'tempsMoyen' => $tempsMoyen,
             'statsParType' => $statsParType,
-            'evolution' => $evolution,
-            'tauxParJour' => $tauxParJour,
-            'jours' => $jours,
+            'moyennesParType' => $moyennesParType,
             'progression' => $progression,
         ]);
     }
+
     
     // Dans src/Controller/SuiviController.php
 

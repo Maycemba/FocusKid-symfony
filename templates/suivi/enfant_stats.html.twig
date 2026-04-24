@@ -1,144 +1,177 @@
 {% extends 'base-back.html.twig' %}
 
-{% block title %}Statistiques - {{ enfant.username }} - FocusKids{% endblock %}
-
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .back-btn { background: #FF9800; color: white; border-radius: 25px; padding: 8px 20px; text-decoration: none; display: inline-block; }
-        .back-btn:hover { background: #F57C00; color: white; }
-        .kpi-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: 100%; }
-        .kpi-value { font-size: 32px; font-weight: bold; color: #9C27B0; }
-        .kpi-label { color: #666; font-size: 14px; }
-        .progress { height: 10px; border-radius: 5px; }
-        .stat-card { background: #f8f9fa; border-radius: 15px; padding: 15px; margin-bottom: 15px; }
-        .type-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
-        .type-memoire { background: #9C27B0; color: white; }
-        .type-attention { background: #2196F3; color: white; }
-        .type-logique { background: #FF9800; color: white; }
-        .type-chrono { background: #F44336; color: white; }
-    </style>
-{% endblock %}
-
 {% block body %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <a href="{{ path('app_suivi_enfant_menu', {'id': enfant.id}) }}" class="back-btn">
-                <i class="ti ti-arrow-left"></i> Retour au menu
-            </a>
-            <h2 class="fw-bold mt-3">
-                <i class="ti ti-chart-bar"></i> Statistiques - {{ enfant.username }}
-            </h2>
+            <h2 class="fw-bold">📊 Statistiques détaillées</h2>
+            <p class="text-muted">{{ enfant.username }} - {{ 'now'|date('d/m/Y') }}</p>
         </div>
+        <a href="{{ path('app_suivi_enfant_menu', {'id': enfant.id}) }}" class="btn btn-warning">
+            ⬅️ Retour au menu
+        </a>
     </div>
 
-    <!-- KPI Cards -->
+    <!-- Cartes KPI -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
-            <div class="kpi-card">
-                <div class="kpi-value">{{ totalExercices }}</div>
-                <div class="kpi-label">📚 Exercices assignés</div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="kpi-card">
-                <div class="kpi-value">{{ exercicesFaits }}</div>
-                <div class="kpi-label">✅ Exercices complétés</div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="kpi-card">
-                <div class="kpi-value">{{ tauxReussite }}%</div>
-                <div class="kpi-label">📈 Taux de complétion</div>
-                <div class="progress mt-2">
-                    <div class="progress-bar bg-success" style="width: {{ tauxReussite }}%"></div>
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">📚 Exercices</h5>
+                    <h2 class="mb-0">{{ exercicesFaits }}/{{ totalExercices }}</h2>
+                    <small>Taux de complétion: {{ tauxReussite }}%</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
-            <div class="kpi-card">
-                <div class="kpi-value">{{ scoreTotal }}</div>
-                <div class="kpi-label">🏆 Score total</div>
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">🏆 Score total</h5>
+                    <h2 class="mb-0">{{ scoreTotal }}</h2>
+                    <small>Moyenne: {{ scoreMoyen }} pts/exo</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">✅ Taux de réussite</h5>
+                    <h2 class="mb-0">{{ tauxReussiteReel }}%</h2>
+                    <small>Sur les exercices tentés</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">⏱️ Temps moyen</h5>
+                    <h2 class="mb-0">{{ tempsMoyen }} s</h2>
+                    <small>Par exercice</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progression -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">📈 Progression</h5>
+                    {% if progression > 0 %}
+                        <h3 class="text-success">+{{ progression }} points</h3>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: {{ (progression / 100 * 100)|round }}%"></div>
+                        </div>
+                        <small>Félicitations ! L'enfant progresse bien !</small>
+                    {% elseif progression < 0 %}
+                        <h3 class="text-danger">{{ progression }} points</h3>
+                        <div class="progress">
+                            <div class="progress-bar bg-danger" style="width: {{ (progression|abs / 100 * 100)|round }}%"></div>
+                        </div>
+                        <small>Des difficultés sont constatées. Plus d'exercices sont recommandés.</small>
+                    {% else %}
+                        <h3 class="text-warning">Stable</h3>
+                        <small>La progression est stable. Continuez ainsi !</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row">
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📈 Évolution des scores</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 400px;">
+                        {{ render_chart(evolutionChart) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">🥧 Répartition par type</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 400px;">
+                        {{ render_chart(typeChart) }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="row">
-        <!-- Taux de réussite réel -->
-        <div class="col-md-6 mb-3">
-            <div class="stat-card">
-                <h6><i class="ti ti-chart-line"></i> Taux de réussite (exercices tentés)</h6>
-                <div class="d-flex align-items-center mt-2">
-                    <div class="kpi-value" style="font-size: 48px;">{{ tauxReussiteReel }}%</div>
-                    <div class="ms-3 flex-grow-1">
-                        <div class="progress">
-                            <div class="progress-bar bg-{{ tauxReussiteReel >= 80 ? 'success' : (tauxReussiteReel >= 50 ? 'warning' : 'danger') }}" style="width: {{ tauxReussiteReel }}%"></div>
-                        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📊 Performance par jour</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 350px;">
+                        {{ render_chart(weekdayChart) }}
                     </div>
-                </div>
-                <small class="text-muted">Temps moyen: {{ tempsMoyen }} secondes</small>
-            </div>
-        </div>
-
-        <!-- Progression -->
-        <div class="col-md-6 mb-3">
-            <div class="stat-card">
-                <h6><i class="ti ti-trending-up"></i> Progression</h6>
-                <div class="kpi-value" style="font-size: 48px; color: {{ progression >= 0 ? '#4CAF50' : '#F44336' }}">
-                    {{ progression >= 0 ? '+' : '' }}{{ progression }} pts
-                </div>
-                <div class="progress mt-2">
-                    <div class="progress-bar {{ progression >= 0 ? 'bg-success' : 'bg-danger' }}" style="width: {{ progression >= 0 ? progression : 0 }}%"></div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Performance par type -->
-    <div class="card mb-3">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">🎯 Performance par type d'exercice</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                {% for type, data in statsParType %}
-                    {% set pourcentage = data.total > 0 ? (data.faits / data.total * 100) : 0 %}
-                    <div class="col-md-3 mb-3">
-                        <div class="text-center">
-                            <div class="type-badge type-{{ type|lower }} mb-2">{{ type }}</div>
-                            <div class="kpi-value" style="font-size: 28px;">{{ data.faits }}/{{ data.total }}</div>
-                            <div class="progress mt-2">
-                                <div class="progress-bar" style="width: {{ pourcentage }}%"></div>
-                            </div>
-                            <small class="text-muted">{{ pourcentage|round }}% complété</small>
-                        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">🎯 Performance par type d'exercice</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-warning">
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Complétés</th>
+                                    <th>Total</th>
+                                    <th>Taux</th>
+                                    <th>Score moyen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for type, data in statsParType %}
+                                    {% set pourcentage = data.total > 0 ? (data.faits / data.total * 100) : 0 %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge type-{{ type|lower }}">
+                                                {{ type }}
+                                            </span>
+                                        </td>
+                                        <td>{{ data.faits }}</td>
+                                        <td>{{ data.total }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="me-2">{{ pourcentage|round }}%</span>
+                                                <div class="progress flex-grow-1" style="height: 5px;">
+                                                    <div class="progress-bar" style="width: {{ pourcentage }}%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ moyennesParType[type] }} pts</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Performance par jour -->
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">📅 Performance par jour de la semaine</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                {% for i in 0..6 %}
-                    <div class="col-md-3 mb-3">
-                        <div class="text-center">
-                            <strong>{{ jours[i] }}</strong>
-                            <div class="kpi-value" style="font-size: 28px;">{{ tauxParJour[i] }}%</div>
-                            <div class="progress mt-2">
-                                <div class="progress-bar bg-{{ tauxParJour[i] >= 80 ? 'success' : (tauxParJour[i] >= 50 ? 'warning' : 'danger') }}" style="width: {{ tauxParJour[i] }}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .type-memoire { background: #9C27B0; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+    .type-attention { background: #2196F3; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+    .type-logique { background: #FF9800; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+    .type-chrono { background: #F44336; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+</style>
 {% endblock %}

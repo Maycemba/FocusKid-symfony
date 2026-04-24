@@ -298,32 +298,35 @@
                             <div class="col-md-12">
                                 <div class="btn-group flex-wrap" role="group">
                                     <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Lundi" class="btn-check planning-day"> L
+                                        <input type="checkbox" name="jours[]" value="Lundi" class="btn-check planning-day"> L
                                     </label>
                                     <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Mardi" class="btn-check planning-day"> M
+                                        <input type="checkbox" name="jours[]" value="Mardi" class="btn-check planning-day"> M
                                     </label>
                                     <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Mercredi" class="btn-check planning-day"> M
+                                        <input type="checkbox" name="jours[]" value="Mercredi" class="btn-check planning-day"> M
                                     </label>
                                     <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Jeudi" class="btn-check planning-day"> J
+                                        <input type="checkbox" name="jours[]" value="Jeudi" class="btn-check planning-day"> J
                                     </label>
                                     <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Vendredi" class="btn-check planning-day"> V
+                                        <input type="checkbox" name="jours[]" value="Vendredi" class="btn-check planning-day"> V
                                     </label>
                                     <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Samedi" class="btn-check planning-day"> S
+                                        <input type="checkbox" name="jours[]" value="Samedi" class="btn-check planning-day"> S
                                     </label>
                                     <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Dimanche" class="btn-check planning-day"> D
+                                        <input type="checkbox" name="jours[]" value="Dimanche" class="btn-check planning-day"> D
                                     </label>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- 🔥 CHAMP CACHÉ AJOUTÉ MANUELLEMENT 🔥 -->
+                    <!-- Champ caché pour les jours -->
+                    <input type="hidden" id="joursHidden" name="jours" value="">
+                    
+                    <!-- Champ caché pour le JSON -->
                     <input type="hidden" id="contenuJson" name="exercice[contenu]" value="{}">
                     
                     <div class="row mt-4">
@@ -504,7 +507,7 @@
             }
         });
         
-        // 🔥 SOUMISSION DU FORMULAIRE - VERSION CORRIGÉE
+        // SOUMISSION DU FORMULAIRE - VERSION CORRIGÉE
         const form = document.getElementById('exerciceForm');
         if (form) {
             form.addEventListener('submit', function(e) {
@@ -514,19 +517,15 @@
                 if (type === 'CHRONO') {
                     let defis = [];
                     const rows = document.querySelectorAll('#chronoDefisContainer .defi-row');
-                    console.log("📌 Défis trouvés:", rows.length);
-                    
                     rows.forEach(row => {
                         const inputs = row.querySelectorAll('input');
                         const question = inputs[0]?.value || '';
                         const reponse = inputs[1]?.value || '';
                         const points = parseInt(inputs[2]?.value || 10);
-                        
                         if (question.trim()) {
                             defis.push({ question, reponse, points });
                         }
                     });
-                    
                     configJson = {
                         dureeTotale: parseInt(document.getElementById('chronoDuree')?.value || 60),
                         defis: defis
@@ -576,13 +575,23 @@
                     };
                 }
                 
-                // Mettre à jour le champ caché
+                // Mettre à jour le champ caché du JSON
                 const contenuField = document.getElementById('contenuJson');
                 if (contenuField) {
                     contenuField.value = JSON.stringify(configJson);
                     console.log("✅ JSON envoyé:", contenuField.value);
-                } else {
-                    console.error("❌ Champ contenuJson non trouvé !");
+                }
+                
+                // 🔥 RÉCUPÉRER LES JOURS ET LES METTRE DANS LE CHAMP CACHÉ
+                const jours = [];
+                document.querySelectorAll('.planning-day:checked').forEach(cb => {
+                    jours.push(cb.value);
+                });
+                
+                const joursHidden = document.getElementById('joursHidden');
+                if (joursHidden) {
+                    joursHidden.value = jours.join(',');
+                    console.log("📅 Jours envoyés:", joursHidden.value);
                 }
             });
         }
