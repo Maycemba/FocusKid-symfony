@@ -2,633 +2,534 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Carnet éducatif #{{ carnet_educatif.id }}</title>
+    <title>Carnet éducatif FocusKid</title>
     <style>
-        /* ===== RESET & BASE ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        @page {
-            margin: 0;
-            size: A4;
-        }
-
         body {
-            font-family: 'Segoe UI', 'Arial', sans-serif;
-            color: #2d3561;
-            background: #fff;
-            line-height: 1.5;
-            font-size: 13px;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* ===== CONTENEUR PRINCIPAL AVEC BACKGROUND ===== */
-        .page-wrapper {
-            position: relative;
-            min-height: 100vh;
-            /* Image de fond avec chemin absolu pour Dompdf */
-            background-image: url('{{ absolute_url(asset('images/background_kid.png')) }}');
-            background-repeat: repeat;
-            background-size: 200px;
-            background-position: center;
-            overflow: hidden;
-        }
-
-        /* Dégradé transparent par-dessus le fond pour meilleure lisibilité */
-        .page-wrapper::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(248,250,255,0.96) 100%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* Étoiles décoratives */
-        .bg-deco {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.3;
-        }
-
-        .star {
-            position: absolute;
-            font-size: 22px;
-            animation: floatStar 8s ease-in-out infinite;
-        }
-
-        @keyframes floatStar {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(10deg); }
-        }
-
-        .content {
-            position: relative;
-            z-index: 2;
-            padding: 0 2cm 1.5cm 2cm;
-        }
-
-        /* ===== EN-TÊTE COLORÉ ===== */
-        .header {
-            background: linear-gradient(135deg, #1CC88A 0%, #0eae70 40%, #4E73DF 100%);
-            margin: 0 -2cm 0 -2cm;
-            padding: 22px 2cm 18px 2cm;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.08);
-            top: -70px;
-            right: 50px;
-        }
-
-        .header::after {
-            content: '';
-            position: absolute;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            bottom: -50px;
-            right: 180px;
-        }
-
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .logo-svg-wrap {
-            width: 62px;
-            height: 62px;
-            background: #fff;
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.18);
-        }
-
-        .logo-svg-wrap svg {
-            width: 40px;
-            height: 40px;
-        }
-
-        .logo-text-block {
-            color: #fff;
-        }
-
-        .logo-name {
-            font-size: 26px;
-            font-weight: 900;
-            letter-spacing: -0.5px;
-        }
-
-        .logo-tagline {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            background: #4a7c2f;
+            padding: 20px;
             font-size: 11px;
-            font-weight: 500;
-            opacity: 0.88;
+            color: #333;
         }
 
-        .report-badge {
-            background: rgba(255,255,255,0.18);
-            border: 1.5px solid rgba(255,255,255,0.4);
-            border-radius: 14px;
-            padding: 10px 18px;
-            text-align: right;
-            color: #fff;
-            backdrop-filter: blur(4px);
+        /* ── Conteneur principal ── */
+        .pdf-container {
+            max-width: 750px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
         }
 
-        .report-badge .rb-num {
-            font-size: 19px;
-            font-weight: 900;
+        /* ── En-tête ── */
+        .header {
+            text-align: center;
+            background: #2d5016;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
         }
-
-        .report-badge .rb-date {
+        .header-title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .header-sub {
             font-size: 10px;
-            opacity: 0.82;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        .header-badge {
+            background: #7ab648;
+            display: inline-block;
+            padding: 4px 15px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-size: 9px;
+        }
+
+        /* ── Titres de sections ── */
+        .section-title {
+            font-size: 12px;
+            font-weight: bold;
+            margin: 15px 0 8px 0;
+            padding: 8px 14px;
+            border-radius: 8px;
+            color: white;
+            display: table;
+            width: 100%;
+        }
+        .section-title span {
+            display: table-cell;
+            vertical-align: middle;
+        }
+        .section-title .s-icon {
+            width: 24px;
+        }
+        .title-green  { background: #2d5016; }
+        .title-blue   { background: #2a6490; }
+        .title-gold   { background: #b86b20; }
+        .title-purple { background: #7c3d8a; }
+        .title-pink   { background: #c0385a; }
+
+        /* ── Fleurs décoratives ── */
+        .flowers {
+            text-align: center;
+            font-size: 12px;
+            margin: 6px 0 10px 0;
+            color: #8bc34a;
+        }
+
+        /* ── Grille ── */
+        .grid {
+            display: table;
+            width: 100%;
+            border-spacing: 0;
+        }
+        .grid-row {
+            display: table-row;
+        }
+        .grid-cell {
+            display: table-cell;
+            padding: 0 6px 10px 0;
+            vertical-align: top;
+        }
+        .grid-cell:last-child { padding-right: 0; }
+        .col-3 { width: 33.33%; }
+        .col-2 { width: 50%; }
+
+        /* ── Carte ── */
+        .card {
+            background: #f8fdf4;
+            border: 1px solid #c8e6a5;
+            border-radius: 10px;
+            padding: 10px 12px;
+            height: 100%;
+        }
+        .card-label {
+            font-size: 8px;
+            text-transform: uppercase;
+            color: #7ab648;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .card-value {
+            font-size: 13px;
+            font-weight: bold;
+            color: #2d5016;
+        }
+        .card-sub {
+            font-size: 9px;
+            color: #999;
             margin-top: 2px;
         }
 
-        /* Bandeau arc-en-ciel */
-        .rainbow-bar {
-            height: 6px;
-            background: linear-gradient(90deg,
-                #FF6B6B 0%,
-                #FFD93D 20%,
-                #6BCB77 40%,
-                #4EC5F1 60%,
-                #C77DFF 80%,
-                #FF6B6B 100%
-            );
-            margin: 0 -2cm 20px -2cm;
-        }
+        /* ── Score avec barre ── */
+        .score-wrap { display: table; width: 100%; }
+        .score-num  { display: table-cell; vertical-align: middle; }
+        .score-bar  { display: table-cell; vertical-align: middle; padding-left: 8px; width: 100%; }
 
-        /* ===== RÉSUMÉ RAPIDE ===== */
-        .quick-summary {
-            background: linear-gradient(135deg, #f0fdf9, #eef2ff);
-            border-radius: 16px;
-            padding: 12px 18px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 24px;
-            align-items: center;
-            border: 1.5px solid #dbe8f8;
-            flex-wrap: wrap;
+        .score-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4a7c2f;
+            line-height: 1;
         }
-
-        .qs-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            font-weight: 700;
-            color: #2d3561;
-        }
-
-        .qs-icon {
-            font-size: 16px;
-        }
-
-        .qs-val {
-            background: #fff;
-            border-radius: 20px;
-            padding: 2px 10px;
-            font-weight: 800;
-            color: #1CC88A;
-            border: 1.5px solid #c8f0df;
-        }
-
-        /* ===== TITRES DE SECTION ===== */
-        h2 {
-            font-size: 14px;
-            font-weight: 900;
-            margin: 22px 0 12px 0;
-            padding: 9px 14px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            letter-spacing: 0.1px;
-        }
-
-        h2.sec-blue {
-            background: linear-gradient(90deg, #e8edfd, #f3f6ff);
-            border-left: 5px solid #4E73DF;
-            color: #2d3561;
-        }
-
-        h2.sec-green {
-            background: linear-gradient(90deg, #d4f7ec, #f0fdf9);
-            border-left: 5px solid #1CC88A;
-            color: #0a5c3a;
-        }
-
-        h2.sec-orange {
-            background: linear-gradient(90deg, #fef3e0, #fff9f0);
-            border-left: 5px solid #F39C12;
-            color: #7a4a00;
-        }
-
-        h2.sec-purple {
-            background: linear-gradient(90deg, #f3ecff, #faf5ff);
-            border-left: 5px solid #9B59B6;
-            color: #5b2d8e;
-        }
-
-        /* ===== GRILLE D'INFOS ===== */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-
-        .info-item {
-            background: rgba(248,250,255,0.9);
-            border-radius: 12px;
-            padding: 10px 12px;
-            border: 1.5px solid #e8ecf5;
-            transition: all 0.2s;
-        }
-
-        .info-label {
+        .score-max {
             font-size: 9px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: #8590a5;
-            margin-bottom: 4px;
+            color: #999;
         }
 
-        .info-value {
-            font-size: 13px;
-            font-weight: 800;
-            color: #2d3561;
-        }
-
-        .info-value.highlight-green { color: #1CC88A; }
-        .info-value.highlight-blue  { color: #4E73DF; }
-        .info-value.highlight-orange{ color: #F39C12; }
-
-        /* ===== BARRES DE PROGRESSION ===== */
-        .score-bar-wrap {
-            margin-top: 6px;
-        }
-
-        .score-bar-bg {
-            background: #e8ecf5;
-            border-radius: 10px;
+        /* ── Barres de progression ── */
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 6px;
             height: 6px;
             overflow: hidden;
         }
-
-        .score-bar-fill {
-            height: 100%;
-            border-radius: 10px;
-            background: linear-gradient(90deg, #1CC88A, #0eae70);
+        .progress-fill {
+            height: 6px;
+            border-radius: 6px;
         }
+        .fill-green  { background: #4a7c2f; }
+        .fill-orange { background: #e8a020; }
+        .fill-blue   { background: #4eaad4; }
 
-        .score-bar-fill.orange {
-            background: linear-gradient(90deg, #FFD93D, #F39C12);
-        }
-
-        .score-bar-fill.red {
-            background: linear-gradient(90deg, #FF6B6B, #e74c3c);
-        }
-
-        .score-bar-fill.blue {
-            background: linear-gradient(90deg, #4EC5F1, #4E73DF);
-        }
-
-        /* ===== BADGES ===== */
+        /* ── Badges ── */
         .badge {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 900;
-        }
-
-        .badge-yes {
-            background: linear-gradient(135deg, #d4f7ec, #b8f0db);
-            color: #0a7a52;
-            border: 1.5px solid rgba(28,200,138,.35);
-        }
-
-        .badge-no {
-            background: linear-gradient(135deg, #fdecea, #f9cfc8);
-            color: #c0392b;
-            border: 1.5px solid rgba(231,76,60,.3);
-        }
-
-        /* ===== CARTES TEXTE ===== */
-        .text-card {
-            border-radius: 16px;
-            padding: 16px 18px;
-            margin-bottom: 14px;
-            font-size: 12.5px;
-            line-height: 1.7;
-            border: 1.5px solid;
-            background: rgba(255,255,255,0.9);
-        }
-
-        .text-card.purple {
-            border-color: rgba(155,89,182,.3);
-            border-left: 5px solid #9B59B6;
-        }
-
-        .text-card.green {
-            border-color: rgba(28,200,138,.3);
-            border-left: 5px solid #1CC88A;
-        }
-
-        .text-card .card-label {
-            font-size: 9px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin-bottom: 8px;
-            opacity: 0.65;
-        }
-
-        /* ===== LISTE COMMENTAIRES ===== */
-        .comments-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .comment-item {
-            background: rgba(248,250,255,0.9);
-            border-radius: 12px;
-            padding: 10px 14px;
-            margin-bottom: 8px;
-            border: 1.5px solid #e8ecf5;
-            font-size: 11px;
-        }
-
-        .comment-meta {
-            font-weight: 800;
-            color: #4E73DF;
-            margin-bottom: 4px;
+            padding: 3px 12px;
+            border-radius: 15px;
             font-size: 10px;
-            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .badge-yes {
+            background: #d4f5e2;
+            color: #2d5016;
+            border: 1px solid #7ab648;
+        }
+        .badge-no {
+            background: #fde8ec;
+            color: #c0385a;
+            border: 1px solid #e87090;
         }
 
-        /* ===== PIED DE PAGE ===== */
-        .footer {
-            margin-top: 30px;
-            padding-top: 12px;
-            text-align: center;
-            font-size: 9px;
-            color: #8590a5;
-            position: relative;
+        /* ── Niveau de difficulté ── */
+        .difficulty {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .diff-easy   { background: #e8f5e0; color: #4a7c2f; }
+        .diff-medium { background: #fef5e0; color: #e8a020; }
+        .diff-hard   { background: #fde8ec; color: #e8637a; }
+
+        /* ── Blocs de texte ── */
+        .text-block {
+            background: #fefdf8;
+            border-left: 3px solid #7ab648;
+            padding: 12px;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #4a5a3a;
+            min-height: 48px;
+        }
+        .text-block.pink {
+            border-left-color: #e8637a;
+            background: #fff8fa;
+        }
+        .text-block.empty {
+            color: #aaa;
+            font-style: italic;
         }
 
-        .footer::before {
-            content: '';
-            display: block;
-            height: 3px;
-            background: linear-gradient(90deg,
-                #FF6B6B 0%, #FFD93D 25%, #6BCB77 50%, #4EC5F1 75%, #C77DFF 100%
-            );
-            border-radius: 999px;
-            margin-bottom: 10px;
+        /* ── Séparateur ── */
+        hr {
+            margin: 12px 0;
+            border: none;
+            border-top: 1px solid #c8e6a5;
+        }
+
+        /* ── Récapitulatif rapide ── */
+        .recap-row {
+            display: table;
             width: 100%;
+            background: #f0f8e8;
+            border: 1px solid #c4dea0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 4px 0 12px 0;
         }
+        .recap-item {
+            display: table-cell;
+            text-align: center;
+            vertical-align: middle;
+            padding: 0 8px;
+            border-right: 1px solid #c4dea0;
+        }
+        .recap-item:last-child { border-right: none; }
+        .recap-num   { font-size: 18px; font-weight: bold; color: #2d5016; }
+        .recap-label { font-size: 8px; color: #6a8a4a; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+        /* ── Pied de page ── */
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            background: #2d5016;
+            border-radius: 10px;
+            color: #c8e6a5;
+            font-size: 8px;
+        }
+        .footer-flowers {
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .no-break { page-break-inside: avoid; }
     </style>
 </head>
 <body>
-<div class="page-wrapper">
 
-    <!-- Étoiles décoratives -->
-    <div class="bg-deco">
-        <div class="star" style="top:8%;left:4%;">⭐</div>
-        <div class="star" style="top:15%;right:5%;">✨</div>
-        <div class="star" style="top:35%;left:2%;">🌟</div>
-        <div class="star" style="top:50%;right:3%;">⭐</div>
-        <div class="star" style="top:70%;left:5%;">✨</div>
-        <div class="star" style="top:85%;right:6%;">🌟</div>
-        <div class="star" style="top:3%;left:45%;">⭐</div>
-        <div class="star" style="top:60%;right:8%;">✨</div>
-        <div class="star" style="top:25%;left:15%;">💫</div>
-        <div class="star" style="top:78%;left:80%;">⭐</div>
-    </div>
+<div class="pdf-container">
 
-    <!-- EN-TÊTE -->
-    <div class="header">
-        <div class="logo-area">
-            <div class="logo-svg-wrap">
-                <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="4" y="10" width="15" height="20" rx="2" fill="#1CC88A"/>
-                    <rect x="21" y="10" width="15" height="20" rx="2" fill="#0eae70"/>
-                    <rect x="18" y="9" width="4" height="22" rx="2" fill="#FFD93D"/>
-                    <rect x="7" y="15" width="9" height="2" rx="1" fill="#fff" opacity="0.6"/>
-                    <rect x="7" y="19" width="7" height="2" rx="1" fill="#fff" opacity="0.6"/>
-                    <rect x="7" y="23" width="9" height="2" rx="1" fill="#fff" opacity="0.6"/>
-                    <rect x="24" y="15" width="9" height="2" rx="1" fill="#fff" opacity="0.6"/>
-                    <rect x="24" y="19" width="7" height="2" rx="1" fill="#fff" opacity="0.6"/>
-                    <rect x="24" y="23" width="9" height="2" rx="1" fill="#fff" opacity="0.6"/>
-                    <polygon points="20,3 21.5,7 25.5,7 22.5,9.5 23.5,13.5 20,11 16.5,13.5 17.5,9.5 14.5,7 18.5,7" fill="#FFD93D"/>
-                </svg>
-            </div>
-            <div class="logo-text-block">
-                <div class="logo-name">FocusKid</div>
-                <div class="logo-tagline">📚 Suivi éducatif personnalisé</div>
-            </div>
-        </div>
-
-        <div class="report-badge">
-            <div class="rb-num">📘 Carnet n°{{ carnet_educatif.id }}</div>
-            <div class="rb-date">Généré le {{ 'now'|date('d/m/Y à H:i') }}</div>
+    <!-- ════════════════════════════════
+         EN-TÊTE
+    ════════════════════════════════ -->
+    <div class="header no-break">
+        <div class="header-title">📗 FocusKid — Carnet Éducatif</div>
+        <div class="header-sub">✦ Suivi pédagogique personnalisé ✦</div>
+        <div class="header-badge">
+            Généré le {{ 'now'|date('d/m/Y à H:i') }}
         </div>
     </div>
 
-    <!-- Bandeau arc-en-ciel -->
-    <div class="rainbow-bar"></div>
-
-    <div class="content">
-
-        <!-- RÉSUMÉ RAPIDE -->
-        <div class="quick-summary">
-            <div class="qs-item">
-                <span class="qs-icon">📅</span>
-                <span>Date :</span>
-                <span class="qs-val">{{ carnet_educatif.dateEtude|date('d/m/Y') }}</span>
-            </div>
-            <div class="qs-item">
-                <span class="qs-icon">⏱️</span>
-                <span>Durée :</span>
-                <span class="qs-val">{{ carnet_educatif.dureeTotale }} min</span>
-            </div>
-            <div class="qs-item">
-                <span class="qs-icon">📖</span>
-                <span>Matière :</span>
-                <span class="qs-val">{{ carnet_educatif.matiere }}</span>
-            </div>
-            <div class="qs-item">
-                <span class="qs-icon">📍</span>
-                <span>Lieu :</span>
-                <span class="qs-val">{{ carnet_educatif.lieu }}</span>
-            </div>
-        </div>
-
-        <!-- SECTION 1 : INFORMATIONS SESSION -->
-        <h2 class="sec-blue">📋 Informations de session</h2>
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">📅 DATE D'ETUDE</div>
-                <div class="info-value highlight-blue">{{ carnet_educatif.dateEtude|date('d/m/Y') }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">🕐 HEURE DEBUT</div>
-                <div class="info-value">{{ carnet_educatif.heureDebut|date('H:i') }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">🕔 HEURE FIN</div>
-                <div class="info-value">{{ carnet_educatif.heureFin|date('H:i') }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">📍 LIEU</div>
-                <div class="info-value">{{ carnet_educatif.lieu }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">📖 MATIERE</div>
-                <div class="info-value highlight-green">{{ carnet_educatif.matiere }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">🎨 TYPE D'ACTIVITE</div>
-                <div class="info-value">{{ carnet_educatif.typeActivite }}</div>
-            </div>
-        </div>
-
-        <!-- SECTION 2 : COMPORTEMENT & CONCENTRATION -->
-        <h2 class="sec-green">🧠 Comportement & concentration</h2>
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">🎯 CONCENTRATION</div>
-                <div class="info-value highlight-green">{{ carnet_educatif.niveauConcentration }} / 10</div>
-                <div class="score-bar-wrap">
-                    <div class="score-bar-bg">
-                        <div class="score-bar-fill" style="width: {{ carnet_educatif.niveauConcentration * 10 }}%;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">⚡ AGITATION</div>
-                <div class="info-value highlight-orange">{{ carnet_educatif.niveauAgitation }} / 10</div>
-                <div class="score-bar-wrap">
-                    <div class="score-bar-bg">
-                        <div class="score-bar-fill orange" style="width: {{ carnet_educatif.niveauAgitation * 10 }}%;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">🌟 AUTONOMIE</div>
-                <div class="info-value highlight-blue">{{ carnet_educatif.niveauAutonomie }} / 10</div>
-                <div class="score-bar-wrap">
-                    <div class="score-bar-bg">
-                        <div class="score-bar-fill blue" style="width: {{ carnet_educatif.niveauAutonomie * 10 }}%;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">🔔 INTERRUPTIONS</div>
-                <div class="info-value">{{ carnet_educatif.nombreInterruptions }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">⏳ TEMPS AVANT PERTE</div>
-                <div class="info-value">{{ carnet_educatif.tempsAvantPerteConcentration ?? '—' }} min</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">🎓 DIFFICULTE</div>
-                <div class="info-value">
-                    {% if carnet_educatif.niveauDifficulte == 'Facile' %}
-                        🟢 Facile
-                    {% elseif carnet_educatif.niveauDifficulte == 'Moyen' %}
-                        🟡 Moyen
-                    {% elseif carnet_educatif.niveauDifficulte == 'Difficile' %}
-                        🔴 Difficile
-                    {% else %}
-                        {{ carnet_educatif.niveauDifficulte }}
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- SECTION 3 : TRAVAIL & AUTONOMIE -->
-        <h2 class="sec-orange">⚙️ Travail & autonomie</h2>
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">✅ TRAVAIL TERMINE</div>
-                <div class="info-value">
-                    <span class="badge {{ carnet_educatif.travailTermine ? 'badge-yes' : 'badge-no' }}">
-                        {{ carnet_educatif.travailTermine ? '✅ Terminé' : '⏳ Non terminé' }}
-                    </span>
-                </div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">🧑 TRAVAILLE SEUL</div>
-                <div class="info-value">
-                    <span class="badge {{ carnet_educatif.travailleSeul ? 'badge-yes' : 'badge-no' }}">
-                        {{ carnet_educatif.travailleSeul ? '✓ Oui' : '✗ Non' }}
-                    </span>
-                </div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">🤝 DEMANDE AIDE</div>
-                <div class="info-value">
-                    <span class="badge {{ carnet_educatif.demandeAide ? 'badge-yes' : 'badge-no' }}">
-                        {{ carnet_educatif.demandeAide ? '✓ Oui' : '✗ Non' }}
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <!-- SECTION 4 : DIFFICULTES RENCONTREES -->
-        <h2 class="sec-purple">📝 Difficultés rencontrées</h2>
-        <div class="text-card purple">
-            <div class="card-label">🔍 OBSERVATIONS</div>
-            {{ carnet_educatif.difficultes ?: 'Aucune difficulté signalée. Excellent travail ! 🎉' }}
-        </div>
-
-        <!-- SECTION 5 : POINTS POSITIFS -->
-        <h2 class="sec-green">⭐ Points positifs</h2>
-        <div class="text-card green">
-            <div class="card-label">✨ FÉLICITATIONS</div>
-            {{ carnet_educatif.pointsPositifs ?: 'Aucun point noté pour cette session.' }}
-        </div>
-
-        <!-- PIED DE PAGE -->
-        <div class="footer">
-            🎓 Document généré automatiquement par <strong>FocusKid</strong> — Suivi éducatif personnalisé<br>
-            {{ 'now'|date('d/m/Y à H:i') }} · Carnet éducatif #{{ carnet_educatif.id }}
-        </div>
-
+    <!-- ════════════════════════════════
+         SECTION 1 — INFORMATIONS DE SESSION
+    ════════════════════════════════ -->
+    <div class="section-title title-green no-break">
+        <span class="s-icon">🌿</span>
+        <span>Informations de session</span>
     </div>
+    <div class="flowers no-break">🌸 🌼 🌺 🌻</div>
+
+    <div class="grid no-break">
+        <div class="grid-row">
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">📅 Date</div>
+                    <div class="card-value">
+                        {{ carnet_educatif.dateEtude ? carnet_educatif.dateEtude|date('d/m/Y') : '—' }}
+                    </div>
+                </div>
+            </div>
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">🕐 Heure début</div>
+                    <div class="card-value">
+                        {{ carnet_educatif.heureDebut ? carnet_educatif.heureDebut|date('H:i') : '—' }}
+                    </div>
+                </div>
+            </div>
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">🕔 Heure fin</div>
+                    <div class="card-value">
+                        {{ carnet_educatif.heureFin ? carnet_educatif.heureFin|date('H:i') : '—' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="grid-row">
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">⏱️ Durée totale</div>
+                    <div class="card-value">{{ carnet_educatif.dureeTotale }}</div>
+                    <div class="card-sub">minutes</div>
+                </div>
+            </div>
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">📍 Lieu</div>
+                    <div class="card-value">{{ carnet_educatif.lieu ?: '—' }}</div>
+                </div>
+            </div>
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">🎨 Type d'activité</div>
+                    <div class="card-value">{{ carnet_educatif.typeActivite ?: '—' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         SECTION 2 — ÉVALUATION COGNITIVE
+    ════════════════════════════════ -->
+    <div class="section-title title-blue no-break">
+        <span class="s-icon">🧠</span>
+        <span>Évaluation cognitive</span>
+    </div>
+
+    <div class="grid no-break">
+        <div class="grid-row">
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">🎯 Concentration</div>
+                    <div class="score-wrap">
+                        <div class="score-num">
+                            <span class="score-value" style="color:#2d5016;">{{ carnet_educatif.niveauConcentration }}</span>
+                            <span class="score-max">/10</span>
+                        </div>
+                        <div class="score-bar">
+                            <div class="progress-bar">
+                                <div class="progress-fill fill-green" style="width:{{ carnet_educatif.niveauConcentration * 10 }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">⚡ Agitation</div>
+                    <div class="score-wrap">
+                        <div class="score-num">
+                            <span class="score-value" style="color:#e8a020;">{{ carnet_educatif.niveauAgitation }}</span>
+                            <span class="score-max">/10</span>
+                        </div>
+                        <div class="score-bar">
+                            <div class="progress-bar">
+                                <div class="progress-fill fill-orange" style="width:{{ carnet_educatif.niveauAgitation * 10 }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">🌟 Autonomie</div>
+                    <div class="score-wrap">
+                        <div class="score-num">
+                            <span class="score-value" style="color:#4eaad4;">{{ carnet_educatif.niveauAutonomie }}</span>
+                            <span class="score-max">/10</span>
+                        </div>
+                        <div class="score-bar">
+                            <div class="progress-bar">
+                                <div class="progress-fill fill-blue" style="width:{{ carnet_educatif.niveauAutonomie * 10 }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="grid-row">
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">📖 Matière</div>
+                    <div class="card-value">{{ carnet_educatif.matiere ?: '—' }}</div>
+                </div>
+            </div>
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">🎓 Niveau de difficulté</div>
+                    <div style="margin-top:6px;">
+                        {% if carnet_educatif.niveauDifficulte == 'Facile' %}
+                            <span class="difficulty diff-easy">🟢 Facile</span>
+                        {% elseif carnet_educatif.niveauDifficulte == 'Moyen' %}
+                            <span class="difficulty diff-medium">🟡 Moyen</span>
+                        {% elseif carnet_educatif.niveauDifficulte == 'Difficile' %}
+                            <span class="difficulty diff-hard">🔴 Difficile</span>
+                        {% else %}
+                            <span class="card-value">{{ carnet_educatif.niveauDifficulte ?: '—' }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">🔔 Interruptions</div>
+                    <div class="card-value">{{ carnet_educatif.nombreInterruptions ?: '0' }}</div>
+                    <div class="card-sub">fois durant la session</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         SECTION 3 — TRAVAIL & AUTONOMIE
+    ════════════════════════════════ -->
+    <div class="section-title title-gold no-break">
+        <span class="s-icon">⚙️</span>
+        <span>Travail &amp; autonomie</span>
+    </div>
+
+    <div class="grid no-break">
+        <div class="grid-row">
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">✅ Travail terminé</div>
+                    <div style="margin-top:6px;">
+                        <span class="badge {{ carnet_educatif.travailTermine ? 'badge-yes' : 'badge-no' }}">
+                            {{ carnet_educatif.travailTermine ? '✔ Terminé' : '✘ Non terminé' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">🧑 A travaillé seul</div>
+                    <div style="margin-top:6px;">
+                        <span class="badge {{ carnet_educatif.travailleSeul ? 'badge-yes' : 'badge-no' }}">
+                            {{ carnet_educatif.travailleSeul ? '✔ Oui' : '✘ Non' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-cell col-3">
+                <div class="card">
+                    <div class="card-label">🤝 A demandé de l'aide</div>
+                    <div style="margin-top:6px;">
+                        <span class="badge {{ carnet_educatif.demandeAide ? 'badge-yes' : 'badge-no' }}">
+                            {{ carnet_educatif.demandeAide ? '✔ Oui' : '✘ Non' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         SECTION 4 — DIFFICULTÉS
+    ════════════════════════════════ -->
+    <div class="section-title title-purple no-break">
+        <span class="s-icon">📝</span>
+        <span>Difficultés rencontrées</span>
+    </div>
+    {% if carnet_educatif.difficultes %}
+        <div class="text-block no-break">{{ carnet_educatif.difficultes }}</div>
+    {% else %}
+        <div class="text-block empty no-break">Aucune difficulté signalée pour cette session. Excellent travail !</div>
+    {% endif %}
+
+    <!-- ════════════════════════════════
+         SECTION 5 — POINTS POSITIFS
+    ════════════════════════════════ -->
+    <div class="section-title title-pink no-break">
+        <span class="s-icon">⭐</span>
+        <span>Points positifs</span>
+    </div>
+    {% if carnet_educatif.pointsPositifs %}
+        <div class="text-block pink no-break">{{ carnet_educatif.pointsPositifs }}</div>
+    {% else %}
+        <div class="text-block pink empty no-break">Aucun point positif noté pour cette session.</div>
+    {% endif %}
+
+    <hr class="no-break">
+
+    <!-- ════════════════════════════════
+         RÉCAPITULATIF RAPIDE
+    ════════════════════════════════ -->
+    <div class="recap-row no-break">
+        <div class="recap-item">
+            <div class="recap-num">{{ carnet_educatif.niveauConcentration }}/10</div>
+            <div class="recap-label">🎯 Concentration</div>
+        </div>
+        <div class="recap-item">
+            <div class="recap-num">{{ carnet_educatif.niveauAgitation }}/10</div>
+            <div class="recap-label">⚡ Agitation</div>
+        </div>
+        <div class="recap-item">
+            <div class="recap-num">{{ carnet_educatif.niveauAutonomie }}/10</div>
+            <div class="recap-label">🌟 Autonomie</div>
+        </div>
+        <div class="recap-item">
+            <div class="recap-num">{{ carnet_educatif.dureeTotale }} min</div>
+            <div class="recap-label">⏱️ Durée</div>
+        </div>
+        <div class="recap-item">
+            <div class="recap-num">{{ carnet_educatif.nombreInterruptions ?: '0' }}</div>
+            <div class="recap-label">🔔 Interruptions</div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         PIED DE PAGE
+    ════════════════════════════════ -->
+    <div class="footer no-break">
+        <div class="footer-flowers">🌿 🌸 🍃 🌻 🌼</div>
+        FocusKid — Suivi éducatif personnalisé — Document généré automatiquement
+    </div>
+
 </div>
+
 </body>
 </html>

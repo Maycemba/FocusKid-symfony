@@ -1,6 +1,6 @@
 {% extends 'base-back.html.twig' %}
 
-{% block title %}Statistiques des carnets éducatifs{% endblock %}
+{% block title %}Statistiques des carnets éducatifs - FocusKid{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
@@ -11,53 +11,121 @@
         padding: 2rem;
         border-radius: 24px;
         margin-bottom: 2rem;
+        animation: slideDown 0.5s ease-out;
     }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
     .stats-card {
         background: white;
         border-radius: 20px;
         padding: 1.5rem;
         box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         margin-bottom: 1.5rem;
-        transition: transform 0.2s;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.5s ease-out;
     }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
     .stats-card:hover {
         transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     }
+    
     .stats-number {
         font-size: 3rem;
         font-weight: bold;
-        color: #667eea;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
     }
+    
     .stats-label {
         color: #6c757d;
         font-size: 0.9rem;
         text-transform: uppercase;
         letter-spacing: 1px;
     }
+    
     .chart-container {
         background: white;
         border-radius: 20px;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
         box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
     }
+    
+    .chart-container:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+    
     .btn-back {
-        background: #6c757d;
+        background: rgba(255,255,255,0.2);
         color: white;
         border: none;
         padding: 0.5rem 1.5rem;
         border-radius: 10px;
         text-decoration: none;
-        transition: background 0.2s;
+        transition: all 0.2s;
     }
+    
     .btn-back:hover {
-        background: #5a6268;
+        background: rgba(255,255,255,0.3);
         color: white;
+        transform: translateX(-3px);
     }
+    
     .progress-stat {
-        height: 30px;
-        border-radius: 15px;
+        height: 35px;
+        border-radius: 20px;
+        overflow: hidden;
     }
+    
+    .stat-icon {
+        font-size: 2rem;
+        opacity: 0.2;
+        position: absolute;
+        bottom: 10px;
+        right: 15px;
+    }
+    
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .badge-stat {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 12px;
+    }
+    
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
 </style>
 {% endblock %}
 
@@ -75,33 +143,66 @@
         </div>
     </div>
 
+    <!-- Cartes de statistiques -->
     <div class="row mb-4">
         <div class="col-md-6 col-lg-3 mb-3">
-            <div class="stats-card text-center">
+            <div class="stats-card text-center stat-card delay-1">
                 <div class="stats-number">{{ total_carnets|default(0) }}</div>
                 <div class="stats-label">Total carnets éducatifs</div>
-                <i class="fas fa-book-open mt-2" style="font-size: 2rem; color: #667eea;"></i>
+                <i class="fas fa-book-open stat-icon"></i>
             </div>
         </div>
         <div class="col-md-6 col-lg-3 mb-3">
-            <div class="stats-card text-center">
+            <div class="stats-card text-center stat-card delay-2">
                 <div class="stats-number">{{ total_commentaires|default(0) }}</div>
                 <div class="stats-label">Total commentaires</div>
-                <i class="fas fa-comments mt-2" style="font-size: 2rem; color: #764ba2;"></i>
+                <i class="fas fa-comments stat-icon"></i>
             </div>
         </div>
         <div class="col-md-6 col-lg-3 mb-3">
-            <div class="stats-card text-center">
+            <div class="stats-card text-center stat-card delay-3">
                 <div class="stats-number">{{ total_termine|default(0) }}</div>
                 <div class="stats-label">Travaux terminés</div>
-                <i class="fas fa-check-circle mt-2" style="font-size: 2rem; color: #28a745;"></i>
+                <i class="fas fa-check-circle stat-icon"></i>
             </div>
         </div>
         <div class="col-md-6 col-lg-3 mb-3">
-            <div class="stats-card text-center">
+            <div class="stats-card text-center stat-card delay-4">
                 <div class="stats-number">{{ taux_termine|default(0) }}%</div>
                 <div class="stats-label">Taux de complétion</div>
-                <i class="fas fa-chart-line mt-2" style="font-size: 2rem; color: #ffc107;"></i>
+                <i class="fas fa-chart-line stat-icon"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques principaux -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <canvas id="matiereChart" height="300"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <canvas id="difficulteChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="chart-container">
+                <canvas id="concentrationChart" height="250"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="chart-container">
+                <canvas id="agitationChart" height="250"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="chart-container">
+                <canvas id="autonomieChart" height="250"></canvas>
             </div>
         </div>
     </div>
@@ -109,50 +210,117 @@
     <div class="row">
         <div class="col-md-6">
             <div class="chart-container">
-                <canvas id="matiereChart" style="height: 300px;"></canvas>
+                <canvas id="evolutionChart" height="300"></canvas>
             </div>
         </div>
         <div class="col-md-6">
             <div class="chart-container">
-                <canvas id="concentrationChart" style="height: 300px;"></canvas>
+                <canvas id="topMatieresChart" height="300"></canvas>
             </div>
         </div>
     </div>
 
-    <div class="chart-container">
-        <h5 class="mb-3">Progression des travaux</h5>
-        <div class="progress progress-stat">
-            <div class="progress-bar bg-success" style="width: {{ taux_termine|default(0) }}%">
-                {{ taux_termine|default(0) }}% Terminé
+    <!-- Progression et moyennes -->
+    <div class="row">
+        <div class="col-md-7">
+            <div class="chart-container">
+                <h5 class="mb-3">📈 Progression des travaux</h5>
+                <div class="progress progress-stat">
+                    <div class="progress-bar bg-success" style="width: {{ taux_termine|default(0) }}%; animation: shimmer 2s ease-in-out infinite;">
+                        {{ taux_termine|default(0) }}% Terminé
+                    </div>
+                </div>
+                <div class="mt-3 text-muted">
+                    <small>
+                        <i class="fas fa-check-circle text-success"></i> {{ total_termine|default(0) }} terminés / 
+                        <i class="fas fa-times-circle text-danger"></i> {{ total_non_termine|default(0) }} non terminés / 
+                        <i class="fas fa-chart-line"></i> {{ total_carnets|default(0) }} au total
+                    </small>
+                </div>
             </div>
         </div>
-        <div class="mt-2 text-muted">
-            <small>{{ total_termine|default(0) }} terminés / {{ total_carnets|default(0) }} au total</small>
+        <div class="col-md-5">
+            <div class="chart-container">
+                <h5 class="mb-3">📊 Moyennes générales</h5>
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="stats-number" style="font-size: 2rem;">{{ moyenne_concentration|default(0) }}/5</div>
+                        <div class="stats-label">Concentration moyenne</div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="stats-number" style="font-size: 2rem;">{{ moyenne_agitation|default(0) }}/5</div>
+                        <div class="stats-label">Agitation moyenne</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stats-number" style="font-size: 2rem;">{{ moyenne_autonomie|default(0) }}/5</div>
+                        <div class="stats-label">Autonomie moyenne</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stats-number" style="font-size: 2rem;">{{ moyenne_interruptions|default(0) }}</div>
+                        <div class="stats-label">Interruptions/session</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    @keyframes shimmer {
+        0% { opacity: 1; }
+        50% { opacity: 0.8; }
+        100% { opacity: 1; }
+    }
+</style>
 {% endblock %}
 
 {% block javascripts %}
 {{ parent() }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Graphique des matières
     {% if stats_par_matiere is defined and stats_par_matiere|length > 0 %}
-    // Convertir l'objet PHP en tableau JavaScript
     const matiereLabels = {{ stats_par_matiere|keys|json_encode|raw }};
-    const matiereData = {{ stats_par_matiere|json_encode|raw }};
-    const matiereValues = Object.values(matiereData);
+    const matiereValues = {{ stats_par_matiere|json_encode|raw }};
     
-    const matiereCtx = document.getElementById('matiereChart').getContext('2d');
-    new Chart(matiereCtx, {
+    new Chart(document.getElementById('matiereChart'), {
         type: 'bar',
         data: {
             labels: matiereLabels,
             datasets: [{
                 label: 'Nombre de carnets',
-                data: matiereValues,
+                data: Object.values(matiereValues),
                 backgroundColor: 'rgba(102, 126, 234, 0.5)',
                 borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 2,
+                borderRadius: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: '📚 Répartition par matière', font: { size: 14 } }
+            },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+    {% endif %}
+
+    // Graphique des difficultés
+    {% if stats_difficulte is defined and stats_difficulte|length > 0 %}
+    const difficulteLabels = {{ stats_difficulte|keys|json_encode|raw }};
+    const difficulteValues = {{ stats_difficulte|json_encode|raw }};
+    
+    new Chart(document.getElementById('difficulteChart'), {
+        type: 'pie',
+        data: {
+            labels: difficulteLabels,
+            datasets: [{
+                data: Object.values(difficulteValues),
+                backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
                 borderWidth: 2
             }]
         },
@@ -161,15 +329,15 @@
             maintainAspectRatio: true,
             plugins: {
                 legend: { position: 'top' },
-                title: { display: true, text: 'Répartition par matière' }
+                title: { display: true, text: '🎓 Niveaux de difficulté' }
             }
         }
     });
     {% endif %}
 
-    {% if stats_concentration is defined and stats_concentration|length > 0 %}
-    const concentrationCtx = document.getElementById('concentrationChart').getContext('2d');
-    new Chart(concentrationCtx, {
+    // Graphique concentration
+    {% if stats_concentration is defined %}
+    new Chart(document.getElementById('concentrationChart'), {
         type: 'bar',
         data: {
             labels: ['Niveau 1', 'Niveau 2', 'Niveau 3', 'Niveau 4', 'Niveau 5'],
@@ -182,9 +350,10 @@
                     {{ stats_concentration[4]|default(0) }},
                     {{ stats_concentration[5]|default(0) }}
                 ],
-                backgroundColor: 'rgba(118, 75, 162, 0.5)',
-                borderColor: 'rgba(118, 75, 162, 1)',
-                borderWidth: 2
+                backgroundColor: 'rgba(40, 167, 69, 0.5)',
+                borderColor: 'rgba(40, 167, 69, 1)',
+                borderWidth: 2,
+                borderRadius: 10
             }]
         },
         options: {
@@ -192,11 +361,134 @@
             maintainAspectRatio: true,
             plugins: {
                 legend: { position: 'top' },
-                title: { display: true, text: 'Distribution des niveaux de concentration' }
+                title: { display: true, text: '🎯 Concentration' }
+            }
+        }
+    });
+    {% endif %}
+
+    // Graphique agitation
+    {% if stats_agitation is defined %}
+    new Chart(document.getElementById('agitationChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Niveau 1', 'Niveau 2', 'Niveau 3', 'Niveau 4', 'Niveau 5'],
+            datasets: [{
+                label: "Nombre d'étudiants",
+                data: [
+                    {{ stats_agitation[1]|default(0) }},
+                    {{ stats_agitation[2]|default(0) }},
+                    {{ stats_agitation[3]|default(0) }},
+                    {{ stats_agitation[4]|default(0) }},
+                    {{ stats_agitation[5]|default(0) }}
+                ],
+                backgroundColor: 'rgba(255, 193, 7, 0.5)',
+                borderColor: 'rgba(255, 193, 7, 1)',
+                borderWidth: 2,
+                borderRadius: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: '⚡ Agitation' }
+            }
+        }
+    });
+    {% endif %}
+
+    // Graphique autonomie
+    {% if stats_autonomie is defined %}
+    new Chart(document.getElementById('autonomieChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Niveau 1', 'Niveau 2', 'Niveau 3', 'Niveau 4', 'Niveau 5'],
+            datasets: [{
+                label: "Nombre d'étudiants",
+                data: [
+                    {{ stats_autonomie[1]|default(0) }},
+                    {{ stats_autonomie[2]|default(0) }},
+                    {{ stats_autonomie[3]|default(0) }},
+                    {{ stats_autonomie[4]|default(0) }},
+                    {{ stats_autonomie[5]|default(0) }}
+                ],
+                backgroundColor: 'rgba(118, 75, 162, 0.5)',
+                borderColor: 'rgba(118, 75, 162, 1)',
+                borderWidth: 2,
+                borderRadius: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: '🌟 Autonomie' }
+            }
+        }
+    });
+    {% endif %}
+
+    // Graphique évolution par mois
+    {% if stats_par_mois is defined and stats_par_mois|length > 0 %}
+    const moisValues = {{ stats_par_mois|json_encode|raw }};
+    
+    new Chart(document.getElementById('evolutionChart'), {
+        type: 'line',
+        data: {
+            labels: Object.keys(moisValues),
+            datasets: [{
+                label: 'Nombre de carnets',
+                data: Object.values(moisValues),
+                borderColor: 'rgba(102, 126, 234, 1)',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: '📅 Évolution mensuelle' }
             },
             scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
         }
     });
     {% endif %}
+
+    // Graphique top matières
+    {% if top_matieres is defined and top_matieres|length > 0 %}
+    const topMatiereValues = {{ top_matieres|json_encode|raw }};
+    
+    new Chart(document.getElementById('topMatieresChart'), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(topMatiereValues),
+            datasets: [{
+                label: 'Concentration moyenne (/5)',
+                data: Object.values(topMatiereValues),
+                backgroundColor: 'rgba(40, 167, 69, 0.5)',
+                borderColor: 'rgba(40, 167, 69, 1)',
+                borderWidth: 2,
+                borderRadius: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: '🏆 Top matières (meilleure concentration)' }
+            },
+            scales: { y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } } }
+        }
+    });
+    {% endif %}
+});
 </script>
 {% endblock %}

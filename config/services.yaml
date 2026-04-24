@@ -1,34 +1,21 @@
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    # Email administrateur par défaut
-    admin_email: 'parent@focuskid.com'
+    admin_email: 'ayamosbeh91@gmail.com'
 
 services:
-    # default configuration for services in *this* file
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
-        bind:
-            # Lie la valeur à tous les paramètres string $adminEmail dans les services
-            string $adminEmail: '%admin_email%'
+        autowire: true
+        autoconfigure: true
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
         exclude:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+            - '../src/Command/'
 
-    # Configuration explicite pour NotificationService (optionnel, car le bind ci-dessus s'en charge)
-    App\Service\NotificationService:
-        arguments:
-            $adminEmail: '%admin_email%'
+    App\Service\MailtrapApiService:
+        autowire: true
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\Service\ConseilIACarnetService:
+        autowire: true

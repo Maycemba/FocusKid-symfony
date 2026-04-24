@@ -121,65 +121,165 @@
 </div>
 
 <script>
+    // ================================
+    // Variables globales
+    // ================================
+    const aujourdhui = new Date().toISOString().split('T')[0];
+    const dans7Jours = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split('T')[0];
+
+    // ================================
+    // Initialisation des dates
+    // ================================
+    document.getElementById('date_debut').value = aujourdhui;
+    document.getElementById('date_fin').value = dans7Jours;
+
+    // ================================
+    // Création d'un objectif
+    // ================================
+    document.getElementById('objectifForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const description = document.getElementById('description').value.trim();
+        const dateDebut = document.getElementById('date_debut').value;
+        const dateFin = document.getElementById('date_fin').value;
+        const submitButton = this.querySelector('button[type="submit"]');
+
+        if (!description || !dateDebut || !dateFin) {
+            alert('Veuillez remplir tous les champs.');
+            return;
+        }
+
+        if (new Date(dateFin) < new Date(dateDebut)) {
+            alert('La date de fin doit être postérieure à la date de début.');
+            return;
+        }
+
+        const originalText = submitButton.innerHTML;
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création...';
+
+        try {
+            const response = await fetch('/objectifs/api', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    description: description,
+                    date_debut: dateDebut,
+                    date_fin: dateFin
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                alert(result.message || 'Objectif créé avec succès !');
+
+                document.getElementById('objectifForm').reset();
+                document.getElementById('date_debut').value = aujourdhui;
+                document.getElementById('date_fin').value = dans7Jours;
+
+                await chargerObjectifs();
+                await chargerStats();
+            } else {
+                alert(
+                    result.error ||
+                    (result.errors ? result.errors.join('\n') : 'Erreur lors de la création.')
+                );
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Erreur réseau : ' + error.message);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalText;
+        }
+    });
+
+    // ================================
     // Charger les statistiques
+    // ================================
     async function chargerStats() {
         try {
             const response = await fetch('/objectifs/api/stats');
             const stats = await response.json();
-            
-            document.getElementById('totalCount').textContent = stats.total;
-            document.getElementById('encoursCount').textContent = stats.en_cours;
-            document.getElementById('atteintCount').textContent = stats.atteint;
-            document.getElementById('nonAtteintCount').textContent = stats.non_atteint;
+
+            document.getElementById('totalCount').textContent = stats.total || 0;
+            document.getElementById('encoursCount').textContent = stats.en_cours || 0;
+            document.getElementById('atteintCount').textContent = stats.atteint || 0;
+            document.getElementById('nonAtteintCount').textContent = stats.non_atteint || 0;
         } catch (error) {
             console.error('Erreur stats:', error);
         }
     }
-    
+
+    // ================================
     // Charger les objectifs
+    // ================================
     async function chargerObjectifs() {
         try {
             const response = await fetch('/objectifs/api');
             const objectifs = await response.json();
-            
+
             const container = document.getElementById('objectifsList');
-            if (objectifs.length === 0) {
-                container.innerHTML = '<div class="alert alert-info">Aucun objectif pour le moment. Créez-en un !</div>';
+
+            if (!Array.isArray(objectifs) || objectifs.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info text-center">
+                        Aucun objectif pour le moment. Créez-en un !
+                    </div>
+                `;
                 return;
             }
-            
+
             container.innerHTML = objectifs.map(obj => `
-                <div class="card objectif-card">
+                <div class="card objectif-card mb-3">
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-md-4">
-                                <h6 class="mb-1">${obj.description}</h6>
+                                <h5>${escapeHtml(obj.description)}</h5>
                                 <small class="text-muted">
                                     📅 ${obj.date_debut} → ${obj.date_fin}
                                 </small>
-                                ${obj.jours_restants ? `<br><small>⏳ Plus que ${obj.jours_restants} jours</small>` : ''}
+                                ${obj.jours_restants > 0
+                                    ? `<br><small>⏳ ${obj.jours_restants} jours restants</small>`
+                                    : ''}
                             </div>
+
                             <div class="col-md-3">
-                                <div class="progress-bar-custom mb-2">
-                                    <div class="progress-fill" style="width: ${obj.progression}%"></div>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar"
+                                         role="progressbar"
+                                         style="width: ${obj.progression}%">
+                                    </div>
                                 </div>
-                                <small>Progression: ${obj.progression}%</small>
+                                <small>${obj.progression}%</small>
                             </div>
+
                             <div class="col-md-2">
-                                <span class="stat-badge stat-${obj.statut.toLowerCase().replace('_', '-')}">
+                                <span class="badge bg-${getBadgeColor(obj.statut)}">
                                     ${obj.statut_label}
                                 </span>
                             </div>
+
                             <div class="col-md-3 text-end">
                                 ${obj.statut === 'EN_COURS' ? `
-                                    <button onclick="updateStatut(${obj.id}, 'ATTEINT')" class="btn btn-success btn-sm me-2">
+                                    <button class="btn btn-success btn-sm me-2"
+                                            onclick="updateStatut(${obj.id}, 'ATTEINT', this)">
                                         ✅ Atteint
                                     </button>
-                                    <button onclick="updateStatut(${obj.id}, 'NON_ATTEINT')" class="btn btn-danger btn-sm">
+
+                                    <button class="btn btn-danger btn-sm"
+                                            onclick="updateStatut(${obj.id}, 'NON_ATTEINT', this)">
                                         ❌ Non atteint
                                     </button>
                                 ` : `
-                                    <button onclick="supprimerObjectif(${obj.id})" class="btn btn-outline-danger btn-sm">
+                                    <button class="btn btn-outline-danger btn-sm"
+                                            onclick="supprimerObjectif(${obj.id})">
                                         🗑️ Supprimer
                                     </button>
                                 `}
@@ -192,99 +292,105 @@
             console.error('Erreur chargement:', error);
         }
     }
-    
-    // Créer un objectif
-    document.getElementById('objectifForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const data = {
-            description: document.getElementById('description').value,
-            date_debut: document.getElementById('date_debut').value,
-            date_fin: document.getElementById('date_fin').value
-        };
-        
-        if (!data.description || !data.date_debut || !data.date_fin) {
-            alert('Veuillez remplir tous les champs');
-            return;
-        }
-        
-        try {
-            const response = await fetch('/objectifs/api', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
-            
-            if (response.ok) {
-                alert('Objectif créé avec succès !');
-                document.getElementById('objectifForm').reset();
-                chargerObjectifs();
-                chargerStats();
-            } else {
-                const error = await response.json();
-                alert('Erreur: ' + (error.errors?.join(', ') || 'Problème lors de la création'));
-            }
-        } catch (error) {
-            alert('Erreur réseau: ' + error.message);
-        }
-    });
-    
+
+    // ================================
     // Mettre à jour le statut
-    async function updateStatut(id, statut) {
+    // ================================
+    async function updateStatut(id, statut, button) {
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '⏳ Envoi...';
+
         try {
             const response = await fetch(`/objectifs/api/${id}/statut`, {
                 method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({statut: statut})
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ statut })
             });
-            
+
+            const result = await response.json();
+
             if (response.ok) {
-                alert(`Objectif marqué comme ${statut === 'ATTEINT' ? 'atteint' : 'non atteint'} !`);
-                chargerObjectifs();
-                chargerStats();
+                if (result.html) {
+                    const newWindow = window.open();
+                    newWindow.document.write(result.html);
+                    newWindow.document.close();
+                }
+
+                alert('Statut mis à jour avec succès !');
+                await chargerObjectifs();
+                await chargerStats();
             } else {
-                alert('Erreur lors de la mise à jour du statut');
+                alert(result.error || 'Erreur lors de la mise à jour.');
             }
         } catch (error) {
-            alert('Erreur réseau: ' + error.message);
+            alert('Erreur réseau : ' + error.message);
+        } finally {
+            button.disabled = false;
+            button.innerHTML = originalText;
         }
     }
-    
+
+    // ================================
     // Supprimer un objectif
+    // ================================
     async function supprimerObjectif(id) {
-        if (!confirm('Êtes-vous sûr de vouloir supprimer cet objectif ?')) return;
-        
+        if (!confirm('Supprimer cet objectif ?')) {
+            return;
+        }
+
         try {
             const response = await fetch(`/objectifs/api/${id}`, {
                 method: 'DELETE'
             });
-            
+
+            const result = await response.json();
+
             if (response.ok) {
-                alert('Objectif supprimé avec succès !');
-                chargerObjectifs();
-                chargerStats();
+                alert(result.message || 'Objectif supprimé.');
+                await chargerObjectifs();
+                await chargerStats();
             } else {
-                alert('Erreur lors de la suppression');
+                alert(result.error || 'Erreur lors de la suppression.');
             }
         } catch (error) {
-            alert('Erreur réseau: ' + error.message);
+            alert('Erreur réseau : ' + error.message);
         }
     }
-    
-    // Initialiser les dates par défaut
-    const aujourdhui = new Date().toISOString().split('T')[0];
-    const dans7Jours = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
-    document.getElementById('date_debut').value = aujourdhui;
-    document.getElementById('date_fin').value = dans7Jours;
-    
-    // Charger au démarrage
-    chargerObjectifs();
-    chargerStats();
-    
-    // Rafraîchir toutes les 30 secondes
-    setInterval(() => {
-        chargerObjectifs();
-        chargerStats();
-    }, 30000);
+
+    // ================================
+    // Fonctions utilitaires
+    // ================================
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function getBadgeColor(statut) {
+        switch (statut) {
+            case 'ATTEINT':
+                return 'success';
+            case 'NON_ATTEINT':
+                return 'danger';
+            default:
+                return 'primary';
+        }
+    }
+
+    // ================================
+    // Chargement initial
+    // ================================
+    document.addEventListener('DOMContentLoaded', async () => {
+        await chargerObjectifs();
+        await chargerStats();
+
+        setInterval(async () => {
+            await chargerObjectifs();
+            await chargerStats();
+        }, 30000);
+    });
 </script>
 {% endblock %}

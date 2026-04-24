@@ -2,49 +2,60 @@
 
 namespace App\Command;
 
-use App\Service\NotificationService;
+use App\Repository\ObjectifRepository;
+use App\Service\MailtrapApiService;  // Changement ici
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'app:verifier-objectifs',
-    description: 'Vérifie les objectifs terminés aujourd\'hui et envoie les notifications'
-)]
+#[AsCommand(name: 'app:verifier-objectifs', description: 'Vérifie les objectifs et envoie des notifications')]
 class VerifierObjectifsCommand extends Command
 {
-    private NotificationService $notificationService;
+    private ObjectifRepository $objectifRepository;
+    private MailtrapApiService $mailtrapApiService;  // Changement ici
+    private EntityManagerInterface $entityManager;
 
-    public function __construct(NotificationService $notificationService)
-    {
+    public function __construct(
+        ObjectifRepository $objectifRepository,
+        MailtrapApiService $mailtrapApiService,  // Changement ici
+        EntityManagerInterface $entityManager
+    ) {
         parent::__construct();
-        $this->notificationService = $notificationService;
+        $this->objectifRepository = $objectifRepository;
+        $this->mailtrapApiService = $mailtrapApiService;
+        $this->entityManager = $entityManager;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $output->writeln('Vérification des objectifs...');
         
-        $io->title('Vérification des objectifs terminés');
+        // Récupérer les objectifs à vérifier (ex: ceux qui se terminent aujourd'hui)
+        $objectifs = $this->objectifRepository->findBy(['statut' => 'EN_COURS']);
         
-        $resultats = $this->notificationService->verifierEtNotifierObjectifsTermines();
-        
-        if (empty($resultats)) {
-            $io->success('Aucun objectif terminé aujourd\'hui.');
-            return Command::SUCCESS;
+        foreach ($objectifs as $objectif) {
+            $dateFin = $objectif->getDateFin();
+            $aujourdhui = new \DateTime();
+            
+            if ($dateFin < $aujourdhui) {
+                // Objectif expiré, marquer comme non atteint
+                $objectif->setStatut('NON_ATTEINT');
+                $this->entityManager->flush();
+                
+                // Envoyer notification
+                $result = $this->mailtrapApiService->envoyerNotification($objectif);
+                
+                $output->writeln(sprintf(
+                    'Objectif "%s" marqué comme non atteint. Email envoyé: %s',
+                    $objectif->getDescription(),
+                    $result['success'] ? 'Oui' : 'Non'
+                ));
+            }
         }
         
-        $io->table(
-            ['ID', 'Description', 'Statut', 'Email envoyé'],
-            array_map(function($r) {
-                return [$r['objectif_id'], $r['description'], $r['statut'], $r['email_envoye'] ? '✅ Oui' : '❌ Non'];
-            }, $resultats)
-        );
-        
-        $io->success(count($resultats) . ' notification(s) envoyée(s)');
-        
+        $output->writeln('Vérification terminée.');
         return Command::SUCCESS;
     }
 }
