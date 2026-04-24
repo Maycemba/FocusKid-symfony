@@ -52,8 +52,7 @@ class LeconType extends AbstractType
                         'message' => 'Le cours associe est obligatoire.',
                     ]),
                 ],
-            ])
-        ;
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -28,3 +28,9 @@ services:
     App\Controller\ChatbotController:
         arguments:
             $groqApiKey: '%env(GROQ_API_KEY)%'
+    App\Controller\LeconController:
+        arguments:
+            $groqApiKey: '%env(GROQ_API_KEY)%'
+    App\Controller\ChatbotLeconController:
+        arguments:
+            $groqApiKey: '%env(GROQ_API_KEY)%'

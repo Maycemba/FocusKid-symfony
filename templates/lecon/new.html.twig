@@ -3,6 +3,21 @@
 {% block title %}Nouvelle lecon - FocusKids{% endblock %}
 
 {% block body %}
+
+{# ── Flash messages ── #}
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success alert-dismissible fade show mx-3 mt-3" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+{% endfor %}
+{% for message in app.flashes('warning') %}
+    <div class="alert alert-warning alert-dismissible fade show mx-3 mt-3" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+{% endfor %}
+
 <div class="row">
     <div class="col-12">
         <div class="card">

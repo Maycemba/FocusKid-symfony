@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}FocusKids Admin - Dashboard{% endblock %}</title>
@@ -55,7 +56,7 @@
         <aside class="left-sidebar">
             <div>
                 <div class="brand-logo d-flex align-items-center justify-content-between px-3 py-2">
-                    <a class="text-nowrap logo-img d-flex align-items-center" href="#">
+                    <a class="text-nowrap logo-img d-flex align-items-center" href="{{ path('app_admin_dashboard') }}">
                         <img src="{{ asset('base-back/assets/images/logos/logo.png') }}" alt="FocusKids" />
                         <span class="fw-bold text-primary">FocusKids</span>
                     </a>
@@ -72,7 +73,7 @@
                             <span class="hide-menu">Navigation</span>
                         </li>
                         <li class="sidebar-item">
-                            <a href="#" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="{{ path('app_admin_dashboard') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
                                 <iconify-icon icon="solar:home-2-line-duotone"></iconify-icon>
                                 <span class="hide-menu">Tableau de bord</span>
                             </a>
@@ -198,7 +199,8 @@
     <script src="{{ asset('assets/libs/simplebar/dist/simplebar.js') }}"></script>
     <script src="{{ asset('assets/js/dashboard.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
-    
+    {{ importmap('app') }}
+
     {% block javascripts %}{% endblock %}
 </body>
 

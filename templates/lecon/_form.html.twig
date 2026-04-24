@@ -3,8 +3,8 @@
 
     <div class="row">
         <div class="col-md-6 mb-3">
-            {{ form_label(form.titre_lecon, 'Titre de la lecon', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-            {{ form_widget(form.titre_lecon, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Les voyelles'}}) }}
+            {{ form_label(form.titre_lecon, 'Titre de la leçon', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.titre_lecon, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Les voyelles', 'id': 'lecon_titre_lecon'}}) }}
             {{ form_errors(form.titre_lecon) }}
         </div>
 
@@ -18,18 +18,204 @@
     <div class="row">
         <div class="col-md-12 mb-3">
             {{ form_label(form.contenu, 'Contenu', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-            {{ form_widget(form.contenu, {'attr': {'class': 'form-control', 'rows': 6, 'placeholder': 'Saisissez le contenu de la lecon...'}}) }}
+            {{ form_widget(form.contenu, {'attr': {'class': 'form-control', 'rows': 6, 'placeholder': 'Saisissez le contenu de la leçon...', 'id': 'lecon_contenu'}}) }}
             {{ form_errors(form.contenu) }}
+        </div>
+    </div>
+
+    <div class="card border-0 mt-2 mb-4" style="background:linear-gradient(135deg,#f0f4ff,#f8f0ff);border-radius:16px;">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-1" style="color:#667eea;">
+                📧 Notifier les parents par email
+            </h5>
+            <p class="text-muted small mb-3">
+                Ajoutez un ou plusieurs emails séparés par des virgules. L'IA génère automatiquement le résumé, l'objectif et la durée estimée.
+            </p>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold" for="email_parent">
+                    Emails des parents <span class="text-muted fw-normal">(optionnel)</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text" style="background:#667eea;color:#fff;border:none;">📧</span>
+                    <input type="text"
+                           id="email_parent"
+                           name="email_parent"
+                           class="form-control"
+                           placeholder="parent1@exemple.com, parent2@exemple.com, parent3@exemple.com"
+                           style="border-left:none;" />
+                </div>
+                <div class="form-text" id="email-counter" style="color:#667eea;font-weight:500;">
+                    0 email saisi
+                </div>
+
+                <div id="email-tags" class="d-flex flex-wrap gap-2 mt-2"></div>
+            </div>
+
+            <button type="button" id="btn-preview-ia"
+                    class="btn fw-semibold mb-3"
+                    style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:10px;padding:9px 24px;">
+                🧠 Générer l'aperçu IA
+            </button>
+
+            <div id="ia-loading" style="display:none;text-align:center;padding:16px 0;">
+                <div class="spinner-border text-primary" role="status" style="width:26px;height:26px;"></div>
+                <div class="small text-muted mt-2">L'IA analyse votre leçon...</div>
+            </div>
+
+            <div id="ia-error" style="display:none;" class="alert alert-danger small py-2 px-3 mb-3"></div>
+
+            <div id="ia-preview" style="display:none;">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3 text-center h-100" style="background:#fff;border:2px solid #e8edff;">
+                            <div style="font-size:28px;">🧠</div>
+                            <div class="text-uppercase fw-bold" style="font-size:10px;color:#aaa;margin:6px 0 4px;">Résumé</div>
+                            <div id="ia-resume" class="small" style="color:#333;line-height:1.5;">—</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3 text-center h-100" style="background:#fff;border:2px solid #ffe8cc;">
+                            <div style="font-size:28px;">🎯</div>
+                            <div class="text-uppercase fw-bold" style="font-size:10px;color:#aaa;margin:6px 0 4px;">Objectif</div>
+                            <div id="ia-objectif" class="small" style="color:#333;line-height:1.5;">—</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3 text-center h-100" style="background:#fff;border:2px solid #c8f0dc;">
+                            <div style="font-size:28px;">⏱️</div>
+                            <div class="text-uppercase fw-bold" style="font-size:10px;color:#aaa;margin:6px 0 4px;">Durée estimée</div>
+                            <div id="ia-duree" style="font-size:26px;font-weight:700;color:#38a169;">— min</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ia-email-notice" style="display:none;" class="alert alert-success py-2 px-3 small mb-0">
+                    ✅ Un email sera envoyé à <strong id="ia-email-count"></strong> lors de l'enregistrement.
+                </div>
+            </div>
         </div>
     </div>
 
     {{ form_rest(form) }}
 
-    <div class="row mt-4">
+    <div class="row mt-2">
         <div class="col-12 text-center">
             <button class="btn btn-primary px-5" type="submit">
-                <i class="ti ti-device-floppy"></i> {{ button_label|default('Enregistrer la lecon') }}
+                <i class="ti ti-device-floppy"></i> {{ button_label|default('Enregistrer la leçon') }}
             </button>
         </div>
     </div>
 {{ form_end(form) }}
+
+<script>
+(function () {
+    const emailInput   = document.getElementById('email_parent');
+    const emailTags    = document.getElementById('email-tags');
+    const emailCounter = document.getElementById('email-counter');
+    const btnPreview   = document.getElementById('btn-preview-ia');
+    const preview      = document.getElementById('ia-preview');
+    const loading      = document.getElementById('ia-loading');
+    const errorBox     = document.getElementById('ia-error');
+    const emailNotice  = document.getElementById('ia-email-notice');
+    const emailCount   = document.getElementById('ia-email-count');
+
+    function parseEmails(value) {
+        return value.split(',')
+            .map(e => e.trim())
+            .filter(e => e !== '');
+    }
+
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function renderTags() {
+        const emails = parseEmails(emailInput.value);
+        emailTags.innerHTML = '';
+
+        emails.forEach(email => {
+            const valid = isValidEmail(email);
+            const tag = document.createElement('span');
+            tag.style.cssText = `
+                display:inline-flex;align-items:center;gap:5px;
+                padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;
+                background:${valid ? '#e8edff' : '#ffe8e8'};
+                color:${valid ? '#667eea' : '#e53e3e'};
+                border:1.5px solid ${valid ? '#667eea' : '#e53e3e'};
+            `;
+            tag.textContent = valid ? '✅ ' + email : '❌ ' + email + ' (invalide)';
+            emailTags.appendChild(tag);
+        });
+
+        const validCount = emails.filter(isValidEmail).length;
+        if (emails.length === 0) {
+            emailCounter.textContent = '0 email saisi';
+            emailCounter.style.color = '#aaa';
+        } else {
+            emailCounter.textContent = `${validCount} email(s) valide(s) sur ${emails.length}`;
+            emailCounter.style.color = validCount === emails.length ? '#38a169' : '#e53e3e';
+        }
+
+        if (preview.style.display !== 'none') {
+            updateNotice(validCount);
+        }
+    }
+
+    function updateNotice(validCount) {
+        if (validCount > 0) {
+            emailCount.textContent = `${validCount} parent(s)`;
+            emailNotice.style.display = 'block';
+        } else {
+            emailNotice.style.display = 'none';
+        }
+    }
+
+    emailInput.addEventListener('input', renderTags);
+
+    btnPreview.addEventListener('click', async () => {
+        const titre   = document.getElementById('lecon_titre_lecon')?.value.trim() ?? '';
+        const contenu = document.getElementById('lecon_contenu')?.value.trim() ?? '';
+
+        if (!titre && !contenu) {
+            errorBox.textContent = '⚠️ Remplissez au moins le titre ou le contenu avant de générer l\'aperçu.';
+            errorBox.style.display = 'block';
+            return;
+        }
+
+        preview.style.display  = 'none';
+        errorBox.style.display = 'none';
+        loading.style.display  = 'block';
+        btnPreview.disabled    = true;
+
+        try {
+            const res = await fetch('/chatbot/lecon-preview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titre, contenu }),
+            });
+
+            const data = await res.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            document.getElementById('ia-resume').textContent   = data.resume ?? '—';
+            document.getElementById('ia-objectif').textContent = data.objectif ?? '—';
+            document.getElementById('ia-duree').textContent    = (data.duree ?? '—') + ' min';
+
+            const validCount = parseEmails(emailInput.value).filter(isValidEmail).length;
+            updateNotice(validCount);
+
+            preview.style.display = 'block';
+        } catch (e) {
+            errorBox.textContent = '❌ ' + e.message;
+            errorBox.style.display = 'block';
+        } finally {
+            loading.style.display = 'none';
+            btnPreview.disabled   = false;
+        }
+    });
+})();
+</script>
