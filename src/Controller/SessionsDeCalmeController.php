@@ -113,7 +113,7 @@ public function saveSession(Request $request, EntityManagerInterface $entityMana
             ]
         ]);
     } */
-   // Dans SessionsDeCalmeController.php, modifiez la méthode index :
+   // Dans SessionsDeCalmeController.php, modifiez la méthode index 
 
 #[Route(name: 'app_sessions_de_calme_index', methods: ['GET'])]
 public function index(Request $request, SessionsDeCalmeRepository $sessionsDeCalmeRepository): Response
