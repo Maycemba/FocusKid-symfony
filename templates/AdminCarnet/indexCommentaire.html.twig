@@ -1,0 +1,147 @@
+{% extends 'base-back.html.twig' %}
+
+{% block title %}Admin – Gestion des commentaires{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+  .admin-card {
+    background: #fff;
+    border: 1px solid #e8ecf5;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(78,115,223,.08);
+  }
+  .admin-filter-bar {
+    background: #f8faff;
+    border-radius: 20px;
+    padding: 1rem 1.5rem;
+  }
+  .table-admin th {
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #5a6a8a;
+  }
+  .type-tag {
+    padding: 0.2rem 0.7rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.82rem;
+  }
+  .type-Observation   { background: #e8edfd; color: #4e6fdf; }
+  .type-Problème      { background: #fee2e2; color: #c0392b; }
+  .type-Suggestion    { background: #d4f7ec; color: #0a7a52; }
+  .type-Amélioration  { background: #fff3cd; color: #856404; }
+  .btn-icon {
+    padding: 0.3rem 0.8rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>💬 Gestion des commentaires</h1>
+        <div>
+            <a href="{{ path('admin_carnet_index') }}" class="btn btn-outline-secondary me-2">📚 Carnets</a>
+            <a href="{{ path('admin_commentaire_index') }}" class="btn btn-outline-secondary">⟳ Actualiser</a>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="admin-filter-bar mb-4">
+        <form method="get" class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold">🔍 Recherche</label>
+                <input type="text" name="search" class="form-control"
+                       placeholder="Texte du commentaire..."
+                       value="{{ search|default('') }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">🏷 Type</label>
+                <select name="type" class="form-select">
+                    <option value="">Tous</option>
+                    {% for t in ['Observation','Problème','Suggestion','Amélioration'] %}
+                        <option value="{{ t }}" {% if app.request.query.get('type') == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tableau -->
+    <div class="admin-card">
+        <div class="table-responsive">
+            <table class="table table-admin align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Carnet</th>
+                        <th>Type</th>
+                        <th>Texte</th>
+                        <th>Date</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for commentaire in commentaires %}
+                    <tr>
+                        <td><span class="badge bg-light text-dark">{{ commentaire.id }}</span></td>
+                        <td>
+                            {% if commentaire.carnetEducatif %}
+                                <a href="{{ path('admin_carnet_show', {id: commentaire.carnetEducatif.id}) }}"
+                                   class="text-decoration-none fw-semibold">
+                                    📖 Carnet #{{ commentaire.carnetEducatif.id }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="type-tag type-{{ commentaire.typeCommentaire }}">
+                                {{ commentaire.typeCommentaire }}
+                            </span>
+                        </td>
+                        <td>
+                            <span title="{{ commentaire.texteCommentaire }}">
+                                {{ commentaire.texteCommentaire|length > 60
+                                    ? commentaire.texteCommentaire|slice(0,60) ~ '…'
+                                    : commentaire.texteCommentaire }}
+                            </span>
+                        </td>
+                        <td>{{ commentaire.dateCommentaire ? commentaire.dateCommentaire|date('d/m/Y H:i') : '—' }}</td>
+                        <td>
+                            <div class="d-flex justify-content-end gap-1">
+                                <a href="{{ path('admin_commentaire_show', {id: commentaire.id}) }}"
+                                   class="btn-icon btn btn-info btn-sm text-white" title="Voir">
+                                    👁 Voir
+                                </a>
+                                
+                               
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">Aucun commentaire trouvé.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

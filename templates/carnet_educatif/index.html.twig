@@ -1,7 +1,9 @@
 {% extends 'base-front.html.twig' %}
+
 {% block title %}Carnets éducatifs{% endblock %}
 
 {% block stylesheets %}
+{{ parent() }}
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@600;700;800&display=swap');
 :root {
@@ -10,13 +12,13 @@
   --warning:#F39C12;--warning-light:#fef3e0;
   --info:#3ABEF9;--info-light:#e7f7ff;
   --text:#2d3561;--muted:#8590a5;--surface:#f8faff;--border:#e8ecf5;
+  --danger:#e74c3c; --danger-light:#fdecea;
 }
 body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 @keyframes pulse-ring{0%,100%{box-shadow:0 8px 24px rgba(28,200,138,.3)}50%{box-shadow:0 8px 36px rgba(28,200,138,.55)}}
 
-/* ── Hero ── */
 .page-hero{
   background:linear-gradient(135deg,#f8faff 0%,#eef2ff 60%,#f0fdf9 100%);
   border-bottom:2px solid var(--border);
@@ -37,9 +39,7 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
 .btn-new{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.75rem;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:none;border-radius:999px;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;text-decoration:none;box-shadow:0 6px 20px rgba(28,200,138,.4);transition:all .25s;white-space:nowrap}
 .btn-new:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(28,200,138,.5);color:#fff}
 
-/* ── Table card ── */
 .table-card{background:#fff;border:1.5px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:0 8px 32px rgba(78,115,223,.08);animation:fadeUp .5s ease both .1s}
-
 .table-card table{width:100%;border-collapse:collapse}
 .table-card thead tr{background:linear-gradient(90deg,var(--surface) 0%,#edf0ff 100%);border-bottom:2px solid var(--border)}
 .table-card thead th{padding:1.1rem 1.25rem;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
@@ -61,9 +61,28 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
 .btn-sm-see{background:var(--info-light);color:#1484c0}.btn-sm-see:hover{background:#ccecff;transform:translateY(-1px)}
 .btn-sm-edit{background:var(--warning-light);color:#9a6200}.btn-sm-edit:hover{background:#fde8b0;transform:translateY(-1px)}
 
-/* ── Empty ── */
 .empty-wrap{text-align:center;padding:5rem 2rem;animation:fadeUp .6s ease both}
 .empty-icon{font-size:4rem;display:block;margin-bottom:1rem;animation:float 3s ease-in-out infinite}
+
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .22rem .75rem;
+  border-radius: 999px;
+  font-size: .82rem;
+  font-weight: 800;
+}
+.badge-status.yes {
+  background: var(--primary-light);
+  color: #0a7a52;
+  border: 1.5px solid rgba(28,200,138,.3);
+}
+.badge-status.no {
+  background: var(--danger-light);
+  color: #c0392b;
+  border: 1.5px solid rgba(231,76,60,.25);
+}
 </style>
 {% endblock %}
 
@@ -78,18 +97,65 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
         </div>
         <div class="hero-sub">Suivez et analysez vos sessions d'apprentissage</div>
       </div>
-      <a href="{{ path('app_carnet_educatif_new') }}" class="btn-new">➕ Nouveau carnet</a>
+
+      <div class="d-flex gap-2">
+        <a href="{{ path('app_commentaire_index') }}" class="btn-new" style="background: linear-gradient(135deg, var(--info), #1484c0);">💬 Tous les commentaires</a>
+        <a href="{{ path('app_carnet_educatif_new') }}" class="btn-new">➕ Nouveau carnet</a>
+        <a href="{{ path('objectif_index') }}" class="btn btn-success">
+                🎯 Gérer mes objectifs
+            </a>
+      </div>
     </div>
   </div>
 </div>
 
 <div class="container py-5">
+
+  {# Barre de filtre #}
+  <div class="card shadow-sm border-0 rounded-4 mb-4">
+    <div class="card-body p-4">
+      <form method="get" action="{{ path('app_carnet_educatif_index') }}" class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label fw-bold">🔍 Recherche</label>
+          <input type="text" name="search" class="form-control" placeholder="Matière, lieu, activité..." value="{{ search|default('') }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">📚 Matière</label>
+          <select name="matiere" class="form-select">
+            <option value="">Toutes</option>
+            {% for m in matieres|default([]) %}
+              <option value="{{ m }}" {% if selected_matiere == m %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">✅ Travail terminé</label>
+          <select name="travail_termine" class="form-select">
+            <option value="">Tous</option>
+            <option value="1" {% if selected_travail_termine == '1' %}selected{% endif %}>Terminé</option>
+            <option value="0" {% if selected_travail_termine == '0' %}selected{% endif %}>Non terminé</option>
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end gap-2">
+          <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+          <a href="{{ path('app_carnet_educatif_index') }}" class="btn btn-outline-secondary w-100">Réinitialiser</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
   {% if carnet_educatifs|length > 0 %}
   <div class="table-card">
     <table>
       <thead>
         <tr>
-          <th>#</th><th>Date</th><th>Matière</th><th>Durée</th><th>Concentration</th><th>Actions</th>
+          <th>#</th>
+          <th>Date</th>
+          <th>Matière</th>
+          <th>Durée</th>
+          <th>Concentration</th>
+          <th>Travail terminé</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -108,9 +174,15 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
             </div>
           </td>
           <td>
+            {% if carnet.travailTermine %}
+              <span class="badge-status yes">✅ Terminé</span>
+            {% else %}
+              <span class="badge-status no">⏳ Non terminé</span>
+            {% endif %}
+          </td>
+          <td>
             <div class="d-flex gap-2">
               <a href="{{ path('app_carnet_educatif_show', {'id': carnet.id}) }}" class="btn-sm-see">👁 Voir</a>
-              <a href="{{ path('app_carnet_educatif_edit', {'id': carnet.id}) }}" class="btn-sm-edit">✏️ Modifier</a>
             </div>
           </td>
         </tr>
@@ -118,6 +190,11 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
       </tbody>
     </table>
   </div>
-
-    <a href="{{ path('app_carnet_educatif_new') }}">Create new</a>
+  {% else %}
+  <div class="empty-wrap">
+    <span class="empty-icon">📭</span>
+    <p style="color:var(--muted);font-size:1.05rem">Aucun carnet trouvé.<br>Créez votre première session d'étude !</p>
+  </div>
+  {% endif %}
+</div>
 {% endblock %}

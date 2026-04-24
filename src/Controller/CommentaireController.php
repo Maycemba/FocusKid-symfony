@@ -1,5 +1,4 @@
 <?php
-// src/Controller/CommentaireController.php
 
 namespace App\Controller;
 
@@ -17,87 +16,83 @@ use Symfony\Component\Routing\Attribute\Route;
 final class CommentaireController extends AbstractController
 {
     #[Route('/', name: 'app_commentaire_index', methods: ['GET'])]
-public function index(Request $request, CommentaireRepository $commentaireRepository): Response
-{
-    // Paramètres de filtre
-    $search = $request->query->get('search', '');
-    $type = $request->query->get('type', '');
-    $carnetId = $request->query->get('carnet_id', '');
-
-    $qb = $commentaireRepository->createQueryBuilder('c')
-        ->leftJoin('c.carnetEducatif', 'ce');
-
-    if ($search) {
-        $qb->andWhere('c.texte_commentaire LIKE :search')
-           ->setParameter('search', '%'.$search.'%');
-    }
-    if ($type) {
-        $qb->andWhere('c.type_commentaire = :type')
-           ->setParameter('type', $type);
-    }
-    if ($carnetId) {
-        $qb->andWhere('ce.id = :carnetId')
-           ->setParameter('carnetId', $carnetId);
-    }
-
-    $qb->orderBy('c.date_commentaire', 'DESC');
-
-    $commentaires = $qb->getQuery()->getResult();
-
-    // Types disponibles pour le filtre
-    $types = ['Observation', 'Problème', 'Suggestion', 'Amélioration'];
-
-    return $this->render('commentaire/index.html.twig', [
-        'commentaires' => $commentaires,
-        'types' => $types,
-        'search' => $search,
-        'selected_type' => $type,
-        'carnet_id' => $carnetId,
-    ]);
-}
-
-    #[Route('/new/{carnetId?}', name: 'app_commentaire_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, ?int $carnetId = null): Response
+    public function index(Request $request, CommentaireRepository $commentaireRepository): Response
     {
-        $commentaire = new Commentaire();
-        $carnet = null;
-        if ($carnetId) {
-            $carnet = $entityManager->getRepository(CarnetEducatif::class)->find($carnetId);
-            if ($carnet) {
-                $commentaire->setCarnetEducatif($carnet);
-            }
+        // Récupérer les paramètres de filtre
+        $search = $request->query->get('search', '');
+        $type = $request->query->get('type', '');
+        $carnetId = $request->query->get('carnet_id', '');
+
+        $qb = $commentaireRepository->createQueryBuilder('c')
+            ->leftJoin('c.carnetEducatif', 'ce');
+
+        if ($search) {
+            $qb->andWhere('c.texte_commentaire LIKE :search')
+               ->setParameter('search', '%'.$search.'%');
         }
+        if ($type) {
+            $qb->andWhere('c.type_commentaire = :type')
+               ->setParameter('type', $type);
+        }
+        if ($carnetId) {
+            $qb->andWhere('ce.id = :carnetId')
+               ->setParameter('carnetId', $carnetId);
+        }
+
+        $qb->orderBy('c.date_commentaire', 'DESC');
+        $commentaires = $qb->getQuery()->getResult();
+
+        $types = ['Observation', 'Problème', 'Suggestion', 'Amélioration'];
+
+        return $this->render('commentaire/index.html.twig', [
+            'commentaires' => $commentaires,
+            'types' => $types,
+            'search' => $search,
+            'selected_type' => $type,
+            'carnet_id' => $carnetId,
+        ]);
+    }
+
+    #[Route('/new/{carnetId}', name: 'app_commentaire_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager, int $carnetId): Response
+    {
+        $carnet = $entityManager->getRepository(CarnetEducatif::class)->find($carnetId);
+        
+        if (!$carnet) {
+            $this->addFlash('error', 'Carnet non trouvé.');
+            return $this->redirectToRoute('app_carnet_educatif_index');
+        }
+
+        $commentaire = new Commentaire();
+        $commentaire->setCarnetEducatif($carnet);
 
         $form = $this->createForm(CommentaireType::class, $commentaire);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Récupérer date et heure séparées
             $date = $form->get('date_seule')->getData();
             $heure = $form->get('heure_seule')->getData();
-
-            // Validation manuelle (par sécurité)
-            if (!$date || !$heure) {
-                $this->addFlash('error', 'La date et l\'heure sont obligatoires.');
-                return $this->render('commentaire/new.html.twig', [
-                    'form' => $form->createView(),
-                    'carnet' => $carnet,
-                ]);
+            
+            if ($date && $heure) {
+                $datetime = new \DateTime();
+                $datetime->setDate(
+                    (int)$date->format('Y'),
+                    (int)$date->format('m'),
+                    (int)$date->format('d')
+                );
+                $datetime->setTime(
+                    (int)$heure->format('H'),
+                    (int)$heure->format('i'),
+                    (int)$heure->format('s')
+                );
+                $commentaire->setDateCommentaire($datetime);
             }
-
-            // Fusion date + heure
-            $datetime = \DateTime::createFromInterface($date);
-            $datetime->setTime((int)$heure->format('H'), (int)$heure->format('i'));
-            $commentaire->setDateCommentaire($datetime);
-
+            
             $entityManager->persist($commentaire);
             $entityManager->flush();
 
             $this->addFlash('success', 'Commentaire ajouté avec succès.');
-            if ($carnet) {
-                return $this->redirectToRoute('app_carnet_educatif_show', ['id' => $carnet->getId()]);
-            }
-            return $this->redirectToRoute('app_commentaire_index');
+            return $this->redirectToRoute('app_carnet_educatif_show', ['id' => $carnet->getId()]);
         }
 
         return $this->render('commentaire/new.html.twig', [
@@ -110,29 +105,33 @@ public function index(Request $request, CommentaireRepository $commentaireReposi
     public function edit(Request $request, Commentaire $commentaire, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(CommentaireType::class, $commentaire);
-        // Pré-remplir date_seule et heure_seule à partir de date_commentaire
+        
         if ($commentaire->getDateCommentaire()) {
             $form->get('date_seule')->setData($commentaire->getDateCommentaire());
             $form->get('heure_seule')->setData($commentaire->getDateCommentaire());
         }
+        
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $date = $form->get('date_seule')->getData();
             $heure = $form->get('heure_seule')->getData();
-
-            if (!$date || !$heure) {
-                $this->addFlash('error', 'La date et l\'heure sont requises.');
-                return $this->render('commentaire/edit.html.twig', [
-                    'commentaire' => $commentaire,
-                    'form' => $form->createView(),
-                ]);
+            
+            if ($date && $heure) {
+                $datetime = new \DateTime();
+                $datetime->setDate(
+                    (int)$date->format('Y'),
+                    (int)$date->format('m'),
+                    (int)$date->format('d')
+                );
+                $datetime->setTime(
+                    (int)$heure->format('H'),
+                    (int)$heure->format('i'),
+                    (int)$heure->format('s')
+                );
+                $commentaire->setDateCommentaire($datetime);
             }
-
-            $datetime = \DateTime::createFromInterface($date);
-            $datetime->setTime((int)$heure->format('H'), (int)$heure->format('i'));
-            $commentaire->setDateCommentaire($datetime);
-
+            
             $entityManager->flush();
             $this->addFlash('success', 'Commentaire modifié.');
             return $this->redirectToRoute('app_commentaire_show', ['id' => $commentaire->getId()]);

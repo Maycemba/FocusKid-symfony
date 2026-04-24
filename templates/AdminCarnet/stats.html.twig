@@ -1,0 +1,202 @@
+{% extends 'base-back.html.twig' %}
+
+{% block title %}Statistiques des carnets éducatifs{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .stats-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 24px;
+        margin-bottom: 2rem;
+    }
+    .stats-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    .stats-number {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+    .stats-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .chart-container {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    .btn-back {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+    .btn-back:hover {
+        background: #5a6268;
+        color: white;
+    }
+    .progress-stat {
+        height: 30px;
+        border-radius: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <div class="stats-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-2">📊 Tableau de bord statistique</h1>
+                <p class="mb-0 opacity-75">Aperçu global des carnets éducatifs et commentaires</p>
+            </div>
+            <a href="{{ path('admin_carnet_index') }}" class="btn-back">
+                ← Retour à la liste
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="stats-card text-center">
+                <div class="stats-number">{{ total_carnets|default(0) }}</div>
+                <div class="stats-label">Total carnets éducatifs</div>
+                <i class="fas fa-book-open mt-2" style="font-size: 2rem; color: #667eea;"></i>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="stats-card text-center">
+                <div class="stats-number">{{ total_commentaires|default(0) }}</div>
+                <div class="stats-label">Total commentaires</div>
+                <i class="fas fa-comments mt-2" style="font-size: 2rem; color: #764ba2;"></i>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="stats-card text-center">
+                <div class="stats-number">{{ total_termine|default(0) }}</div>
+                <div class="stats-label">Travaux terminés</div>
+                <i class="fas fa-check-circle mt-2" style="font-size: 2rem; color: #28a745;"></i>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="stats-card text-center">
+                <div class="stats-number">{{ taux_termine|default(0) }}%</div>
+                <div class="stats-label">Taux de complétion</div>
+                <i class="fas fa-chart-line mt-2" style="font-size: 2rem; color: #ffc107;"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <canvas id="matiereChart" style="height: 300px;"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <canvas id="concentrationChart" style="height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <h5 class="mb-3">Progression des travaux</h5>
+        <div class="progress progress-stat">
+            <div class="progress-bar bg-success" style="width: {{ taux_termine|default(0) }}%">
+                {{ taux_termine|default(0) }}% Terminé
+            </div>
+        </div>
+        <div class="mt-2 text-muted">
+            <small>{{ total_termine|default(0) }} terminés / {{ total_carnets|default(0) }} au total</small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    {% if stats_par_matiere is defined and stats_par_matiere|length > 0 %}
+    // Convertir l'objet PHP en tableau JavaScript
+    const matiereLabels = {{ stats_par_matiere|keys|json_encode|raw }};
+    const matiereData = {{ stats_par_matiere|json_encode|raw }};
+    const matiereValues = Object.values(matiereData);
+    
+    const matiereCtx = document.getElementById('matiereChart').getContext('2d');
+    new Chart(matiereCtx, {
+        type: 'bar',
+        data: {
+            labels: matiereLabels,
+            datasets: [{
+                label: 'Nombre de carnets',
+                data: matiereValues,
+                backgroundColor: 'rgba(102, 126, 234, 0.5)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: 'Répartition par matière' }
+            }
+        }
+    });
+    {% endif %}
+
+    {% if stats_concentration is defined and stats_concentration|length > 0 %}
+    const concentrationCtx = document.getElementById('concentrationChart').getContext('2d');
+    new Chart(concentrationCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Niveau 1', 'Niveau 2', 'Niveau 3', 'Niveau 4', 'Niveau 5'],
+            datasets: [{
+                label: "Nombre d'étudiants",
+                data: [
+                    {{ stats_concentration[1]|default(0) }},
+                    {{ stats_concentration[2]|default(0) }},
+                    {{ stats_concentration[3]|default(0) }},
+                    {{ stats_concentration[4]|default(0) }},
+                    {{ stats_concentration[5]|default(0) }}
+                ],
+                backgroundColor: 'rgba(118, 75, 162, 0.5)',
+                borderColor: 'rgba(118, 75, 162, 1)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: 'Distribution des niveaux de concentration' }
+            },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}
