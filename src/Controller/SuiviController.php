@@ -7,12 +7,14 @@ use App\Repository\ExerciceRepository;
 use App\Repository\ReponseExerciceRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\ExerciceEnfantRepository;
+use App\Service\AdvancedIaRecommendationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
+use App\Service\GeminiService;
 
 #[Route('/suivi')]
 class SuiviController extends AbstractController
@@ -394,6 +396,24 @@ public function enfantReponses(int $id, EntityManagerInterface $em): Response
     return $this->render('suivi/enfant_reponses.html.twig', [
         'enfant' => $enfant,
         'reponses' => $reponses,
+    ]);
+}
+#[Route('/enfant/{id}/rapport-ia-avance', name: 'app_suivi_enfant_rapport_ia_avance')]
+public function rapportIaAvance(int $id, UtilisateurRepository $utilisateurRepository, AdvancedIaRecommendationService $iaService): Response
+{
+    $enfant = $utilisateurRepository->find($id);
+    
+    if (!$enfant) {
+        throw $this->createNotFoundException('Enfant non trouvé');
+    }
+    
+    $rapport = $iaService->generateFullReport($id);
+    
+    // Vérification du QR code
+    dump($rapport['qr_code']); // Vérifiez ce qui s'affiche
+    
+    return $this->render('suivi/rapport_ia_avance.html.twig', [
+        'rapport' => $rapport
     ]);
 }
 }

@@ -71,6 +71,120 @@
             color: #F44336;
             font-weight: bold;
         }
+        
+        /* Caméra et surveillance */
+        .camera-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            background: #000;
+            border-radius: 10px;
+            z-index: 1000;
+            overflow: hidden;
+            border: 2px solid #FF9800;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .camera-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .violation-badge {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 15px;
+            font-size: 10px;
+            display: none;
+        }
+        .face-status {
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            font-size: 9px;
+            padding: 2px;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            margin: 100px auto;
+            text-align: center;
+        }
+        .modal-content video {
+            width: 100%;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        .modal-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+        .modal-btn-skip {
+            background: #ccc;
+            color: #333;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        /* Alerte violation */
+        .violation-alert {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #F44336;
+            color: white;
+            padding: 20px 40px;
+            border-radius: 20px;
+            z-index: 3000;
+            text-align: center;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+        }
+        .violation-alert h3 {
+            margin: 0 0 10px 0;
+        }
+        .violation-alert button {
+            background: white;
+            color: #F44336;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
     </style>
 {% endblock %}
 
@@ -102,6 +216,33 @@
         </div>
     </div>
 </div>
+
+<!-- Caméra de surveillance -->
+<div id="cameraContainer" class="camera-container" style="display: none;">
+    <video id="surveillanceVideo" autoplay muted playsinline></video>
+    <div id="violationBadge" class="violation-badge">⚠️</div>
+    <div class="face-status">
+        <span id="faceStatus">🔍 Vérification...</span>
+    </div>
+</div>
+
+<!-- Modal d'enregistrement du visage -->
+<div id="registerModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>📸 Enregistrement du visage</h2>
+        <p>Placez-vous face à la caméra</p>
+        <video id="registerVideo" autoplay muted></video>
+        <button id="confirmRegisterBtn" class="modal-btn">✅ Enregistrer mon visage</button>
+        <button id="skipRegisterBtn" class="modal-btn-skip">⏭️ Passer</button>
+    </div>
+</div>
+
+<!-- Alerte violation -->
+<div id="violationAlert" class="violation-alert">
+    <h3>⚠️ Exercice interrompu !</h3>
+    <p id="violationReason"></p>
+    <button onclick="location.reload()">🔁 Recommencer</button>
+</div>
 {% endblock %}
 
 {% block javascripts %}
@@ -111,6 +252,7 @@
         const exerciceId = {{ exercice.id }};
         const questionsData = {{ questions|default([])|json_encode|raw }};
         
+        // Variables du jeu
         let images = [];
         let currentTarget = null;
         let score = 0;
@@ -121,12 +263,17 @@
         let timeLeft = 100;
         let gameFinished = false;
         let reponsesDonnees = [];
+        let gameStarted = false;
         
         // Paramètres
         let pointsParClick = 10;
         let penalite = 5;
         let tempsMax = 120;
         
+        // Variables de surveillance
+        let surveillanceActive = false;
+        
+        // ========== FONCTIONS DU JEU ==========
         function initGame() {
             if (!questionsData || questionsData.length === 0) {
                 console.log('❌ Aucune donnée pour le jeu Attention');
@@ -150,8 +297,31 @@
             updateProgressBar();
             setNewTarget();
             renderGrid();
-            startTimer();
-            startProgressTimer();
+        }
+        
+        function startGameTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            if (progressTimer) clearInterval(progressTimer);
+            
+            timer = 0;
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                if (gameActive && !gameFinished && gameStarted) {
+                    timer++;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+            
+            progressTimer = setInterval(() => {
+                if (gameActive && !gameFinished && gameStarted && timeLeft > 0) {
+                    timeLeft--;
+                    updateProgressBar();
+                    if (timeLeft <= 0) {
+                        finishGame();
+                    }
+                }
+            }, 1000);
         }
         
         function setNewTarget() {
@@ -180,7 +350,7 @@
         }
         
         function selectImage(index) {
-            if (!gameActive || gameFinished) return;
+            if (!gameActive || gameFinished || !gameStarted) return;
             
             const selectedImage = images[index];
             
@@ -241,31 +411,6 @@
             }
         }
         
-        function startProgressTimer() {
-            if (progressTimer) clearInterval(progressTimer);
-            progressTimer = setInterval(() => {
-                if (gameActive && !gameFinished && timeLeft > 0) {
-                    timeLeft--;
-                    updateProgressBar();
-                    if (timeLeft <= 0) {
-                        finishGame();
-                    }
-                }
-            }, 1000);
-        }
-        
-        function startTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-            timer = 0;
-            updateTimerDisplay();
-            timerInterval = setInterval(() => {
-                if (gameActive && !gameFinished) {
-                    timer++;
-                    updateTimerDisplay();
-                }
-            }, 1000);
-        }
-        
         function updateTimerDisplay() {
             const m = Math.floor(timer / 60);
             const s = timer % 60;
@@ -291,7 +436,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     exercice_id: exerciceId,
-                    enfant_id: 1,
+                    enfant_id: {{ app.user.id ?? 1 }},
                     score: score,
                     temps_passe: timer,
                     reponses: reponsesData,
@@ -313,8 +458,14 @@
             if (!gameActive || gameFinished) return;
             
             gameActive = false;
+            gameStarted = false;
             if (timerInterval) clearInterval(timerInterval);
             if (progressTimer) clearInterval(progressTimer);
+            
+            // Arrêter la surveillance
+            if (window.ExerciceGuardian) {
+                window.ExerciceGuardian.stop();
+            }
             
             const msgDiv = document.getElementById('message');
             if (msgDiv) msgDiv.innerHTML = '📝 Sauvegarde en cours...';
@@ -329,9 +480,98 @@
             });
         }
         
-        // Initialisation
+        // ========== SURVEILLANCE FACIALE ==========
+        async function initSurveillance() {
+            if (!window.FaceDetectionService || !window.ExerciceGuardian) {
+                console.log('⏳ Attente des services...');
+                setTimeout(initSurveillance, 500);
+                return;
+            }
+            
+            const status = await window.ExerciceGuardian.init();
+            
+            if (!status.faceLoaded) {
+                showRegisterModal();
+            } else {
+                startSurveillance();
+            }
+        }
+        
+        function showRegisterModal() {
+            const modal = document.getElementById('registerModal');
+            const video = document.getElementById('registerVideo');
+            
+            modal.style.display = 'flex';
+            window.FaceDetectionService.startCamera(video);
+            
+            document.getElementById('confirmRegisterBtn').onclick = async () => {
+                const success = await window.ExerciceGuardian.registerFirstFace(video);
+                if (success) {
+                    modal.style.display = 'none';
+                    window.FaceDetectionService.stopCamera();
+                    startSurveillance();
+                } else {
+                    alert('❌ Placez-vous bien face à la caméra');
+                }
+            };
+            
+            document.getElementById('skipRegisterBtn').onclick = () => {
+                modal.style.display = 'none';
+                window.FaceDetectionService.stopCamera();
+                startGameWithoutSurveillance();
+            };
+        }
+        
+        function startSurveillance() {
+            const cameraDiv = document.getElementById('cameraContainer');
+            const video = document.getElementById('surveillanceVideo');
+            
+            cameraDiv.style.display = 'block';
+            
+            window.ExerciceGuardian.start(
+                video,
+                (reason) => {
+                    // Arrêt du jeu
+                    gameActive = false;
+                    gameStarted = false;
+                    if (timerInterval) clearInterval(timerInterval);
+                    if (progressTimer) clearInterval(progressTimer);
+                    document.getElementById('violationReason').innerHTML = reason;
+                    document.getElementById('violationAlert').style.display = 'flex';
+                },
+                (count) => {
+                    const badge = document.getElementById('violationBadge');
+                    const statusSpan = document.getElementById('faceStatus');
+                    
+                    if (count > 0) {
+                        badge.style.display = 'block';
+                        statusSpan.innerHTML = `⚠️ Alerte (${count}/3)`;
+                        statusSpan.style.color = '#ff6b6b';
+                    } else {
+                        badge.style.display = 'none';
+                        statusSpan.innerHTML = '✅ Enfant vérifié';
+                        statusSpan.style.color = '#4CAF50';
+                    }
+                }
+            );
+            
+            // Démarrer le jeu après 1 seconde
+            setTimeout(() => {
+                gameStarted = true;
+                startGameTimer();
+            }, 1000);
+        }
+        
+        function startGameWithoutSurveillance() {
+            gameStarted = true;
+            startGameTimer();
+            console.log('Jeu démarré sans surveillance');
+        }
+        
+        // ========== INITIALISATION ==========
         if (document.getElementById('attentionGrid')) {
             initGame();
+            initSurveillance();
         }
     </script>
 {% endblock %}

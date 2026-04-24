@@ -3,3 +3,10 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+export_pdf:
+    path: /suivi/export/pdf/{id}
+    controller: App\Controller\ExportStatsController::exportPdf
+
+export_csv:
+    path: /suivi/export/csv/{id}
+    controller: App\Controller\ExportStatsController::exportCsv

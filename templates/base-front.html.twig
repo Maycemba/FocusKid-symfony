@@ -529,8 +529,19 @@
 
     
     <script src="{{ asset('base-front/js/main.js') }}"></script>
+    <!-- TensorFlow.js et Face-api.js (AVANT vos services) -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.0.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+<!-- Vos services de détection -->
+<script src="{{ asset('base-front/js/face-detection.js') }}"></script>
+<script src="{{ asset('base-front/js/exercice-guardian.js') }}"></script>
+
+<!-- main.js EN DERNIER -->
+<script src="{{ asset('base-front/js/main.js') }}"></script>
     
-    {% block javascripts %}{% endblock %}
+    {% block javascripts %}
+    {% endblock %}
 </body>
 
 </html>
