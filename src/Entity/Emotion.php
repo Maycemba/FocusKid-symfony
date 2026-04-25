@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Repository\EmotionRepository;
 
+
 #[ORM\Entity(repositoryClass: EmotionRepository::class)]
 #[ORM\Table(name: 'emotion')]
 class Emotion

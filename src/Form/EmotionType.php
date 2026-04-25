@@ -8,6 +8,7 @@ use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
 class EmotionType extends AbstractType
 {
@@ -25,6 +26,11 @@ class EmotionType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-control', 'accept' => 'image/*']
             ])
+            ->add('imageFile', VichImageType::class, [
+    'required' => false,
+    'allow_delete' => true,
+    'download_uri' => false,
+])
         ;
     }
 

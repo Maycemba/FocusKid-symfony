@@ -31,6 +31,37 @@ class HumeurJournaliereRepository extends ServiceEntityRepository
     }
 
     /**
+     * Récupère les humeurs pour l'export Excel avec filtres optionnels.
+     */
+    public function findForExport(
+        ?string $dateDebut = null,
+        ?string $dateFin   = null,
+        ?string $emotion   = null
+    ): array {
+        $qb = $this->createQueryBuilder('h')
+            ->leftJoin('h.emotion', 'e')
+            ->addSelect('e')
+            ->orderBy('h.dateHeure', 'DESC');
+
+        if ($dateDebut) {
+            $qb->andWhere('h.dateHeure >= :dateDebut')
+               ->setParameter('dateDebut', new \DateTime($dateDebut . ' 00:00:00'));
+        }
+
+        if ($dateFin) {
+            $qb->andWhere('h.dateHeure <= :dateFin')
+               ->setParameter('dateFin', new \DateTime($dateFin . ' 23:59:59'));
+        }
+
+        if ($emotion) {
+            $qb->andWhere('e.nom = :emotion')
+               ->setParameter('emotion', $emotion);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * Statistiques : humeurs par jour pour la courbe (30 derniers jours)
      */
     public function countByDay(): array

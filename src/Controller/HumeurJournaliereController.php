@@ -6,11 +6,13 @@ use App\Entity\HumeurJournaliere;
 use App\Form\HumeurJournaliereType;
 use App\Repository\HumeurJournaliereRepository;
 use App\Repository\EmotionRepository;
+use App\Service\HumeurExportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/humeur/journaliere')]
@@ -45,6 +47,19 @@ final class HumeurJournaliereController extends AbstractController
             'humeur_journaliere' => $humeurJournaliere,
             'form'               => $form,
         ]);
+    }
+
+    /**
+     * Export Excel des humeurs journalières — déclenché uniquement par le formulaire du bouton
+     */
+    #[Route('/export/excel', name: 'app_humeur_export_excel', methods: ['GET', 'POST'])]
+    public function exportExcel(Request $request, HumeurExportService $exportService): StreamedResponse
+    {
+        $dateDebut = $request->get('date_debut') ?: null;
+        $dateFin   = $request->get('date_fin')   ?: null;
+        $emotion   = $request->get('emotion')    ?: null;
+
+        return $exportService->exportExcel($dateDebut, $dateFin, $emotion);
     }
 
     /**

@@ -9,6 +9,7 @@ use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
 class HumeurJournaliereType extends AbstractType
 {
@@ -28,6 +29,11 @@ class HumeurJournaliereType extends AbstractType
                 'attr' => ['class' => 'form-control'],
                 'required' => false
             ])
+            ->add('imageFile', VichImageType::class, [
+    'required' => false,
+    'allow_delete' => true,
+    'download_uri' => false,
+])
         ;
     }
 
