@@ -70,48 +70,84 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const langSelector = document.getElementById('target-lang-selector');
     const translateBtns = document.querySelectorAll('.btn-translate');
     
+    // On suit la langue actuelle du contenu (par défaut français au départ)
+    let currentContentLang = 'fr';
+
+    // Fonction de traduction réutilisable
+    async function translateField(input, sourceLang, targetLang, btn = null) {
+        if (!input || !input.value || sourceLang === targetLang) return;
+
+        let originalBtnContent = '';
+        if (btn) {
+            originalBtnContent = btn.innerHTML;
+            btn.innerHTML = '<iconify-icon icon="solar:spinner-line-duotone" class="fa-spin"></iconify-icon>';
+            btn.disabled = true;
+        }
+
+        try {
+            const response = await fetch('{{ path("api_translate_index") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: input.value,
+                    sourceLang: sourceLang,
+                    targetLang: targetLang
+                })
+            });
+
+            const data = await response.json();
+            if (data.translated) {
+                input.value = data.translated;
+            }
+        } catch (error) {
+            console.error('Erreur traduction:', error);
+        } finally {
+            if (btn) {
+                btn.innerHTML = originalBtnContent;
+                btn.disabled = false;
+            }
+        }
+    }
+
+    // Traduction manuelle via bouton
     translateBtns.forEach(btn => {
-        btn.addEventListener('click', async function() {
+        btn.addEventListener('click', function() {
             const targetId = this.getAttribute('data-target');
             const input = document.querySelector(`[id$="_${targetId}"]`);
-            const targetLang = document.getElementById('target-lang-selector').value;
-            
-            if (!input || !input.value) {
-                alert('Veuillez saisir un texte à traduire');
-                return;
-            }
-
-            const originalBtnContent = this.innerHTML;
-            this.innerHTML = '<iconify-icon icon="solar:spinner-line-duotone" class="fa-spin"></iconify-icon>';
-            this.disabled = true;
-
-            try {
-                const response = await fetch('{{ path("api_translate_index") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        text: input.value,
-                        sourceLang: targetLang === 'fr' ? 'en' : 'fr', // Si on traduit en FR, on suppose la source est EN
-                        targetLang: targetLang
-                    })
-                });
-
-                const data = await response.json();
-                if (data.translated) {
-                    input.value = data.translated;
-                }
-            } catch (error) {
-                console.error('Erreur traduction:', error);
-                alert('Erreur lors de la traduction');
-            } finally {
-                this.innerHTML = originalBtnContent;
-                this.disabled = false;
-            }
+            const targetLang = langSelector.value;
+            // On traduit de la langue actuelle vers la cible
+            translateField(input, currentContentLang, targetLang, this);
         });
+    });
+
+    // Traduction automatique au changement de langue
+    langSelector.addEventListener('change', async function() {
+        const targetLang = this.value;
+        const sourceLang = currentContentLang;
+        
+        if (sourceLang === targetLang) return;
+
+        const translatableInputs = document.querySelectorAll('[data-translatable="true"]');
+        
+        // On attend que toutes les traductions soient lancées
+        const translationPromises = Array.from(translatableInputs).map(input => {
+            if (input.value.trim() !== '') {
+                const targetId = input.id.split('_').pop();
+                const btn = document.querySelector(`.btn-translate[data-target="${targetId}"]`);
+                return translateField(input, sourceLang, targetLang, btn);
+            }
+            return Promise.resolve();
+        });
+
+        await Promise.all(translationPromises);
+        
+        // Une fois terminé, la nouvelle langue du contenu est la cible
+        currentContentLang = targetLang;
     });
 });
 </script>
