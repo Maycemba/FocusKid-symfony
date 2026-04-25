@@ -3,6 +3,8 @@ namespace App\Controller;
 
 use App\Repository\CourRepository;
 use App\Service\TranslationService;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -84,10 +86,10 @@ final class FrontController extends AbstractController
         }
 
         return $this->render('front/cours.html.twig', [
-            'cours' => $pagination,
+            'cours'  => $pagination,
             'search' => $search,
             'niveau' => $niveau,
-            'sort' => $sort,
+            'sort'   => $sort,
         ]);
     }
 
@@ -114,7 +116,7 @@ final class FrontController extends AbstractController
         $locale = $_locale;
         $request->setLocale($locale);
 
-        $lecons = $cour->getLecons();
+        $lecons          = $cour->getLecons();
         $leconsTraduites = [];
 
         foreach ($lecons as $lecon) {
@@ -135,5 +137,73 @@ final class FrontController extends AbstractController
             'leconsTraduites' => $leconsTraduites,
             'locale'          => $locale,
         ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Téléchargement PDF du cours (DomPDF)
+    // ─────────────────────────────────────────────────────────────────────────
+    #[Route(
+        '/enfant/cours/{id_cours}/pdf/{_locale}',
+        name: 'app_enfant_cours_pdf',
+        methods: ['GET'],
+        defaults: ['_locale' => 'fr'],
+        requirements: ['_locale' => 'fr|en|ar', 'id_cours' => '\d+']
+    )]
+    public function telechargerCoursPdf(
+        int $id_cours,
+        string $_locale,
+        CourRepository $courRepository,
+        TranslationService $translationService
+    ): Response {
+        $cour = $courRepository->find($id_cours);
+
+        if (!$cour) {
+            throw $this->createNotFoundException('Cours introuvable');
+        }
+
+        $locale          = $_locale;
+        $lecons          = $cour->getLecons();
+        $leconsTraduites = [];
+
+        foreach ($lecons as $lecon) {
+            $leconsTraduites[] = [
+                'titre_lecon' => $locale !== 'fr'
+                    ? $translationService->translate($lecon->getTitreLecon(), $locale)
+                    : $lecon->getTitreLecon(),
+                'contenu'     => $locale !== 'fr'
+                    ? $translationService->translate($lecon->getContenu() ?? '', $locale)
+                    : $lecon->getContenu(),
+            ];
+        }
+
+        // Générer le HTML depuis un template Twig dédié
+        $html = $this->renderView('front/cours_pdf.html.twig', [
+            'cour'            => $cour,
+            'leconsTraduites' => $leconsTraduites,
+            'locale'          => $locale,
+        ]);
+
+        // Configurer DomPDF
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', false);
+        $options->set('defaultFont', 'Arial');
+        $options->set('chroot', $this->getParameter('kernel.project_dir') . '/public');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $nomFichier = 'cours-' . preg_replace('/[^a-z0-9]/i', '-', $cour->getTitre()) . '.pdf';
+
+        return new Response(
+            $dompdf->output(),
+            200,
+            [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $nomFichier . '"',
+            ]
+        );
     }
 }

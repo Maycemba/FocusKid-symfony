@@ -41,6 +41,8 @@
     .tdah-badge-green  { background: #28a745; color: white; }
     .tdah-badge-active { outline: 3px solid white; outline-offset: 2px; }
     .tdah-lang-selector { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+    /* ── Bouton PDF ── */
     .tdah-progress-wrap { background: rgba(255,255,255,0.25); border-radius: 999px; height: 18px; margin: 24px 32px 0; overflow: hidden; }
     .tdah-progress-fill { background: #ffc107; height: 100%; border-radius: 999px; width: 0%; transition: width 1s ease; }
     .tdah-progress-label { color: rgba(255,255,255,0.9); font-size: 14px; text-align: center; margin-top: 8px; font-weight: 600; }
@@ -235,10 +237,12 @@
         padding: 14px 36px; font-size: 17px; font-weight: 800;
         cursor: pointer; font-family: 'Nunito', sans-serif;
         text-decoration: none; display: inline-block; transition: transform 0.15s;
+        margin: 6px;
     }
     .tdah-footer-btn:hover { transform: scale(1.05); }
 
     @keyframes tdah-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
 </style>
 {% endblock %}
 
@@ -363,7 +367,14 @@
         <span class="tdah-footer-trophy">🏆</span>
         <h3>{{ 'lecons.footer_title'|trans }}</h3>
         <p>{{ 'lecons.footer_text'|trans }}</p>
-        <a href="{{ path('app_enfant_cours') }}" class="tdah-footer-btn">{{ 'btn.back'|trans }}</a>
+        <a href="{{ path('app_enfant_cours') }}" class="tdah-footer-btn">
+            {{ 'btn.back'|trans }}
+        </a>
+        {# ── Bouton PDF dans le footer ── #}
+        <a href="{{ path('app_enfant_cours_pdf', {'id_cours': cour.id_cours, '_locale': locale}) }}"
+           class="tdah-footer-btn" style="background:#28a745; color:white;">
+            📄 {{ 'download_pdf'|trans }}
+        </a>
     </div>
 
     {% endif %}
@@ -398,7 +409,7 @@ var leconsContenu = [
     {% endfor %}
 ];
 
-// ══ TIMER AUTOMATIQUE — Quiz après 5 minutes sans indice ══
+// ══ TIMER AUTOMATIQUE — Quiz après 1 minute sans interaction ══
 var QUIZ_DELAI_SECONDES = 1 * 60;
 var quizTimer = null;
 

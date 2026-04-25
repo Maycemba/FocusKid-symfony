@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="{{ locale|default('fr') }}">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            margin: 150px 42px 110px 42px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #203040;
+            background: #f6fbff;
+        }
+
+        body {
+            {% if locale|default('fr') == 'ar' %}
+            direction: rtl;
+            {% endif %}
+        }
+
+        .pdf-header {
+            position: fixed;
+            top: -128px;
+            left: 0;
+            right: 0;
+            height: 116px;
+            padding: 18px 0 0;
+            background: transparent;
+        }
+
+        .pdf-header-card {
+            height: 100%;
+            margin: 0 42px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #06A3DA 0%, #0b67b2 100%);
+            color: #fff;
+            padding: 18px 24px;
+            box-shadow: 0 10px 26px rgba(6, 163, 218, 0.28);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: 0;
+        }
+
+        .header-logo {
+            width: 62px;
+            height: 62px;
+            object-fit: contain;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.16);
+            padding: 8px;
+            flex-shrink: 0;
+        }
+
+        .header-text {
+            min-width: 0;
+        }
+
+        .header-kicker {
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            opacity: 0.92;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin: 0 0 6px;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            opacity: 0.95;
+            margin: 0;
+        }
+
+        .header-meta {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.16);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .pdf-footer {
+            position: fixed;
+            bottom: -82px;
+            left: 0;
+            right: 0;
+            height: 72px;
+        }
+
+        .pdf-footer-card {
+            margin: 0 42px;
+            height: 100%;
+            border-radius: 18px;
+            background: #ffffff;
+            border: 1px solid #dceaf5;
+            box-shadow: 0 8px 18px rgba(16, 42, 67, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 22px;
+            color: #607080;
+            font-size: 12px;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-logo {
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .footer-brand {
+            font-weight: 800;
+            color: #203040;
+            font-size: 13px;
+        }
+
+        .footer-note {
+            text-align: right;
+            line-height: 1.4;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-cover {
+            background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+            border: 1px solid #e1edf7;
+            border-radius: 24px;
+            padding: 22px 22px 6px;
+            margin-bottom: 18px;
+            box-shadow: 0 8px 20px rgba(17, 55, 88, 0.06);
+        }
+
+        .cover-grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .cover-left {
+            flex: 1 1 360px;
+        }
+
+        .cover-right {
+            flex: 0 0 auto;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .course-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: #e8f7fd;
+            color: #056a91;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .course-name {
+            font-size: 28px;
+            line-height: 1.15;
+            font-weight: 900;
+            color: #18324d;
+            margin: 0 0 10px;
+        }
+
+        .course-desc {
+            font-size: 13px;
+            line-height: 1.8;
+            color: #5e6f80;
+            margin: 0 0 14px;
+            max-width: 760px;
+        }
+
+        .course-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid #dceaf5;
+            color: #35506a;
+            font-size: 12px;
+            font-weight: 700;
+            margin: 0 8px 8px 0;
+        }
+
+        .lesson-card {
+            background: #fff;
+            border: 1px solid #dfeaf4;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 0 0 16px;
+            box-shadow: 0 8px 18px rgba(16, 42, 67, 0.05);
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .lesson-head {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            padding: 18px 18px 10px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbfe 100%);
+        }
+
+        .lesson-index {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+
+        .lesson-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #18324d;
+            line-height: 1.35;
+            padding-top: 7px;
+        }
+
+        .lesson-divider {
+            border: 0;
+            border-top: 1px solid #edf3f8;
+            margin: 0 18px;
+        }
+
+        .lesson-body {
+            padding: 16px 18px 18px;
+        }
+
+        .lesson-content {
+            background: #f8fcff;
+            border: 1px solid #e4eef7;
+            border-radius: 16px;
+            padding: 16px 16px 18px;
+            font-size: 13px;
+            line-height: 1.95;
+            color: #32485d;
+            white-space: pre-line;
+        }
+
+        .lesson-tag-row {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .lesson-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            background: #eef7ff;
+            color: #056a91;
+        }
+
+        .theme-0 .lesson-index { background: #ff6b6b; }
+        .theme-1 .lesson-index { background: #06A3DA; }
+        .theme-2 .lesson-index { background: #ff9f43; }
+        .theme-3 .lesson-index { background: #26de81; color: #0a4a25; }
+        .theme-4 .lesson-index { background: #a55eea; }
+
+        .theme-0 .lesson-title { color: #cc3333; }
+        .theme-1 .lesson-title { color: #0580b0; }
+        .theme-2 .lesson-title { color: #b86b00; }
+        .theme-3 .lesson-title { color: #0e7a40; }
+        .theme-4 .lesson-title { color: #7b3ec4; }
+
+        .theme-0 .lesson-content { background: #fff6f6; }
+        .theme-1 .lesson-content { background: #f2fbff; }
+        .theme-2 .lesson-content { background: #fff9f0; }
+        .theme-3 .lesson-content { background: #f2fff7; }
+        .theme-4 .lesson-content { background: #faf4ff; }
+
+        .empty-state {
+            background: #fff;
+            border: 1px dashed #cfe1ef;
+            border-radius: 20px;
+            padding: 42px 24px;
+            text-align: center;
+            color: #667788;
+            box-shadow: 0 8px 18px rgba(16, 42, 67, 0.04);
+        }
+
+        .empty-emoji {
+            font-size: 34px;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header class="pdf-header">
+        <div class="pdf-header-card">
+            <div class="header-brand">
+                <img class="header-logo" src="{{ asset('base-front/img/logo.png') }}" alt="Logo FocusKid">
+                <div class="header-text">
+                    <div class="header-kicker">FocusKid</div>
+                    <h1 class="header-title">{{ cour.titre }}</h1>
+                    <p class="header-subtitle">Fiche PDF de cours et leçons pour impression ou consultation hors ligne</p>
+                </div>
+            </div>
+
+            <div class="header-meta">
+                {% if cour.niveau %}
+                <span class="header-badge">Niveau {{ cour.niveau }}</span>
+                {% endif %}
+                {% if cour.formateur %}
+                <span class="header-badge">{{ cour.formateur }}</span>
+                {% endif %}
+                <span class="header-badge">{{ leconsTraduites|length }} leçon{{ leconsTraduites|length > 1 ? 's' : '' }}</span>
+            </div>
+        </div>
+    </header>
+
+    <footer class="pdf-footer">
+        <div class="pdf-footer-card">
+            <div class="footer-left">
+                <img class="footer-logo" src="{{ asset('base-front/img/logo.png') }}" alt="Logo FocusKid">
+                <div>
+                    <div class="footer-brand">FocusKid</div>
+                    <div>Apprentissage simple, doux et visuel</div>
+                </div>
+            </div>
+            <div class="footer-note">
+                Document généré automatiquement<br>
+                {{ 'now'|date('d/m/Y H:i') }}
+            </div>
+        </div>
+    </footer>
+
+    <main class="content">
+        <section class="page-cover">
+            <div class="cover-grid">
+                <div class="cover-left">
+                    <div class="course-label">Cours PDF</div>
+                    <h2 class="course-name">{{ cour.titre }}</h2>
+                    {% if cour.description %}
+                    <p class="course-desc">{{ cour.description }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="cover-right">
+                    {% if cour.niveau %}
+                    <span class="course-chip">🎯 Niveau {{ cour.niveau }}</span>
+                    {% endif %}
+                    {% if cour.formateur %}
+                    <span class="course-chip">👨‍🏫 {{ cour.formateur }}</span>
+                    {% endif %}
+                    <span class="course-chip">📝 {{ leconsTraduites|length }} leçon{{ leconsTraduites|length > 1 ? 's' : '' }}</span>
+                    {% if locale is defined %}
+                    <span class="course-chip">🌐 {{ locale|upper }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        {% if leconsTraduites is empty %}
+        <div class="empty-state">
+            <span class="empty-emoji">📚</span>
+            Aucune leçon disponible pour ce cours.
+        </div>
+        {% else %}
+            {% for item in leconsTraduites %}
+            {% set themeClass = 'theme-' ~ (loop.index0 % 5) %}
+            <article class="lesson-card {{ themeClass }}">
+                <div class="lesson-head">
+                    <div class="lesson-index">{{ loop.index }}</div>
+                    <div class="lesson-title">{{ item.titre_lecon }}</div>
+                </div>
+                <hr class="lesson-divider">
+                <div class="lesson-body">
+                    <div class="lesson-content">
+                        {{ item.contenu ? item.contenu|striptags : '—' }}
+                    </div>
+                    <div class="lesson-tag-row">
+                        <span class="lesson-tag">Lecture simple</span>
+                        <span class="lesson-tag">PDF imprimable</span>
+                        <span class="lesson-tag">FocusKid</span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        {% endif %}
+    </main>
+</body>
+</html>
