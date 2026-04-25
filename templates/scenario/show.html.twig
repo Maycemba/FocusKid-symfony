@@ -1,29 +1,67 @@
 {% extends 'base-back.html.twig' %}
 
-{% block title %}Détail - Émotion{% endblock %}
+{% block title %}Détail du scénario #{{ scenario.id }}{% endblock %}
 
 {% block body %}
 <div class="container-fluid">
 
     <div class="card bg-light-info shadow-none position-relative overflow-hidden mb-4">
         <div class="card-body px-4 py-3">
-            <h4 class="fw-semibold mb-8">Détail de l'émotion</h4>
+            <h4 class="fw-semibold mb-8">Détail du scénario</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ path('app_scenario_index') }}">Scénarios</a></li>
+                    <li class="breadcrumb-item active">Scénario #{{ scenario.id }}</li>
+                </ol>
+            </nav>
         </div>
     </div>
 
-    <div class="card">
+    <div class="card shadow-sm">
         <div class="card-body">
-            <table class="table table-bordered">
+            <table class="table table-bordered align-middle">
                 <tbody>
-                    <tr><th>Nom</th><td>{{ emotion.nom }}</td></tr>
                     <tr>
-                        <th>Photo</th>
+                        <th style="width:160px;">#</th>
+                        <td>{{ scenario.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>{{ scenario.description ?? '<span class="text-muted fst-italic">Aucune description</span>'|raw }}</td>
+                    </tr>
+                    <tr>
+                        <th>Émotion associée</th>
                         <td>
-                            {% if emotion.photo %}
-                                <img src="data:image/png;base64,{{ emotion.photo }}"
-                                     style="max-width:200px; border-radius:8px;">
+                            {% if scenario.emotion %}
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if scenario.emotion.photo %}
+                                        <img src="data:image/png;base64,{{ scenario.emotion.photo }}"
+                                             style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+                                    {% endif %}
+                                    <span class="fw-semibold">{{ scenario.emotion.nom }}</span>
+                                </div>
                             {% else %}
-                                <span class="text-muted">Aucune photo</span>
+                                <span class="text-muted fst-italic">Non associée</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Animation</th>
+                        <td>
+                            {% if scenario.animation %}
+                                {% set anim = scenario.animation %}
+                                {% if anim starts with 'GIF' or anim starts with 'gif' or anim starts with 'R0lG' %}
+                                    <img src="data:image/gif;base64,{{ anim }}"
+                                         style="max-width:200px; border-radius:8px;">
+                                {% else %}
+                                    <video controls style="max-width:300px; border-radius:8px;">
+                                        <source src="data:video/mp4;base64,{{ anim }}" type="video/mp4">
+                                        Votre navigateur ne supporte pas la vidéo.
+                                    </video>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted fst-italic">Aucune animation</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -31,27 +69,38 @@
             </table>
 
             <div class="mt-3 d-flex gap-2">
-                <a href="{{ path('app_emotion_index') }}" class="btn btn-secondary">← Retour</a>
-                <a href="{{ path('app_emotion_edit', {'id': emotion.id}) }}" class="btn btn-warning">Modifier</a>
-                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Supprimer</button>
+                <a href="{{ path('app_scenario_index') }}" class="btn btn-secondary">
+                    <i class="ti ti-arrow-left me-1"></i>Retour
+                </a>
+                <a href="{{ path('app_scenario_edit', {'id': scenario.id}) }}" class="btn btn-warning">
+                    <i class="ti ti-pencil me-1"></i>Modifier
+                </a>
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="ti ti-trash me-1"></i>Supprimer
+                </button>
             </div>
         </div>
     </div>
 
     {# Modal suppression #}
     <div class="modal fade" id="deleteModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-sm">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirmer la suppression</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header bg-danger text-white">
+                    <h6 class="modal-title"><i class="ti ti-alert-triangle me-2"></i>Confirmer</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">Supprimer <strong>{{ emotion.nom }}</strong> ?</div>
+                <div class="modal-body text-center py-3">
+                    <p class="mb-0">Supprimer le scénario <strong>#{{ scenario.id }}</strong> ?</p>
+                    <small class="text-muted">Cette action est irréversible.</small>
+                </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <form method="post" action="{{ path('app_emotion_delete', {'id': emotion.id}) }}" style="display:inline">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ emotion.id) }}">
-                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                    <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <form method="post" action="{{ path('app_scenario_delete', {'id': scenario.id}) }}" style="display:inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ scenario.id) }}">
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="ti ti-trash me-1"></i>Supprimer
+                        </button>
                     </form>
                 </div>
             </div>

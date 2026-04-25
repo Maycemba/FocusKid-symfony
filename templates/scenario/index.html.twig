@@ -1,91 +1,195 @@
 {% extends 'base-back.html.twig' %}
 
+{% block title %}Gestion des scénarios{% endblock %}
 
-{% block title %}Scenario index{% endblock %}
+{% block stylesheets %}
+<style>
+.scenario-media { width:70px; height:50px; object-fit:cover; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.1); }
+.badge-scenario { background:linear-gradient(135deg,#f72585,#7209b7); color:#fff; border-radius:20px; padding:4px 12px; font-size:0.78rem; }
+.emotion-pill { display:inline-flex; align-items:center; gap:6px; background:#f0f4ff; border:1px solid #dde4ff; border-radius:20px; padding:4px 10px; font-size:0.82rem; }
+.emotion-pill img { width:22px; height:22px; border-radius:50%; object-fit:cover; }
+.filter-bar { background:#f8f9fa; border-radius:12px; padding:16px; margin-bottom:0; }
+</style>
+{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
-        <h1 class="mb-4">Gestion des scénarios</h1>
+<div class="container-fluid">
 
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success">{{ message }}</div>
-        {% endfor %}
+    {# Breadcrumb #}
+    <div class="card bg-light-info shadow-none position-relative overflow-hidden mb-4">
+        <div class="card-body px-4 py-3">
+            <div class="row align-items-center">
+                <div class="col-9">
+                    <h4 class="fw-semibold mb-8">Scénarios</h4>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Gestion des scénarios</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="col-3 text-end">
+                    <span class="badge-scenario">{{ scenarios|length }} scénario(s)</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Id</th>
-                        <th>Description</th>
-                        <th>Animation</th>
-                        <th>Émotion</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for scenario in scenarios %}
-                    <tr>
-                        <td>{{ scenario.id }}</td>
-                        <td>{{ scenario.description|slice(0, 100) }}{% if scenario.description|length > 100 %}...{% endif %}</td>
-                        <td>
-                            {% if scenario.animation %}
-                                {% set animation = scenario.animation %}
-                                {% if animation starts with 'GIF' or animation starts with 'gif' %}
-                                    <img src="data:image/gif;base64,{{ animation }}" 
-                                         alt="Animation" 
-                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="ti ti-circle-check me-2"></i>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <h5 class="card-title fw-semibold mb-0">
+                    <i class="ti ti-movie me-2 text-primary"></i>Liste des scénarios
+                </h5>
+                <a href="{{ path('app_scenario_new') }}" class="btn btn-primary">
+                    <i class="ti ti-plus me-1"></i>Nouveau scénario
+                </a>
+            </div>
+
+            {# Filtres #}
+            <div class="filter-bar mt-3">
+                <form method="GET" action="{{ path('app_scenario_index') }}" class="d-flex flex-wrap align-items-center gap-2">
+                    <div class="input-group" style="width:280px;">
+                        <span class="input-group-text"><i class="ti ti-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Rechercher dans la description…" value="{{ search }}">
+                        {% if search %}
+                            <a href="{{ path('app_scenario_index', {emotion_id: selected_emotion}) }}" class="btn btn-outline-secondary"><i class="ti ti-x"></i></a>
+                        {% endif %}
+                    </div>
+
+                    <select name="emotion_id" class="form-select" style="width:200px;" onchange="this.form.submit()">
+                        <option value="">— Toutes les émotions —</option>
+                        {% for emotion in emotions %}
+                            <option value="{{ emotion.id }}" {% if selected_emotion == emotion.id %}selected{% endif %}>
+                                {{ emotion.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="ti ti-filter me-1"></i>Filtrer
+                    </button>
+
+                    {% if search or selected_emotion %}
+                        <a href="{{ path('app_scenario_index') }}" class="btn btn-outline-secondary">
+                            <i class="ti ti-refresh me-1"></i>Réinitialiser
+                        </a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:60px;">#</th>
+                            <th>Description</th>
+                            <th style="width:100px;">Animation</th>
+                            <th>Émotion</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for scenario in scenarios %}
+                        <tr>
+                            <td><span class="badge bg-light text-dark fw-bold">{{ scenario.id }}</span></td>
+                            <td>
+                                <div style="max-width:350px;">
+                                    {{ scenario.description|slice(0, 120) }}{% if scenario.description|length > 120 %}<span class="text-muted">…</span>{% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                {% if scenario.animation %}
+                                    {% set anim = scenario.animation %}
+                                    {% if anim starts with 'GIF' or anim starts with 'gif' or anim starts with 'R0lG' %}
+                                        <img src="data:image/gif;base64,{{ anim }}" class="scenario-media" alt="GIF">
+                                    {% else %}
+                                        <video class="scenario-media" muted loop>
+                                            <source src="data:video/mp4;base64,{{ anim }}" type="video/mp4">
+                                        </video>
+                                    {% endif %}
                                 {% else %}
-                                    <video width="100" height="60" controls style="border-radius: 5px;">
-                                        <source src="data:video/mp4;base64,{{ animation }}" type="video/mp4">
-                                        Votre navigateur ne supporte pas la vidéo.
-                                    </video>
+                                    <div class="d-flex align-items-center justify-content-center bg-light rounded" style="width:70px;height:50px;">
+                                        <i class="ti ti-video-off text-muted"></i>
+                                    </div>
                                 {% endif %}
-                            {% else %}
-                                <span class="text-muted">Aucune animation</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ scenario.emotion ? scenario.emotion.nom : 'Non associée' }}</td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <a href="{{ path('app_scenario_show', {'id': scenario.id}) }}" class="btn btn-sm btn-info">Voir</a>
-                                <a href="{{ path('app_scenario_edit', {'id': scenario.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
-                                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ scenario.id }}">
-                                    Supprimer
-                                </button>
-                            </div>
-                            
-                            <!-- Modal de confirmation de suppression -->
-                            <div class="modal fade" id="deleteModal{{ scenario.id }}" tabindex="-1">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Confirmer la suppression</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            Êtes-vous sûr de vouloir supprimer ce scénario ?
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                            <form method="post" action="{{ path('app_scenario_delete', {'id': scenario.id}) }}" style="display: inline-block;">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ scenario.id) }}">
-                                                <button type="submit" class="btn btn-danger">Supprimer</button>
-                                            </form>
+                            </td>
+                            <td>
+                                {% if scenario.emotion %}
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                                        {{ scenario.emotion.nom }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted fst-italic">Non associé</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-1">
+                                    <a href="{{ path('app_scenario_show', {'id': scenario.id}) }}" class="btn btn-sm btn-outline-info" title="Voir">
+                                        <i class="ti ti-eye"></i>
+                                    </a>
+                                    <a href="{{ path('app_scenario_edit', {'id': scenario.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier">
+                                        <i class="ti ti-pencil"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger" title="Supprimer"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteScenario{{ scenario.id }}">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </div>
+
+                                <div class="modal fade" id="deleteScenario{{ scenario.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-sm">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h6 class="modal-title"><i class="ti ti-alert-triangle me-2"></i>Confirmer</h6>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body text-center py-3">
+                                                <p class="mb-0">Supprimer ce scénario ?</p>
+                                                <small class="text-muted">Cette action est irréversible.</small>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                <form method="post" action="{{ path('app_scenario_delete', {'id': scenario.id}) }}" style="display:inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ scenario.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="ti ti-trash me-1"></i>Supprimer
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center">Aucun scénario trouvé</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="ti ti-movie-off fs-2 d-block mb-2"></i>
+                                {% if search or selected_emotion %}
+                                    Aucun scénario trouvé pour ce filtre.
+                                    <a href="{{ path('app_scenario_index') }}" class="d-block mt-2">Afficher tous les scénarios</a>
+                                {% else %}
+                                    Aucun scénario enregistré.
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-        <a href="{{ path('app_scenario_new') }}" class="btn btn-primary mt-3">Créer un nouveau scénario</a>
     </div>
+
+</div>
 {% endblock %}

@@ -15,10 +15,19 @@ use Symfony\Component\Routing\Attribute\Route;
 final class EmotionController extends AbstractController
 {
     #[Route(name: 'app_emotion_index', methods: ['GET'])]
-    public function index(EmotionRepository $emotionRepository): Response
+    public function index(Request $request, EmotionRepository $emotionRepository): Response
     {
+        $search = $request->query->get('search', '');
+        $sort   = $request->query->get('sort', 'id');
+        $order  = $request->query->get('order', 'ASC');
+
+        $emotions = $emotionRepository->findWithFilters($search ?: null, $sort, $order);
+
         return $this->render('emotion/index.html.twig', [
-            'emotions' => $emotionRepository->findAll(),
+            'emotions' => $emotions,
+            'search'   => $search,
+            'sort'     => $sort,
+            'order'    => $order,
         ]);
     }
 
@@ -43,7 +52,7 @@ final class EmotionController extends AbstractController
 
         return $this->render('emotion/new.html.twig', [
             'emotion' => $emotion,
-            'form' => $form,
+            'form'    => $form,
         ]);
     }
 
@@ -63,11 +72,9 @@ final class EmotionController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $file = $form->get('photo')->getData();
-            
             if ($file) {
                 $emotion->setPhoto($file);
             }
-            
             $entityManager->flush();
 
             $this->addFlash('success', 'Émotion modifiée avec succès !');
@@ -76,14 +83,14 @@ final class EmotionController extends AbstractController
 
         return $this->render('emotion/edit.html.twig', [
             'emotion' => $emotion,
-            'form' => $form,
+            'form'    => $form,
         ]);
     }
 
     #[Route('/{id}', name: 'app_emotion_delete', methods: ['POST'])]
     public function delete(Request $request, Emotion $emotion, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$emotion->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $emotion->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($emotion);
             $entityManager->flush();
             $this->addFlash('success', 'Émotion supprimée avec succès !');

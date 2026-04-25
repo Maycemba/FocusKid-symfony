@@ -16,28 +16,26 @@ class EmotionRepository extends ServiceEntityRepository
         parent::__construct($registry, Emotion::class);
     }
 
-//    /**
-//     * @return Emotion[] Returns an array of Emotion objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('e.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Recherche et tri des émotions
+     */
+    public function findWithFilters(?string $search = null, string $sort = 'id', string $order = 'ASC'): array
+    {
+        $qb = $this->createQueryBuilder('e');
 
-//    public function findOneBySomeField($value): ?Emotion
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        if ($search) {
+            $qb->andWhere('e.nom LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        $allowedSorts = ['id', 'nom'];
+        $allowedOrders = ['ASC', 'DESC'];
+
+        $sortField = in_array($sort, $allowedSorts) ? $sort : 'id';
+        $orderDir  = in_array(strtoupper($order), $allowedOrders) ? strtoupper($order) : 'ASC';
+
+        $qb->orderBy('e.' . $sortField, $orderDir);
+
+        return $qb->getQuery()->getResult();
+    }
 }

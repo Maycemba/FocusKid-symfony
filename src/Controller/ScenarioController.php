@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Scenario;
 use App\Form\ScenarioType;
 use App\Repository\ScenarioRepository;
+use App\Repository\EmotionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,10 +16,19 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ScenarioController extends AbstractController
 {
     #[Route(name: 'app_scenario_index', methods: ['GET'])]
-    public function index(ScenarioRepository $scenarioRepository): Response
+    public function index(Request $request, ScenarioRepository $scenarioRepository, EmotionRepository $emotionRepository): Response
     {
+        $search    = $request->query->get('search', '');
+        $emotionId = $request->query->get('emotion_id') ? (int) $request->query->get('emotion_id') : null;
+
+        $scenarios = $scenarioRepository->findWithFilters($search ?: null, $emotionId);
+        $emotions  = $emotionRepository->findAll();
+
         return $this->render('scenario/index.html.twig', [
-            'scenarios' => $scenarioRepository->findAll(),
+            'scenarios'        => $scenarios,
+            'emotions'         => $emotions,
+            'search'           => $search,
+            'selected_emotion' => $emotionId,
         ]);
     }
 
@@ -43,7 +53,7 @@ final class ScenarioController extends AbstractController
 
         return $this->render('scenario/new.html.twig', [
             'scenario' => $scenario,
-            'form' => $form,
+            'form'     => $form,
         ]);
     }
 
@@ -63,11 +73,9 @@ final class ScenarioController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $file = $form->get('animation')->getData();
-            
             if ($file) {
                 $scenario->setAnimation($file);
             }
-            
             $entityManager->flush();
 
             $this->addFlash('success', 'Scénario modifié avec succès !');
@@ -76,14 +84,14 @@ final class ScenarioController extends AbstractController
 
         return $this->render('scenario/edit.html.twig', [
             'scenario' => $scenario,
-            'form' => $form,
+            'form'     => $form,
         ]);
     }
 
-    #[Route('/{id}', name: 'app_scenario_delete', methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'app_scenario_delete', methods: ['POST'])]
     public function delete(Request $request, Scenario $scenario, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$scenario->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $scenario->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($scenario);
             $entityManager->flush();
             $this->addFlash('success', 'Scénario supprimé avec succès !');

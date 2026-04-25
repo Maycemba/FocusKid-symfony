@@ -111,6 +111,7 @@ class Utilisateur
         $this->createdAt = $createdAt;
         return $this;
     }
+    
 
     #[ORM\Column(type: 'boolean', nullable: true)]
     private ?bool $notifications_email = null;

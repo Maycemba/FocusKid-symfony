@@ -1,7 +1,9 @@
 <?php
+
 namespace App\Controller;
 
 use App\Repository\CourRepository;
+use App\Repository\EmotionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,8 +36,19 @@ final class FrontController extends AbstractController
         }
 
         return $this->render('front/lecons.html.twig', [
-            'cour' => $cour,
+            'cour'   => $cour,
             'lecons' => $cour->getLecons(),
+        ]);
+    }
+
+    /**
+     * Page front-office : sélection d'émotion (humeur journalière enfant)
+     */
+    #[Route('/enfant/emotions', name: 'app_enfant_emotions', methods: ['GET'])]
+    public function emotions(EmotionRepository $emotionRepository): Response
+    {
+        return $this->render('front/emotions.html.twig', [
+            'emotions' => $emotionRepository->findAll(),
         ]);
     }
 }

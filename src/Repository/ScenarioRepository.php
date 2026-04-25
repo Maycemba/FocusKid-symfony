@@ -16,28 +16,27 @@ class ScenarioRepository extends ServiceEntityRepository
         parent::__construct($registry, Scenario::class);
     }
 
-//    /**
-//     * @return Scenario[] Returns an array of Scenario objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('s.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Recherche et filtre des scénarios par description et émotion
+     */
+    public function findWithFilters(?string $search = null, ?int $emotionId = null): array
+    {
+        $qb = $this->createQueryBuilder('s')
+                   ->leftJoin('s.emotion', 'e')
+                   ->addSelect('e');
 
-//    public function findOneBySomeField($value): ?Scenario
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        if ($search) {
+            $qb->andWhere('s.description LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        if ($emotionId) {
+            $qb->andWhere('e.id = :emotionId')
+               ->setParameter('emotionId', $emotionId);
+        }
+
+        $qb->orderBy('s.id', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
 }

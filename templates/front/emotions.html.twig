@@ -1,0 +1,353 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Comment tu te sens aujourd'hui ? - FocusKid{% endblock %}
+
+{% block stylesheets %}
+<style>
+/* ── Page wrapper ──────────────────────────────────────────────────────── */
+.emotions-section {
+    padding: 60px 0 80px;
+    background: linear-gradient(160deg, #f0f4ff 0%, #fef9ff 60%, #fff5f7 100%);
+    min-height: 60vh;
+}
+
+.emotions-section .section-title {
+    font-family: 'Lobster Two', cursive;
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: #3a0ca3;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.emotions-section .section-subtitle {
+    text-align: center;
+    color: #7c7c9a;
+    font-size: 1.1rem;
+    margin-bottom: 48px;
+}
+
+/* ── Horizontal scroll container ──────────────────────────────────────── */
+.emotions-scroll-wrapper {
+    position: relative;
+    padding: 0 20px;
+}
+
+.emotions-track {
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    padding: 20px 16px 32px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #c8b8ff #f0f0f0;
+}
+
+.emotions-track::-webkit-scrollbar { height: 6px; }
+.emotions-track::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 10px; }
+.emotions-track::-webkit-scrollbar-thumb { background: #c8b8ff; border-radius: 10px; }
+
+/* ── Emotion card ──────────────────────────────────────────────────────── */
+.emotion-card {
+    flex: 0 0 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    padding: 0;
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1);
+    position: relative;
+}
+
+.emotion-card:focus { outline: 3px solid #4361ee; outline-offset: 4px; border-radius: 50%; }
+
+.emotion-card:hover { transform: translateY(-8px) scale(1.04); }
+
+.emotion-card.selected { transform: translateY(-12px) scale(1.08); }
+
+/* Photo circle */
+.emotion-photo-wrap {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 4px solid #e8dfff;
+    overflow: hidden;
+    position: relative;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(67,97,238,0.15);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.emotion-card:hover .emotion-photo-wrap,
+.emotion-card.selected .emotion-photo-wrap {
+    border-color: #4361ee;
+    box-shadow: 0 12px 32px rgba(67,97,238,0.3);
+}
+
+.emotion-photo-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Placeholder when no photo */
+.emotion-photo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f0f4ff, #fce4ff);
+    font-size: 3.5rem;
+}
+
+/* Checkmark overlay when selected */
+.emotion-check {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #4361ee;
+    color: #fff;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    box-shadow: 0 2px 8px rgba(67,97,238,0.4);
+}
+
+.emotion-card.selected .emotion-check { display: flex; }
+
+/* Label */
+.emotion-label {
+    font-family: 'Heebo', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #3a0ca3;
+    text-align: center;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+}
+
+.emotion-card:hover .emotion-label,
+.emotion-card.selected .emotion-label { color: #4361ee; }
+
+/* ── Toast notification ────────────────────────────────────────────────── */
+.emotion-toast-container {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.emotion-toast {
+    background: #fff;
+    border-radius: 50px;
+    padding: 14px 28px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #3a0ca3;
+    animation: toastIn 0.4s cubic-bezier(.34,1.56,.64,1) forwards;
+    border-left: 5px solid #4361ee;
+}
+
+.emotion-toast.error { border-left-color: #f72585; color: #f72585; }
+
+.emotion-toast .toast-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.9); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toastOut {
+    to { opacity: 0; transform: translateY(10px) scale(0.95); }
+}
+
+/* ── Loading pulse ─────────────────────────────────────────────────────── */
+.emotion-card.loading .emotion-photo-wrap {
+    animation: pulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    from { opacity: 1; }
+    to   { opacity: 0.5; }
+}
+
+/* ── Empty state ───────────────────────────────────────────────────────── */
+.empty-emotions {
+    text-align: center;
+    padding: 60px 20px;
+    color: #9999bb;
+}
+
+.empty-emotions i { font-size: 4rem; margin-bottom: 16px; display: block; }
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 576px) {
+    .emotion-card { flex: 0 0 120px; }
+    .emotion-photo-wrap { width: 100px; height: 100px; }
+    .emotion-label { font-size: 0.88rem; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# ══ Hero / Titre ══════════════════════════════════════════════════════════ #}
+<section class="emotions-section">
+    <div class="container">
+
+        <h2 class="section-title">Comment tu te sens aujourd'hui ? 😊</h2>
+        <p class="section-subtitle">
+            Clique sur l'émotion qui te correspond le mieux !
+        </p>
+
+        {% if emotions|length > 0 %}
+
+            <div class="emotions-scroll-wrapper">
+                <div class="emotions-track" id="emotionsTrack">
+                    {% for emotion in emotions %}
+                    <button
+                        class="emotion-card"
+                        type="button"
+                        data-emotion-id="{{ emotion.id }}"
+                        data-emotion-nom="{{ emotion.nom }}"
+                        data-emotion-photo="{% if emotion.photo %}data:image/png;base64,{{ emotion.photo }}{% endif %}"
+                        onclick="selectEmotion(this)"
+                        title="{{ emotion.nom }}"
+                        aria-label="Sélectionner l'émotion : {{ emotion.nom }}"
+                    >
+                        <div class="emotion-photo-wrap">
+                            {% if emotion.photo %}
+                                <img src="data:image/png;base64,{{ emotion.photo }}"
+                                     alt="{{ emotion.nom }}"
+                                     draggable="false">
+                            {% else %}
+                                <div class="emotion-photo-placeholder">😶</div>
+                            {% endif %}
+                            <span class="emotion-check">✓</span>
+                        </div>
+                        <span class="emotion-label">{{ emotion.nom }}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+        {% else %}
+            <div class="empty-emotions">
+                <i class="bi bi-emoji-smile"></i>
+                <p>Aucune émotion disponible pour le moment.</p>
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+
+{# ══ Toast container ══════════════════════════════════════════════════════ #}
+<div class="emotion-toast-container" id="toastContainer"></div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+// URL de l'endpoint Symfony pour enregistrer l'humeur
+// On construit dynamiquement en remplaçant le placeholder d'id
+const REGISTER_URL_TEMPLATE = '{{ path('app_humeur_enregistrer', {'emotionId': '__ID__'}) }}';
+const CSRF_TOKEN             = '{{ csrf_token('humeur_enregistrer') }}'; // optionnel, non requis ici
+
+let activeCard = null;
+
+/**
+ * Appelé au clic sur une émotion
+ */
+async function selectEmotion(card) {
+    if (card.classList.contains('loading')) return;
+
+    const emotionId  = card.dataset.emotionId;
+    const emotionNom = card.dataset.emotionNom;
+    const emotionPhoto = card.dataset.emotionPhoto;
+
+    // Désélectionner l'ancienne carte
+    if (activeCard && activeCard !== card) {
+        activeCard.classList.remove('selected');
+    }
+
+    // Marquer comme loading
+    card.classList.add('loading');
+
+    const url = REGISTER_URL_TEMPLATE.replace('__ID__', emotionId);
+
+    try {
+        const response = await fetch(url, {
+            method : 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            card.classList.remove('loading');
+            card.classList.add('selected');
+            activeCard = card;
+            showToast(emotionNom, emotionPhoto, false);
+        } else {
+            card.classList.remove('loading');
+            showToast('Erreur : ' + (data.message || 'Impossible d\'enregistrer'), null, true);
+        }
+    } catch (err) {
+        card.classList.remove('loading');
+        showToast('Erreur de connexion. Réessaie !', null, true);
+        console.error(err);
+    }
+}
+
+/**
+ * Affiche un toast de confirmation
+ */
+function showToast(nom, photoSrc, isError = false) {
+    const container = document.getElementById('toastContainer');
+
+    const toast = document.createElement('div');
+    toast.className = 'emotion-toast' + (isError ? ' error' : '');
+
+    let iconHtml = '';
+    if (!isError && photoSrc) {
+        iconHtml = `<img src="${photoSrc}" class="toast-icon" alt="">`;
+    } else if (!isError) {
+        iconHtml = `<span style="font-size:1.4rem;">✅</span>`;
+    } else {
+        iconHtml = `<span style="font-size:1.4rem;">⚠️</span>`;
+    }
+
+    toast.innerHTML = iconHtml + `<span>${isError ? nom : 'Humeur « ' + nom + ' » enregistrée !'}</span>`;
+    container.appendChild(toast);
+
+    // Auto-dismiss after 3s
+    setTimeout(() => {
+        toast.style.animation = 'toastOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 350);
+    }, 3000);
+}
+</script>
+{% endblock %}
