@@ -38,9 +38,16 @@ final class FrontController extends AbstractController
         ]);
     }
 
-    #[Route('/enfant/cours/{id_cours}', name: 'app_enfant_lecons', methods: ['GET'])]
+    #[Route(
+        '/enfant/cours/{id_cours}/{_locale}',
+        name: 'app_enfant_lecons',
+        methods: ['GET'],
+        defaults: ['_locale' => 'fr'],
+        requirements: ['_locale' => 'fr|en|ar']
+    )]
     public function listeLecons(
         int $id_cours,
+        string $_locale,
         Request $request,
         CourRepository $courRepository,
         TranslationService $translationService
@@ -51,11 +58,8 @@ final class FrontController extends AbstractController
             throw $this->createNotFoundException('Cours introuvable');
         }
 
-        $locale = $request->query->get('lang', 'fr');
-        $langues = ['fr', 'en', 'ar'];
-        if (!in_array($locale, $langues)) {
-            $locale = 'fr';
-        }
+        $locale = $_locale;
+        $request->setLocale($locale);
 
         $lecons = $cour->getLecons();
         $leconsTraduites = [];

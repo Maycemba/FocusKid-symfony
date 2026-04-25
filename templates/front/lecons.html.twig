@@ -1,6 +1,6 @@
 {% extends 'base-front.html.twig' %}
 
-{% block title %}{{ cour.titre }} - Leçons{% endblock %}
+{% block title %}{{ cour.titre }} - {{ 'lecons.title_plain'|trans }}{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
@@ -255,29 +255,37 @@
         {% if cour.formateur %}
         <span class="tdah-badge tdah-badge-yellow">👨‍🏫 {{ cour.formateur }}</span>
         {% endif %}
-        <span class="tdah-badge tdah-badge-green">📝 {{ lecons|length }} leçon(s)</span>
+        <span class="tdah-badge tdah-badge-green">📝 {{ lecons|length }} {{ 'lecons.count_suffix'|trans }}</span>
     </div>
 
-    {# Sélecteur de langue #}
+    {# ── Sélecteur de langue ── #}
     <div class="tdah-lang-selector">
-        <a href="?lang=fr" class="tdah-badge tdah-badge-white {{ locale == 'fr' ? 'tdah-badge-active' : '' }}" style="text-decoration:none;">🇫🇷 Français</a>
-        <a href="?lang=en" class="tdah-badge tdah-badge-white {{ locale == 'en' ? 'tdah-badge-active' : '' }}" style="text-decoration:none;">🇬🇧 English</a>
-        <a href="?lang=ar" class="tdah-badge tdah-badge-white {{ locale == 'ar' ? 'tdah-badge-active' : '' }}" style="text-decoration:none;">🇹🇳 العربية</a>
+        <a href="{{ path('app_enfant_lecons', {'id_cours': cour.id_cours, '_locale': 'fr'}) }}"
+           class="tdah-badge tdah-badge-white {{ locale == 'fr' ? 'tdah-badge-active' : '' }}"
+           style="text-decoration:none;">🇫🇷 {{ 'lang.fr'|trans }}</a>
+
+        <a href="{{ path('app_enfant_lecons', {'id_cours': cour.id_cours, '_locale': 'en'}) }}"
+           class="tdah-badge tdah-badge-white {{ locale == 'en' ? 'tdah-badge-active' : '' }}"
+           style="text-decoration:none;">🇬🇧 {{ 'lang.en'|trans }}</a>
+
+        <a href="{{ path('app_enfant_lecons', {'id_cours': cour.id_cours, '_locale': 'ar'}) }}"
+           class="tdah-badge tdah-badge-white {{ locale == 'ar' ? 'tdah-badge-active' : '' }}"
+           style="text-decoration:none;">🇹🇳 {{ 'lang.ar'|trans }}</a>
     </div>
 
     <div class="tdah-progress-wrap">
         <div class="tdah-progress-fill" id="progressBar"></div>
     </div>
     <div class="tdah-progress-label" id="progressLabel">
-        0 leçon terminée sur {{ lecons|length }}
+        0 {{ 'lecons.progress.completed_singular'|trans }} {{ 'common.on'|trans }} {{ lecons|length }}
     </div>
 </div>
 
 {# ── Quiz Modal ── #}
 <div class="quiz-overlay" id="quizOverlay">
     <div class="quiz-box">
-        <div class="quiz-title">🧠 Quiz de concentration</div>
-        <div class="quiz-subtitle">Réponds aux questions pour montrer que tu es concentré !</div>
+        <div class="quiz-title">{{ 'quiz.title'|trans }}</div>
+        <div class="quiz-subtitle">{{ 'quiz.subtitle'|trans }}</div>
         <div id="quizContent"></div>
     </div>
 </div>
@@ -285,25 +293,17 @@
 {# ── Contenu principal ── #}
 <div class="tdah-container">
 
-    <a href="{{ path('app_enfant_cours') }}" class="tdah-back-btn">← Retour aux cours</a>
+    <a href="{{ path('app_enfant_cours') }}" class="tdah-back-btn">
+        {{ 'btn.back'|trans }}
+    </a>
 
-    {# BOUTON TEST — à supprimer après validation #}
-    <button onclick="lancerQuizLecon()" style="
-        background: #FF9F43; color: white; border: none;
-        border-radius: 999px; padding: 14px 30px;
-        font-size: 18px; font-weight: 800; cursor: pointer;
-        margin-bottom: 20px; font-family: 'Nunito', sans-serif;
-    ">
-        🧠 Tester le Quiz
-    </button>
-
-    <div class="tdah-section-title">📚 Tes leçons</div>
+    <div class="tdah-section-title">{{ 'lecons.title'|trans }}</div>
 
     {% if lecons is empty %}
     <div class="tdah-empty">
         <span class="tdah-empty-icon">📖</span>
-        <p>Aucune leçon disponible pour ce cours.</p>
-        <a href="{{ path('app_enfant_cours') }}" class="tdah-footer-btn">Retour aux cours</a>
+        <p>{{ 'lecons.empty'|trans }}</p>
+        <a href="{{ path('app_enfant_cours') }}" class="tdah-footer-btn">{{ 'btn.back'|trans }}</a>
     </div>
 
     {% else %}
@@ -322,7 +322,7 @@
                 <div class="tdah-contenu">{{ item.contenu }}</div>
                 {% else %}
                 <div class="tdah-contenu" style="color:#999; font-style:italic;">
-                    Aucun contenu disponible pour cette leçon.
+                    {{ 'lecons.no_content'|trans }}
                 </div>
                 {% endif %}
 
@@ -335,11 +335,11 @@
                 <div class="tdah-actions">
                     <button class="tdah-btn tdah-btn-audio"
                             onclick="tdahLire(event, {{ loop.index0 }}, `{{ item.contenu|replace({"`": "'"}) }}`, '{{ locale }}')">
-                        🔊 Écouter
+                        {{ 'btn.listen'|trans }}
                     </button>
                     <button class="tdah-btn tdah-btn-compris"
                             onclick="tdahCompris(event, {{ loop.index0 }})">
-                        ✅ J'ai compris !
+                        {{ 'btn.understood'|trans }}
                     </button>
                 </div>
             </div>
@@ -348,10 +348,10 @@
         {# ── Bannière quiz à mi-parcours ── #}
         {% if lecons|length > 1 and loop.index == (lecons|length / 2)|round(0, 'floor') %}
         <div class="quiz-trigger-banner" id="quizBanner">
-            <h3>🧠 Quiz de concentration !</h3>
-            <p>Tu as lu la moitié des leçons. Prouve que tu es bien concentré !</p>
+            <h3>{{ 'quiz.banner_title'|trans }}</h3>
+            <p>{{ 'quiz.banner_text'|trans }}</p>
             <button class="quiz-trigger-btn" onclick="lancerQuizLecon()">
-                🎯 Commencer le quiz
+                {{ 'quiz.start'|trans }}
             </button>
         </div>
         {% endif %}
@@ -361,9 +361,9 @@
 
     <div class="tdah-footer">
         <span class="tdah-footer-trophy">🏆</span>
-        <h3>Tu avances super bien !</h3>
-        <p>Lis chaque leçon et clique sur "J'ai compris" pour gagner des étoiles ⭐</p>
-        <a href="{{ path('app_enfant_cours') }}" class="tdah-footer-btn">← Retour aux cours</a>
+        <h3>{{ 'lecons.footer_title'|trans }}</h3>
+        <p>{{ 'lecons.footer_text'|trans }}</p>
+        <a href="{{ path('app_enfant_cours') }}" class="tdah-footer-btn">{{ 'btn.back'|trans }}</a>
     </div>
 
     {% endif %}
@@ -373,6 +373,21 @@
 var tdahTotal     = {{ lecons|length }};
 var tdahCompleted = new Array(tdahTotal).fill(false);
 var quizLeconDone = false;
+var tdahI18n = {
+    progressCompletedSingular: '{{ 'lecons.progress.completed_singular'|trans|e('js') }}',
+    progressCompletedPlural:   '{{ 'lecons.progress.completed_plural'|trans|e('js') }}',
+    commonOn:                  '{{ 'common.on'|trans|e('js') }}',
+    quizLoading:               '{{ 'quiz.loading'|trans|e('js') }}',
+    quizError:                 '{{ 'common.error'|trans|e('js') }}',
+    quizClose:                 '{{ 'quiz.close'|trans|e('js') }}',
+    quizSubmit:                '{{ 'quiz.submit'|trans|e('js') }}',
+    quizResultGood:            '{{ 'quiz.result.good'|trans|e('js') }}',
+    quizResultBad:             '{{ 'quiz.result.bad'|trans|e('js') }}',
+    quizAdviceGood:            '{{ 'quiz.advice.good'|trans|e('js') }}',
+    quizAdviceBad:             '{{ 'quiz.advice.bad'|trans|e('js') }}',
+    quizScore:                 '{{ 'quiz.score'|trans|e('js') }}',
+    quizContinue:              '{{ 'quiz.continue'|trans|e('js') }}'
+};
 
 var leconsContenu = [
     {% for item in leconsTraduites %}
@@ -382,6 +397,23 @@ var leconsContenu = [
     }{% if not loop.last %},{% endif %}
     {% endfor %}
 ];
+
+// ══ TIMER AUTOMATIQUE — Quiz après 5 minutes sans indice ══
+var QUIZ_DELAI_SECONDES = 1 * 60;
+var quizTimer = null;
+
+function demarrerTimerQuiz() {
+    if (quizLeconDone) return;
+    quizTimer = setTimeout(function() {
+        if (!quizLeconDone) {
+            lancerQuizLecon();
+        }
+    }, QUIZ_DELAI_SECONDES * 1000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    demarrerTimerQuiz();
+});
 
 function tdahRate(e, idx, n) {
     e.stopPropagation();
@@ -413,7 +445,9 @@ function tdahUpdateProgress() {
     var bar   = document.getElementById('progressBar');
     var label = document.getElementById('progressLabel');
     if (bar)   bar.style.width = pct + '%';
-    if (label) label.textContent = count + ' leçon' + (count > 1 ? 's terminées' : ' terminée') + ' sur ' + tdahTotal;
+    if (label) label.textContent = count + ' ' +
+        (count > 1 ? tdahI18n.progressCompletedPlural : tdahI18n.progressCompletedSingular) +
+        ' ' + tdahI18n.commonOn + ' ' + tdahTotal;
 }
 
 function tdahLire(e, idx, texte, locale) {
@@ -434,11 +468,13 @@ var quizLeconAnswers   = {};
 
 async function lancerQuizLecon() {
     quizLeconDone = true;
+    if (quizTimer) { clearTimeout(quizTimer); quizTimer = null; }
+
     document.getElementById('quizOverlay').classList.add('active');
     document.getElementById('quizContent').innerHTML = `
         <div class="quiz-loading">
             <div class="quiz-loading-spinner"></div>
-            <p style="font-size:16px; color:#888;">Claude génère ton quiz... 🤖</p>
+            <p style="font-size:16px; color:#888;">${tdahI18n.quizLoading}</p>
         </div>
     `;
 
@@ -447,7 +483,6 @@ async function lancerQuizLecon() {
         return 'Leçon ' + (i + 1) + ': ' + l.titre + '\n' + l.contenu;
     }).join('\n\n');
 
-    // Si une seule leçon, prendre tout le contenu
     if (contenuLecons.trim() === '') {
         contenuLecons = leconsContenu.map(function(l, i) {
             return 'Leçon ' + (i + 1) + ': ' + l.titre + '\n' + l.contenu;
@@ -473,8 +508,8 @@ async function lancerQuizLecon() {
     } catch (err) {
         document.getElementById('quizContent').innerHTML = `
             <div style="text-align:center; padding:30px;">
-                <p style="font-size:18px; color:#dc3545;">❌ Erreur : ${err.message}</p>
-                <button class="quiz-btn-close" onclick="fermerQuizLecon()">Fermer</button>
+                <p style="font-size:18px; color:#dc3545;">${tdahI18n.quizError} : ${err.message}</p>
+                <button class="quiz-btn-close" onclick="fermerQuizLecon()">${tdahI18n.quizClose}</button>
             </div>
         `;
     }
@@ -496,7 +531,7 @@ function afficherQuizLecon() {
     });
 
     html += `<button class="quiz-btn-submit" id="quizLeconSubmit" onclick="soumettreQuizLecon()" disabled>
-        ✅ Valider mes réponses
+        ${tdahI18n.quizSubmit}
     </button>`;
 
     document.getElementById('quizContent').innerHTML = html;
@@ -544,19 +579,17 @@ function afficherResultatLecon(score) {
     var total     = quizLeconQuestions.length;
     var concentre = score >= 2;
     var emoji     = concentre ? '🌟' : '😴';
-    var titre     = concentre ? 'Bravo ! Tu es bien concentré !' : 'Attention ! Tu es un peu distrait...';
+    var titre     = concentre ? tdahI18n.quizResultGood : tdahI18n.quizResultBad;
     var classe    = concentre ? 'quiz-result-concentrated' : 'quiz-result-distracted';
-    var conseil   = concentre
-        ? 'Continue comme ça, tu es sur la bonne voie !'
-        : 'Essaie de relire les leçons précédentes avant de continuer.';
+    var conseil   = concentre ? tdahI18n.quizAdviceGood : tdahI18n.quizAdviceBad;
 
     document.getElementById('quizContent').innerHTML = `
         <div class="quiz-result">
             <span class="quiz-result-emoji">${emoji}</span>
             <div class="quiz-result-title ${classe}">${titre}</div>
-            <div class="quiz-result-score">Score : <strong>${score} / ${total}</strong></div>
+            <div class="quiz-result-score">${tdahI18n.quizScore} : <strong>${score} / ${total}</strong></div>
             <p style="color:#666; font-size:16px; margin-bottom:24px;">${conseil}</p>
-            <button class="quiz-btn-close" onclick="fermerQuizLecon()">Continuer les leçons</button>
+            <button class="quiz-btn-close" onclick="fermerQuizLecon()">${tdahI18n.quizContinue}</button>
         </div>
     `;
 }
