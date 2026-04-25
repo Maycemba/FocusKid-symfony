@@ -1,4 +1,33 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            {{ form_row(form.question_text, {'attr': {'class': 'form-control'}}) }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            {{ form_row(form.option_a, {'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-4 mb-3">
+            {{ form_row(form.option_b, {'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-4 mb-3">
+            {{ form_row(form.option_c, {'attr': {'class': 'form-control'}}) }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_row(form.bonne_reponse, {'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-6 mb-3">
+            <div {% if jeu_id %}style="display:none;"{% endif %}>
+                {{ form_row(form.jeu, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="d-grid gap-2">
+        <button class="btn btn-primary btn-lg">
+            <i class="fas fa-plus-circle"></i> {{ button_label|default('Ajouter la Question') }}
+        </button>
+    </div>
 {{ form_end(form) }}

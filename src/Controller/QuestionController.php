@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Question;
 use App\Form\QuestionType;
+use App\Repository\JeuRepository;
 use App\Repository\QuestionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,16 +23,33 @@ final class QuestionController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_question_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new/{jeu_id}', name: 'app_question_new', methods: ['GET', 'POST'], defaults: ['jeu_id' => null])]
+    public function new(Request $request, EntityManagerInterface $entityManager, JeuRepository $jeuRepository, $jeu_id = null): Response
     {
         $question = new Question();
-        $form = $this->createForm(QuestionType::class, $question);
+        
+        if ($jeu_id) {
+            $jeu = $jeuRepository->find($jeu_id);
+            if ($jeu) {
+                $question->setJeu($jeu);
+            }
+        }
+
+        $form = $this->createForm(QuestionType::class, $question, [
+            'disable_jeu' => $jeu_id !== null
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($question);
             $entityManager->flush();
+
+            $this->addFlash('success', 'Question ajoutée avec succès !');
+
+            // Si on vient d'un jeu, on reste sur l'ajout de question pour ce jeu
+            if ($jeu_id) {
+                return $this->redirectToRoute('app_question_new', ['jeu_id' => $jeu_id], Response::HTTP_SEE_OTHER);
+            }
 
             return $this->redirectToRoute('app_question_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -39,6 +57,7 @@ final class QuestionController extends AbstractController
         return $this->render('question/new.html.twig', [
             'question' => $question,
             'form' => $form,
+            'jeu_id' => $jeu_id,
         ]);
     }
 

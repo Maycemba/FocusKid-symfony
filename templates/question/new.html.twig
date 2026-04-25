@@ -1,11 +1,39 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}New Question{% endblock %}
+{% block title %}Ajouter une Question{% endblock %}
 
 {% block body %}
-    <h1>Create new Question</h1>
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">Ajouter une Question</h1>
+            {% if jeu_id %}
+                <span class="badge bg-light text-primary">Jeu ID: {{ jeu_id }}</span>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
 
-    {{ include('question/_form.html.twig') }}
+            <p class="text-muted">Remplissez les détails de la question ci-dessous. Vous pouvez ajouter plusieurs questions l'une après l'autre.</p>
 
-    <a href="{{ path('app_question_index') }}">back to list</a>
+            {{ include('question/_form.html.twig') }}
+
+            <div class="mt-4 d-flex justify-content-between">
+                <a href="{{ path('app_jeu_index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste des jeux
+                </a>
+                {% if jeu_id %}
+                    <a href="{{ path('app_jeu_index') }}" class="btn btn-success">
+                        <i class="fas fa-check"></i> Terminer l'ajout de questions
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
