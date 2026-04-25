@@ -29,7 +29,7 @@
                         <i class="fa fa-search text-primary"></i>
                     </span>
                     <input type="text" id="searchInput" class="form-control border-start-0"
-                           placeholder="Rechercher un cours, formateur...">
+                           placeholder="Rechercher un cours, formateur..." value="{{ search|default('') }}">
                 </div>
             </div>
 
@@ -37,10 +37,10 @@
             <div class="col-lg-3 col-md-6">
                 <select id="filterNiveau" class="form-select">
                     <option value="">🎯 Tous les niveaux</option>
-                    <option value="1">Niveau 1</option>
-                    <option value="2">Niveau 2</option>
-                    <option value="3">Niveau 3</option>
-                    <option value="4">Niveau 4</option>
+                    <option value="1" {{ niveau|default('') == '1' ? 'selected' : '' }}>Niveau 1</option>
+                    <option value="2" {{ niveau|default('') == '2' ? 'selected' : '' }}>Niveau 2</option>
+                    <option value="3" {{ niveau|default('') == '3' ? 'selected' : '' }}>Niveau 3</option>
+                    <option value="4" {{ niveau|default('') == '4' ? 'selected' : '' }}>Niveau 4</option>
                 </select>
             </div>
 
@@ -48,8 +48,8 @@
             <div class="col-lg-3 col-md-6">
                 <select id="sortAlpha" class="form-select">
                     <option value="">🔤 Trier par...</option>
-                    <option value="az">A → Z</option>
-                    <option value="za">Z → A</option>
+                    <option value="az" {{ sort|default('') == 'az' ? 'selected' : '' }}>A → Z</option>
+                    <option value="za" {{ sort|default('') == 'za' ? 'selected' : '' }}>Z → A</option>
                 </select>
             </div>
 
@@ -71,11 +71,7 @@
     <!-- Liste des cours -->
     <div class="row g-4" id="coursList">
         {% for cour in cours %}
-        <div class="col-lg-4 col-md-6 cours-item"
-             data-titre="{{ cour.titre|lower }}"
-             data-formateur="{{ cour.formateur|lower|default('') }}"
-             data-description="{{ cour.description|lower|default('') }}"
-             data-niveau="{{ cour.niveau|lower|default('') }}">
+        <div class="col-lg-4 col-md-6">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-4">
 
@@ -135,7 +131,7 @@
     </div>
 
     <!-- Pagination -->
-    <div class="d-flex justify-content-center mt-5">
+    <div class="d-flex justify-content-center mt-5" id="paginationContainer">
         {{ knp_pagination_render(cours) }}
     </div>
 
@@ -162,6 +158,163 @@
     const coursList = document.getElementById('coursList');
     const noResult = document.getElementById('noResult');
     const resultCount = document.getElementById('resultCount');
+    const paginationContainer = document.getElementById('paginationContainer');
+    const coursUrl = '{{ path('app_enfant_cours') }}';
+
+    let fetchTimer = null;
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function buildCoursCard(cour) {
+        const niveauBadge = cour.niveau
+            ? `<span class="badge bg-primary rounded-pill px-3 py-2 mb-3">🎯 Niveau ${escapeHtml(cour.niveau)}</span>`
+            : `<span class="badge bg-secondary rounded-pill px-3 py-2 mb-3">Niveau non défini</span>`;
+
+        const description = cour.description
+            ? `<p class="text-muted mb-3">${escapeHtml(cour.description.length > 100 ? cour.description.slice(0, 100) + '...' : cour.description)}</p>`
+            : '';
+
+        const formateur = cour.formateur
+            ? `
+                <div class="d-flex align-items-center mb-3">
+                    <img class="rounded-circle flex-shrink-0"
+                         src="{{ asset('base-front/img/user.jpg') }}"
+                         alt="" style="width: 38px; height: 38px;">
+                    <div class="ms-2">
+                        <h6 class="text-primary mb-0">${escapeHtml(cour.formateur)}</h6>
+                        <small class="text-muted">Formateur</small>
+                    </div>
+                </div>
+            `
+            : '';
+
+        return `
+            <div class="col-lg-4 col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-body p-4">
+                        ${niveauBadge}
+                        <h4 class="text-primary fw-bold mb-3 cours-titre">${escapeHtml(cour.titre)}</h4>
+                        ${description}
+                        ${formateur}
+                        <div class="d-flex align-items-center mb-4">
+                            <i class="fa fa-book-open text-primary me-2"></i>
+                            <span class="text-muted">${cour.lecons} leçon(s)</span>
+                        </div>
+                        <a href="${escapeHtml(cour.urlLecons)}"
+                           class="btn btn-primary rounded-pill py-2 px-4 w-100">
+                            📖 Voir les leçons <i class="fa fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function buildPagination(page, pages) {
+        if (!pages || pages <= 1) {
+            return '';
+        }
+
+        let html = '<nav aria-label="Pagination cours"><ul class="pagination">';
+        html += `
+            <li class="page-item ${page <= 1 ? 'disabled' : ''}">
+                <a class="page-link ajax-page" href="#" data-page="${page - 1}">Précédent</a>
+            </li>
+        `;
+
+        for (let i = 1; i <= pages; i++) {
+            html += `
+                <li class="page-item ${i === page ? 'active' : ''}">
+                    <a class="page-link ajax-page" href="#" data-page="${i}">${i}</a>
+                </li>
+            `;
+        }
+
+        html += `
+            <li class="page-item ${page >= pages ? 'disabled' : ''}">
+                <a class="page-link ajax-page" href="#" data-page="${page + 1}">Suivant</a>
+            </li>
+        `;
+        html += '</ul></nav>';
+
+        return html;
+    }
+
+    function getParams(page = 1) {
+        return {
+            search: searchInput.value.trim(),
+            niveau: filterNiveau.value,
+            sort: sortAlpha.value,
+            page
+        };
+    }
+
+    async function loadCours(page = 1) {
+        const params = getParams(page);
+        const url = new URL(coursUrl, window.location.origin);
+
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== '') {
+                url.searchParams.set(key, value);
+            }
+        });
+
+        coursList.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+            </div>
+        `;
+        paginationContainer.innerHTML = '';
+        noResult.classList.add('d-none');
+
+        try {
+            const response = await fetch(url.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erreur lors du chargement');
+            }
+
+            if (!data.cours || data.cours.length === 0) {
+                coursList.innerHTML = '';
+                noResult.classList.remove('d-none');
+                resultCount.textContent = '0 cours trouvé(s)';
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            coursList.innerHTML = data.cours.map(buildCoursCard).join('');
+            resultCount.textContent = `${data.total} cours trouvé(s)`;
+            paginationContainer.innerHTML = buildPagination(data.page, data.pages);
+            noResult.classList.add('d-none');
+
+            paginationContainer.querySelectorAll('.ajax-page').forEach(link => {
+                link.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const targetPage = parseInt(link.dataset.page, 10);
+                    if (!Number.isNaN(targetPage) && targetPage > 0) {
+                        loadCours(targetPage);
+                    }
+                });
+            });
+        } catch (error) {
+            coursList.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <h4 class="text-danger">Impossible de charger les cours.</h4>
+                    <p class="text-muted">${escapeHtml(error.message)}</p>
+                </div>
+            `;
+        }
+    }
 
     function filterAndSort() {
         const search = searchInput.value.toLowerCase().trim();
@@ -217,15 +370,20 @@
         searchInput.value = '';
         filterNiveau.value = '';
         sortAlpha.value = '';
-        filterAndSort();
+        loadCours(1);
     }
 
-    searchInput.addEventListener('input', filterAndSort);
-    filterNiveau.addEventListener('change', filterAndSort);
-    sortAlpha.addEventListener('change', filterAndSort);
+    function scheduleLoad() {
+        clearTimeout(fetchTimer);
+        fetchTimer = setTimeout(() => loadCours(1), 250);
+    }
+
+    searchInput.addEventListener('input', scheduleLoad);
+    filterNiveau.addEventListener('change', () => loadCours(1));
+    sortAlpha.addEventListener('change', () => loadCours(1));
     resetBtn.addEventListener('click', reset);
     resetBtn2.addEventListener('click', reset);
 
-    filterAndSort();
+    loadCours({{ app.request.query.getInt('page', 1) }});
 </script>
 {% endblock %}

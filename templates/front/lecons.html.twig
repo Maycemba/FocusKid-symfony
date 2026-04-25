@@ -465,6 +465,7 @@ function tdahLire(e, idx, texte, locale) {
 // ══ QUIZ LECON ══
 var quizLeconQuestions = [];
 var quizLeconAnswers   = {};
+var quizLeconUrl       = '{{ path('api_generer_quiz_lecon') }}';
 
 async function lancerQuizLecon() {
     quizLeconDone = true;
@@ -490,7 +491,7 @@ async function lancerQuizLecon() {
     }
 
     try {
-        const response = await fetch('/api/generer-quiz-lecon', {
+        const response = await fetch(quizLeconUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contenu: contenuLecons })

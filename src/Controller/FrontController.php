@@ -5,6 +5,7 @@ use App\Repository\CourRepository;
 use App\Service\TranslationService;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -23,9 +24,29 @@ final class FrontController extends AbstractController
         CourRepository $courRepository,
         PaginatorInterface $paginator
     ): Response {
-        $query = $courRepository->createQueryBuilder('c')
-            ->orderBy('c.titre', 'ASC')
-            ->getQuery();
+        $search = trim($request->query->get('search', ''));
+        $niveau = trim($request->query->get('niveau', ''));
+        $sort   = trim($request->query->get('sort', ''));
+
+        $qb = $courRepository->createQueryBuilder('c');
+
+        if ($search !== '') {
+            $qb->andWhere('LOWER(c.titre) LIKE :search OR LOWER(COALESCE(c.formateur, \'\')) LIKE :search OR LOWER(COALESCE(c.description, \'\')) LIKE :search')
+                ->setParameter('search', '%' . mb_strtolower($search) . '%');
+        }
+
+        if ($niveau !== '') {
+            $qb->andWhere('c.niveau = :niveau')
+                ->setParameter('niveau', $niveau);
+        }
+
+        if ($sort === 'za') {
+            $qb->orderBy('c.titre', 'DESC');
+        } else {
+            $qb->orderBy('c.titre', 'ASC');
+        }
+
+        $query = $qb->getQuery();
 
         $pagination = $paginator->paginate(
             $query,
@@ -33,8 +54,40 @@ final class FrontController extends AbstractController
             6
         );
 
+        if ($request->isXmlHttpRequest()) {
+            $items = [];
+
+            foreach ($pagination as $cour) {
+                $items[] = [
+                    'id'          => $cour->getIdCours(),
+                    'titre'       => $cour->getTitre(),
+                    'niveau'      => $cour->getNiveau(),
+                    'description' => $cour->getDescription(),
+                    'formateur'   => $cour->getFormateur(),
+                    'lecons'      => $cour->getLecons()->count(),
+                    'urlLecons'   => $this->generateUrl('app_enfant_lecons', [
+                        'id_cours' => $cour->getIdCours(),
+                    ]),
+                ];
+            }
+
+            return new JsonResponse([
+                'cours'    => $items,
+                'total'    => $pagination->getTotalItemCount(),
+                'page'     => $pagination->getCurrentPageNumber(),
+                'perPage'  => $pagination->getItemNumberPerPage(),
+                'pages'    => (int) ceil($pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()),
+                'search'   => $search,
+                'niveau'   => $niveau,
+                'sort'     => $sort,
+            ]);
+        }
+
         return $this->render('front/cours.html.twig', [
             'cours' => $pagination,
+            'search' => $search,
+            'niveau' => $niveau,
+            'sort' => $sort,
         ]);
     }
 
