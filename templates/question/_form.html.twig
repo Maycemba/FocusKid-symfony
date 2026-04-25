@@ -1,18 +1,54 @@
 {{ form_start(form) }}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <label class="form-label fw-bold"><iconify-icon icon="solar:global-line-duotone"></iconify-icon> Langue de traduction</label>
+            <select id="target-lang-selector" class="form-select border-primary text-primary fw-bold">
+                <option value="en">Anglais 🇬🇧</option>
+                <option value="ar">Arabe 🇸🇦</option>
+                <option value="fr">Français 🇫🇷</option>
+            </select>
+            <small class="text-muted">Choisissez la langue cible pour les traductions.</small>
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-12 mb-3">
-            {{ form_row(form.question_text, {'attr': {'class': 'form-control'}}) }}
+            {{ form_label(form.question_text) }}
+            <div class="input-group">
+                {{ form_widget(form.question_text, {'attr': {'class': 'form-control', 'data-translatable': 'true'}}) }}
+                <button type="button" class="btn btn-outline-info btn-translate" data-target="question_text">
+                    <iconify-icon icon="solar:translation-line-duotone"></iconify-icon> Traduire
+                </button>
+            </div>
+            {{ form_errors(form.question_text) }}
         </div>
     </div>
     <div class="row">
         <div class="col-md-4 mb-3">
-            {{ form_row(form.option_a, {'attr': {'class': 'form-control'}}) }}
+            {{ form_label(form.option_a) }}
+            <div class="input-group">
+                {{ form_widget(form.option_a, {'attr': {'class': 'form-control', 'data-translatable': 'true'}}) }}
+                <button type="button" class="btn btn-outline-info btn-translate" data-target="option_a">
+                    <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                </button>
+            </div>
         </div>
         <div class="col-md-4 mb-3">
-            {{ form_row(form.option_b, {'attr': {'class': 'form-control'}}) }}
+            {{ form_label(form.option_b) }}
+            <div class="input-group">
+                {{ form_widget(form.option_b, {'attr': {'class': 'form-control', 'data-translatable': 'true'}}) }}
+                <button type="button" class="btn btn-outline-info btn-translate" data-target="option_b">
+                    <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                </button>
+            </div>
         </div>
         <div class="col-md-4 mb-3">
-            {{ form_row(form.option_c, {'attr': {'class': 'form-control'}}) }}
+            {{ form_label(form.option_c) }}
+            <div class="input-group">
+                {{ form_widget(form.option_c, {'attr': {'class': 'form-control', 'data-translatable': 'true'}}) }}
+                <button type="button" class="btn btn-outline-info btn-translate" data-target="option_c">
+                    <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                </button>
+            </div>
         </div>
     </div>
     <div class="row">
@@ -27,7 +63,55 @@
     </div>
     <div class="d-grid gap-2">
         <button class="btn btn-primary btn-lg">
-            <i class="fas fa-plus-circle"></i> {{ button_label|default('Ajouter la Question') }}
+            <i class="ti ti-plus"></i> {{ button_label|default('Ajouter la Question') }}
         </button>
     </div>
 {{ form_end(form) }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const translateBtns = document.querySelectorAll('.btn-translate');
+    
+    translateBtns.forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const targetId = this.getAttribute('data-target');
+            const input = document.querySelector(`[id$="_${targetId}"]`);
+            const targetLang = document.getElementById('target-lang-selector').value;
+            
+            if (!input || !input.value) {
+                alert('Veuillez saisir un texte à traduire');
+                return;
+            }
+
+            const originalBtnContent = this.innerHTML;
+            this.innerHTML = '<iconify-icon icon="solar:spinner-line-duotone" class="fa-spin"></iconify-icon>';
+            this.disabled = true;
+
+            try {
+                const response = await fetch('{{ path("api_translate_index") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: input.value,
+                        sourceLang: targetLang === 'fr' ? 'en' : 'fr', // Si on traduit en FR, on suppose la source est EN
+                        targetLang: targetLang
+                    })
+                });
+
+                const data = await response.json();
+                if (data.translated) {
+                    input.value = data.translated;
+                }
+            } catch (error) {
+                console.error('Erreur traduction:', error);
+                alert('Erreur lors de la traduction');
+            } finally {
+                this.innerHTML = originalBtnContent;
+                this.disabled = false;
+            }
+        });
+    });
+});
+</script>
