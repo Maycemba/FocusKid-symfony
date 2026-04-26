@@ -101,9 +101,12 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
       <div class="d-flex gap-2">
         <a href="{{ path('app_commentaire_index') }}" class="btn-new" style="background: linear-gradient(135deg, var(--info), #1484c0);">💬 Tous les commentaires</a>
         <a href="{{ path('app_carnet_educatif_new') }}" class="btn-new">➕ Nouveau carnet</a>
-        <a href="{{ path('objectif_index') }}" class="btn btn-success">
-                🎯 Gérer mes objectifs
-            </a>
+       <a href="{{ path('app_objectif_index') }}" class="btn btn-success">
+    🎯 Gérer mes objectifs
+</a>
+<a href="{{ path('app_trello_index') }}" class="btn-new" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+          📋 Tableau des tâches
+        </a>
       </div>
     </div>
   </div>
@@ -129,7 +132,7 @@ body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
           </select>
         </div>
         <div class="col-md-3">
-          <label class="form-label fw-bold">✅ Travail terminé</label>
+          <label class="form-label fw-bold">✅ Travail </label>
           <select name="travail_termine" class="form-select">
             <option value="">Tous</option>
             <option value="1" {% if selected_travail_termine == '1' %}selected{% endif %}>Terminé</option>

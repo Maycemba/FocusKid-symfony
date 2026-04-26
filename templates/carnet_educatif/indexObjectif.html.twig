@@ -1,290 +1,390 @@
 {% extends 'base-front.html.twig' %}
 
-{% block title %}Gestion des objectifs{% endblock %}
+{% block title %}Mes Objectifs{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
 <style>
-    .objectif-card {
-        transition: transform 0.2s;
-        margin-bottom: 20px;
-    }
-    .objectif-card:hover {
-        transform: translateY(-5px);
-    }
-    .progress-bar-custom {
-        height: 8px;
-        border-radius: 4px;
-        background: #e8ecf5;
-        overflow: hidden;
-    }
-    .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #1CC88A, #4E73DF);
-        border-radius: 4px;
-        transition: width 0.3s;
-    }
-    .stat-badge {
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: bold;
-    }
-    .stat-en-cours { background: #e3f2fd; color: #1976d2; }
-    .stat-atteint { background: #d4f7ec; color: #0a7a52; }
-    .stat-non-atteint { background: #fdecea; color: #c0392b; }
+.objectif-card {
+    border-radius: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+.objectif-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.progress-bar-custom {
+    height: 8px;
+    border-radius: 10px;
+}
+.badge-statut {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.btn-atteint {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    transition: all 0.3s;
+}
+.btn-atteint:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(40,167,69,0.3);
+}
+.btn-non-atteint {
+    background: linear-gradient(135deg, #dc3545, #fd7e14);
+    color: white;
+    border: none;
+    transition: all 0.3s;
+}
+.btn-non-atteint:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(220,53,69,0.3);
+}
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="mb-4">🎯 Gestion des objectifs</h1>
-            
-            <!-- Statistiques -->
-            <div class="row mb-4" id="statsContainer">
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 id="totalCount">0</h3>
-                            <p class="text-muted">Total objectifs</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 id="encoursCount" class="text-primary">0</h3>
-                            <p class="text-muted">En cours</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 id="atteintCount" class="text-success">0</h3>
-                            <p class="text-muted">Atteints</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 id="nonAtteintCount" class="text-danger">0</h3>
-                            <p class="text-muted">Non atteints</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Formulaire de création -->
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">➕ Créer un nouvel objectif</h5>
-                </div>
-                <div class="card-body">
-                    <form id="objectifForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Description</label>
-                                <input type="text" id="description" class="form-control" required 
-                                       placeholder="Ex: Lire 15 min chaque jour">
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Date début</label>
-                                <input type="date" id="date_debut" class="form-control" required>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Date fin</label>
-                                <input type="date" id="date_fin" class="form-control" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Créer l'objectif
-                        </button>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Liste des objectifs -->
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">📋 Liste des objectifs</h5>
-                </div>
-                <div class="card-body">
-                    <div id="objectifsList"></div>
-                </div>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-5 fw-bold" style="color: var(--primary);">
+            🎯 Mes Objectifs
+        </h1>
+        <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#newObjectifModal">
+            ➕ Nouvel objectif
+        </button>
+    </div>
+
+    <!-- Liste des objectifs -->
+    <div class="row" id="objectifs-list">
+        <div class="col-12 text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Modal Nouvel Objectif -->
+<div class="modal fade" id="newObjectifModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">🎯 Créer un nouvel objectif</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newObjectifForm">
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date de début</label>
+                        <input type="date" class="form-control" id="date_debut" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date de fin</label>
+                        <input type="date" class="form-control" id="date_fin" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="creerObjectif()">Créer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Charger les statistiques
-    async function chargerStats() {
-        try {
-            const response = await fetch('/objectifs/api/stats');
-            const stats = await response.json();
-            
-            document.getElementById('totalCount').textContent = stats.total;
-            document.getElementById('encoursCount').textContent = stats.en_cours;
-            document.getElementById('atteintCount').textContent = stats.atteint;
-            document.getElementById('nonAtteintCount').textContent = stats.non_atteint;
-        } catch (error) {
-            console.error('Erreur stats:', error);
-        }
-    }
-    
-    // Charger les objectifs
-    async function chargerObjectifs() {
-        try {
-            const response = await fetch('/objectifs/api');
-            const objectifs = await response.json();
-            
-            const container = document.getElementById('objectifsList');
-            if (objectifs.length === 0) {
-                container.innerHTML = '<div class="alert alert-info">Aucun objectif pour le moment. Créez-en un !</div>';
-                return;
-            }
-            
-            container.innerHTML = objectifs.map(obj => `
-                <div class="card objectif-card">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-4">
-                                <h6 class="mb-1">${obj.description}</h6>
-                                <small class="text-muted">
-                                    📅 ${obj.date_debut} → ${obj.date_fin}
-                                </small>
-                                ${obj.jours_restants ? `<br><small>⏳ Plus que ${obj.jours_restants} jours</small>` : ''}
-                            </div>
-                            <div class="col-md-3">
-                                <div class="progress-bar-custom mb-2">
-                                    <div class="progress-fill" style="width: ${obj.progression}%"></div>
-                                </div>
-                                <small>Progression: ${obj.progression}%</small>
-                            </div>
-                            <div class="col-md-2">
-                                <span class="stat-badge stat-${obj.statut.toLowerCase().replace('_', '-')}">
-                                    ${obj.statut_label}
-                                </span>
-                            </div>
-                            <div class="col-md-3 text-end">
-                                ${obj.statut === 'EN_COURS' ? `
-                                    <button onclick="updateStatut(${obj.id}, 'ATTEINT')" class="btn btn-success btn-sm me-2">
-                                        ✅ Atteint
-                                    </button>
-                                    <button onclick="updateStatut(${obj.id}, 'NON_ATTEINT')" class="btn btn-danger btn-sm">
-                                        ❌ Non atteint
-                                    </button>
-                                ` : `
-                                    <button onclick="supprimerObjectif(${obj.id})" class="btn btn-outline-danger btn-sm">
-                                        🗑️ Supprimer
-                                    </button>
-                                `}
-                            </div>
-                        </div>
+// Fonction pour afficher la notification WhatsApp
+function showWhatsAppNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = 'whatsapp-notification';
+    notification.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        animation: slideInWhatsApp 0.3s ease-out;
+        margin-bottom: 15px;
+        max-width: 350px;
+    `;
+
+    const colors = {
+        success: { header: '#075E54', accent: '#128C7E', bubble: '#DCF8C6', icon: '🎉' },
+        warning: { header: '#D32F2F', accent: '#C62828', bubble: '#FFCDD2', icon: '⚠️' }
+    };
+
+    const color = type === 'success' ? colors.success : colors.warning;
+
+    notification.innerHTML = `
+        <div style="background: ${color.header}; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); overflow: hidden;">
+            <div style="background: ${color.accent}; padding: 12px 15px; display: flex; align-items: center; gap: 10px;">
+                <div style="background: #25D366; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                    💬
+                </div>
+                <div style="color: white;">
+                    <div style="font-weight: bold; font-size: 14px;">FocusKid ${color.icon}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">Notification WhatsApp</div>
+                </div>
+                <button onclick="this.closest('.whatsapp-notification').remove()" 
+                        style="margin-left: auto; background: none; border: none; color: white; cursor: pointer; font-size: 18px;">
+                    ✕
+                </button>
+            </div>
+            <div style="background: white; padding: 15px;">
+                <div style="background: ${color.bubble}; padding: 10px 12px; border-radius: 10px;">
+                    <div style="font-size: 14px; line-height: 1.4; color: #111b21; white-space: pre-line;">
+                        ${message.replace(/\n/g, '<br>')}
+                    </div>
+                    <div style="font-size: 10px; color: #667781; text-align: right; margin-top: 5px;">
+                        ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        ✓✓
                     </div>
                 </div>
-            `).join('');
-        } catch (error) {
-            console.error('Erreur chargement:', error);
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        if (notification && notification.parentNode) {
+            notification.style.animation = 'slideOutWhatsApp 0.3s ease-in';
+            setTimeout(() => notification.remove(), 300);
         }
-    }
-    
-    // Créer un objectif
-    document.getElementById('objectifForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    }, 5000);
+}
+
+// Charger la liste des objectifs
+async function chargerObjectifs() {
+    try {
+        const response = await fetch('/objectifs/api');
+        const objectifs = await response.json();
         
-        const data = {
-            description: document.getElementById('description').value,
-            date_debut: document.getElementById('date_debut').value,
-            date_fin: document.getElementById('date_fin').value
-        };
+        const container = document.getElementById('objectifs-list');
         
-        if (!data.description || !data.date_debut || !data.date_fin) {
-            alert('Veuillez remplir tous les champs');
+        if (objectifs.length === 0) {
+            container.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <div class="empty-state">
+                        <i class="fas fa-tasks" style="font-size: 64px; color: #ddd;"></i>
+                        <h3 class="mt-3">Aucun objectif</h3>
+                        <p>Créez votre premier objectif !</p>
+                    </div>
+                </div>
+            `;
             return;
         }
         
-        try {
-            const response = await fetch('/objectifs/api', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
-            
-            if (response.ok) {
-                alert('Objectif créé avec succès !');
-                document.getElementById('objectifForm').reset();
-                chargerObjectifs();
-                chargerStats();
-            } else {
-                const error = await response.json();
-                alert('Erreur: ' + (error.errors?.join(', ') || 'Problème lors de la création'));
-            }
-        } catch (error) {
-            alert('Erreur réseau: ' + error.message);
-        }
+        container.innerHTML = objectifs.map(obj => `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card objectif-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge-statut ${getStatutClass(obj.statut)}">
+                                ${obj.statut_label}
+                            </span>
+                            <small class="text-muted">#${obj.id}</small>
+                        </div>
+                        
+                        <p class="card-text">${escapeHtml(obj.description)}</p>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>Progression</small>
+                                <small>${obj.progression}%</small>
+                            </div>
+                            <div class="progress progress-bar-custom">
+                                <div class="progress-bar bg-success" style="width: ${obj.progression}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-muted small mb-3">
+                            <div>📅 Du ${obj.date_debut} au ${obj.date_fin}</div>
+                            <div>⏰ Jours restants: ${obj.jours_restants}</div>
+                        </div>
+                        
+                        ${obj.statut === 'EN_COURS' ? `
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-atteint btn-sm flex-grow-1" onclick="updateStatut(${obj.id}, 'ATTEINT')">
+                                    ✅ Atteint
+                                </button>
+                                <button class="btn btn-non-atteint btn-sm flex-grow-1" onclick="updateStatut(${obj.id}, 'NON_ATTEINT')">
+                                    ❌ Non atteint
+                                </button>
+                            </div>
+                        ` : `
+                            <button class="btn btn-secondary w-100" onclick="supprimerObjectif(${obj.id})">
+                                🗑️ Supprimer
+                            </button>
+                        `}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Erreur:', error);
+    }
+}
+
+function getStatutClass(statut) {
+    switch(statut) {
+        case 'EN_COURS': return 'bg-info text-white';
+        case 'ATTEINT': return 'bg-success text-white';
+        case 'NON_ATTEINT': return 'bg-danger text-white';
+        default: return 'bg-secondary text-white';
+    }
+}
+
+// Mettre à jour le statut
+async function updateStatut(id, statut) {
+    const confirmText = statut === 'ATTEINT' 
+        ? 'Confirmez-vous que cet objectif est ATTEINT ?'
+        : 'Confirmez-vous que cet objectif n\'est PAS ATTEINT ?';
+    
+    const result = await Swal.fire({
+        title: 'Confirmation',
+        text: confirmText,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: statut === 'ATTEINT' ? '#28a745' : '#dc3545',
+        confirmButtonText: 'Oui, confirmer',
+        cancelButtonText: 'Annuler'
     });
     
-    // Mettre à jour le statut
-    async function updateStatut(id, statut) {
+    if (result.isConfirmed) {
         try {
             const response = await fetch(`/objectifs/api/${id}/statut`, {
                 method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({statut: statut})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ statut: statut })
             });
             
-            if (response.ok) {
-                alert(`Objectif marqué comme ${statut === 'ATTEINT' ? 'atteint' : 'non atteint'} !`);
+            const data = await response.json();
+            
+            if (data.success) {
+                // AFFICHER LA NOTIFICATION WHATSAPP
+                showWhatsAppNotification(data.message, statut === 'ATTEINT' ? 'success' : 'warning');
+                
+                await Swal.fire({
+                    title: statut === 'ATTEINT' ? '🎉 Félicitations !' : '⚠️ Objectif non atteint',
+                    text: 'Statut mis à jour avec succès !',
+                    icon: statut === 'ATTEINT' ? 'success' : 'info',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                
                 chargerObjectifs();
-                chargerStats();
-            } else {
-                alert('Erreur lors de la mise à jour du statut');
             }
         } catch (error) {
-            alert('Erreur réseau: ' + error.message);
+            Swal.fire('Erreur', 'Une erreur est survenue', 'error');
         }
     }
+}
+
+// Créer un objectif
+async function creerObjectif() {
+    const description = document.getElementById('description').value;
+    const date_debut = document.getElementById('date_debut').value;
+    const date_fin = document.getElementById('date_fin').value;
     
-    // Supprimer un objectif
-    async function supprimerObjectif(id) {
-        if (!confirm('Êtes-vous sûr de vouloir supprimer cet objectif ?')) return;
+    if (!description || !date_debut || !date_fin) {
+        Swal.fire('Erreur', 'Tous les champs sont obligatoires', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/objectifs/api', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ description, date_debut, date_fin })
+        });
         
+        const data = await response.json();
+        
+        if (data.success) {
+            Swal.fire('Succès', 'Objectif créé avec succès', 'success');
+            document.getElementById('newObjectifForm').reset();
+            bootstrap.Modal.getInstance(document.getElementById('newObjectifModal')).hide();
+            chargerObjectifs();
+        }
+    } catch (error) {
+        Swal.fire('Erreur', 'Erreur lors de la création', 'error');
+    }
+}
+
+// Supprimer un objectif
+async function supprimerObjectif(id) {
+    const result = await Swal.fire({
+        title: 'Confirmation',
+        text: 'Voulez-vous vraiment supprimer cet objectif ?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: 'Oui, supprimer',
+        cancelButtonText: 'Annuler'
+    });
+    
+    if (result.isConfirmed) {
         try {
-            const response = await fetch(`/objectifs/api/${id}`, {
-                method: 'DELETE'
-            });
+            const response = await fetch(`/objectifs/api/${id}`, { method: 'DELETE' });
+            const data = await response.json();
             
-            if (response.ok) {
-                alert('Objectif supprimé avec succès !');
-                chargerObjectifs();
-                chargerStats();
-            } else {
-                alert('Erreur lors de la suppression');
-            }
+            Swal.fire('Supprimé', 'Objectif supprimé avec succès', 'success');
+            chargerObjectifs();
         } catch (error) {
-            alert('Erreur réseau: ' + error.message);
+            Swal.fire('Erreur', 'Erreur lors de la suppression', 'error');
+        }
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Ajouter les animations CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInWhatsApp {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
         }
     }
     
-    // Initialiser les dates par défaut
-    const aujourdhui = new Date().toISOString().split('T')[0];
-    const dans7Jours = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
-    document.getElementById('date_debut').value = aujourdhui;
-    document.getElementById('date_fin').value = dans7Jours;
-    
-    // Charger au démarrage
-    chargerObjectifs();
-    chargerStats();
-    
-    // Rafraîchir toutes les 30 secondes
-    setInterval(() => {
-        chargerObjectifs();
-        chargerStats();
-    }, 30000);
+    @keyframes slideOutWhatsApp {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// Charger au démarrage
+chargerObjectifs();
 </script>
 {% endblock %}

@@ -11,34 +11,31 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\HasLifecycleCallbacks]
 class Objectif
 {
-    // Constantes pour les statuts
     const STATUT_EN_COURS = 'EN_COURS';
     const STATUT_ATTEINT = 'ATTEINT';
     const STATUT_NON_ATTEINT = 'NON_ATTEINT';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: false)]
+    #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank(message: 'La description est obligatoire')]
-    #[Assert\Length(min: 3, max: 255, minMessage: 'La description doit faire au moins 3 caractères', maxMessage: 'La description ne peut pas dépasser 255 caractères')]
     private ?string $description = null;
 
-    #[ORM\Column(type: 'date', nullable: false)]
+    #[ORM\Column(type: 'date')]
     #[Assert\NotNull(message: 'La date de début est obligatoire')]
     private ?\DateTimeInterface $date_debut = null;
 
-    #[ORM\Column(type: 'date', nullable: false)]
+    #[ORM\Column(type: 'date')]
     #[Assert\NotNull(message: 'La date de fin est obligatoire')]
-    #[Assert\GreaterThan(propertyPath: 'date_debut', message: 'La date de fin doit être postérieure à la date de début')]
     private ?\DateTimeInterface $date_fin = null;
 
-    #[ORM\Column(type: 'string', length: 20, columnDefinition: "ENUM('EN_COURS', 'ATTEINT', 'NON_ATTEINT') DEFAULT 'EN_COURS'")]
-    private ?string $statut = self::STATUT_EN_COURS;
+    #[ORM\Column(type: 'string', length: 20, options: ['default' => 'EN_COURS'])]
+    private string $statut = self::STATUT_EN_COURS;
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
+    #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $created_at = null;
 
     public function __construct()
@@ -47,46 +44,15 @@ class Objectif
         $this->statut = self::STATUT_EN_COURS;
     }
 
-    // ========== GETTERS ==========
+    // GETTERS
+    public function getId(): ?int { return $this->id; }
+    public function getDescription(): ?string { return $this->description; }
+    public function getDateDebut(): ?\DateTimeInterface { return $this->date_debut; }
+    public function getDateFin(): ?\DateTimeInterface { return $this->date_fin; }
+    public function getStatut(): string { return $this->statut; }
+    public function getCreatedAt(): ?\DateTimeInterface { return $this->created_at; }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-
-    public function getDateDebut(): ?\DateTimeInterface
-    {
-        return $this->date_debut;
-    }
-
-    public function getDateFin(): ?\DateTimeInterface
-    {
-        return $this->date_fin;
-    }
-
-    public function getStatut(): ?string
-    {
-        return $this->statut;
-    }
-
-    public function getCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->created_at;
-    }
-
-    // ========== SETTERS ==========
-
-    public function setId(?int $id): self
-    {
-        $this->id = $id;
-        return $this;
-    }
-
+    // SETTERS
     public function setDescription(string $description): self
     {
         $this->description = $description;
@@ -108,7 +74,7 @@ class Objectif
     public function setStatut(string $statut): self
     {
         if (!in_array($statut, [self::STATUT_EN_COURS, self::STATUT_ATTEINT, self::STATUT_NON_ATTEINT])) {
-            throw new \InvalidArgumentException("Statut invalide");
+            throw new \InvalidArgumentException("Statut invalide: $statut");
         }
         $this->statut = $statut;
         return $this;
@@ -120,8 +86,6 @@ class Objectif
         return $this;
     }
 
-    // ========== MÉTHODES UTILITAIRES ==========
-
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
@@ -130,31 +94,11 @@ class Objectif
         }
     }
 
-    public function isEnCours(): bool
-    {
-        return $this->statut === self::STATUT_EN_COURS;
-    }
-
-    public function isAtteint(): bool
-    {
-        return $this->statut === self::STATUT_ATTEINT;
-    }
-
-    public function isNonAtteint(): bool
-    {
-        return $this->statut === self::STATUT_NON_ATTEINT;
-    }
-
-    public function estTermine(): bool
-    {
-        return !$this->isEnCours();
-    }
-
-    public function estDansPeriode(): bool
-    {
-        $aujourdhui = new \DateTime();
-        return $aujourdhui >= $this->date_debut && $aujourdhui <= $this->date_fin;
-    }
+    // MÉTHODES UTILITAIRES
+    public function isAtteint(): bool { return $this->statut === self::STATUT_ATTEINT; }
+    public function isNonAtteint(): bool { return $this->statut === self::STATUT_NON_ATTEINT; }
+    public function isEnCours(): bool { return $this->statut === self::STATUT_EN_COURS; }
+    public function estTermine(): bool { return !$this->isEnCours(); }
 
     public function getStatutLabel(): string
     {
@@ -176,35 +120,27 @@ class Objectif
         };
     }
 
-    public function getDureeTotale(): int
+    public function getProgression(): float
     {
-        $interval = $this->date_debut->diff($this->date_fin);
-        return $interval->days + 1;
+        if (!$this->date_debut || !$this->date_fin) return 0;
+        
+        $total = $this->date_debut->diff($this->date_fin)->days + 1;
+        $now = new \DateTime();
+        
+        if ($now < $this->date_debut) return 0;
+        if ($now > $this->date_fin) return 100;
+        
+        $ecoule = $this->date_debut->diff($now)->days + 1;
+        return round(($ecoule / $total) * 100, 2);
     }
 
     public function getJoursRestants(): ?int
     {
-        if ($this->estTermine()) {
-            return null;
-        }
+        if ($this->estTermine() || !$this->date_fin) return null;
         
-        $aujourdhui = new \DateTime();
-        if ($aujourdhui > $this->date_fin) {
-            return 0;
-        }
+        $now = new \DateTime();
+        if ($now > $this->date_fin) return 0;
         
-        $interval = $aujourdhui->diff($this->date_fin);
-        return $interval->days;
-    }
-
-    public function getProgression(): float
-    {
-        $total = $this->getDureeTotale();
-        $ecoule = (new \DateTime())->diff($this->date_debut)->days;
-        
-        if ($ecoule < 0) return 0;
-        if ($ecoule >= $total) return 100;
-        
-        return round(($ecoule / $total) * 100, 2);
+        return $now->diff($this->date_fin)->days;
     }
 }
