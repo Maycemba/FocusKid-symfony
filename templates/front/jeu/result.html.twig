@@ -53,6 +53,10 @@
                            class="btn btn-primary rounded-pill py-2 px-4">
                             <i class="fa fa-redo me-2"></i>Rejouer
                         </a>
+                        <a href="{{ path('app_front_jeu_pdf', {'id': jeu.id}) }}"
+                           class="btn btn-outline-info rounded-pill py-2 px-4">
+                            <i class="fa fa-file-pdf me-2"></i>Télécharger en PDF
+                        </a>
                         <a href="{{ path('app_front_jeu_list') }}"
                            class="btn btn-outline-secondary rounded-pill py-2 px-4">
                             <i class="fa fa-th-list me-2"></i>Tous les jeux

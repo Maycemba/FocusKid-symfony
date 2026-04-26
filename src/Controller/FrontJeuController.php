@@ -6,6 +6,8 @@ use App\Entity\Jeu;
 use App\Entity\Score;
 use App\Repository\JeuRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,12 +21,30 @@ final class FrontJeuController extends AbstractController
      * Liste de tous les jeux disponibles (lecture seule, front)
      */
     #[Route('', name: 'app_front_jeu_list', methods: ['GET'])]
-    public function list(JeuRepository $jeuRepository): Response
+    public function list(Request $request, JeuRepository $jeuRepository): Response
     {
-        $jeus = $jeuRepository->findAll();
+        $search = $request->query->get('search');
+        $sort = $request->query->get('sort', 'asc');
+
+        $queryBuilder = $jeuRepository->createQueryBuilder('j');
+
+        if ($search) {
+            $queryBuilder->andWhere('j.titre LIKE :search')
+                         ->setParameter('search', '%' . $search . '%');
+        }
+
+        if ($sort === 'asc') {
+            $queryBuilder->orderBy('j.titre', 'ASC');
+        } elseif ($sort === 'desc') {
+            $queryBuilder->orderBy('j.titre', 'DESC');
+        } elseif ($sort === 'niveau') {
+            $queryBuilder->orderBy('j.niveau', 'ASC');
+        }
 
         return $this->render('front/jeu/list.html.twig', [
-            'jeus' => $jeus,
+            'jeus' => $queryBuilder->getQuery()->getResult(),
+            'current_search' => $search,
+            'current_sort' => $sort,
         ]);
     }
 
@@ -112,14 +132,51 @@ final class FrontJeuController extends AbstractController
             return $this->redirectToRoute('app_front_jeu_play', ['id' => $jeu->getId()]);
         }
 
-        // Effacer le résultat de la session après affichage
-        $session->remove('jeu_result');
-
         return $this->render('front/jeu/result.html.twig', [
             'jeu' => $jeu,
             'score' => $result['score'],
             'total' => $result['total'],
             'details' => $result['details'],
+        ]);
+    }
+
+    /**
+     * Exporter les résultats en PDF
+     */
+    #[Route('/{id}/pdf', name: 'app_front_jeu_pdf', methods: ['GET'])]
+    public function downloadPdf(Jeu $jeu, SessionInterface $session): Response
+    {
+        $result = $session->get('jeu_result');
+
+        if (!$result || $result['jeu_id'] !== $jeu->getId()) {
+            return $this->redirectToRoute('app_front_jeu_list');
+        }
+
+        // Configuration de Dompdf
+        $pdfOptions = new Options();
+        $pdfOptions->set('defaultFont', 'DejaVu Sans');
+        $pdfOptions->set('isHtml5ParserEnabled', true);
+        $pdfOptions->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($pdfOptions);
+
+        // Générer le HTML
+        $html = $this->renderView('front/jeu/pdf.html.twig', [
+            'jeu' => $jeu,
+            'score' => $result['score'],
+            'total' => $result['total'],
+            'details' => $result['details'],
+            'date' => new \DateTime(),
+        ]);
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // Envoyer le PDF au navigateur
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="Resultats_FocusKid_' . $jeu->getTitre() . '.pdf"'
         ]);
     }
 }
