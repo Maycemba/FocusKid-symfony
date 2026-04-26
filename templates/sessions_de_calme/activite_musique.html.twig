@@ -1,194 +1,1141 @@
 {% extends 'base-front.html.twig' %}
 
-{% block title %}Session de calme - Musique apaisante{% endblock %}
+{% block title %}Session de calme — Musique magique{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --kid-bg: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+    --kid-card-bg: #FFFFFF;
+    --kid-primary: #FF6B6B;
+    --kid-secondary: #4ECDC4;
+    --kid-accent: #FFE66D;
+    --kid-purple: #A8E6CF;
+    --kid-orange: #FFB347;
+    --kid-pink: #FF85B3;
+    --kid-dark: #2C3E50;
+    --kid-text: #2C3E50;
+    --kid-text-light: #7F8C8D;
+    --kid-border: #E8F0FE;
+    --kid-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    --radius-lg: 25px;
+    --radius-md: 18px;
+    --radius-sm: 12px;
+  }
+
+  .music-studio {
+    min-height: 100vh;
+    background: var(--kid-bg);
+    padding: 40px 20px 80px;
+    font-family: 'Poppins', sans-serif;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Animated music notes */
+  .music-studio::before {
+    content: '♪ ♫ ♩ ♪ ♬ ♪ ♫';
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 1.5rem;
+    letter-spacing: 12px;
+    opacity: 0.4;
+    z-index: 10;
+    pointer-events: none;
+    white-space: nowrap;
+    animation: floatNotes 3s ease-in-out infinite;
+  }
+
+  @keyframes floatNotes {
+    0%, 100% { transform: translateX(-50%) translateY(0px); }
+    50% { transform: translateX(-50%) translateY(-5px); }
+  }
+
+  /* Floating musical elements */
+  .music-note-1, .music-note-2, .music-note-3 {
+    position: fixed;
+    font-size: 2rem;
+    opacity: 0.2;
+    pointer-events: none;
+    animation: float 20s linear infinite;
+    z-index: 1;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(100vh) rotate(0deg); }
+    100% { transform: translateY(-100vh) rotate(360deg); }
+  }
+
+  .studio-header {
+    text-align: center;
+    margin-bottom: 48px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .studio-header h1 {
+    font-family: 'Comic Neue', cursive;
+    font-weight: 700;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    background: linear-gradient(135deg, #FFE66D, #FF6B6B, #4ECDC4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+    letter-spacing: -1px;
+    text-shadow: 3px 3px 12px rgba(0,0,0,0.2);
+  }
+
+  .studio-header p {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  }
+
+  /* Dual panel layout */
+  .dual-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto 40px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .panel {
+    background: var(--kid-card-bg);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    transition: all 0.4s ease;
+    cursor: pointer;
+    box-shadow: var(--kid-shadow);
+    border: 3px solid transparent;
+  }
+
+  .panel:hover {
+    transform: translateY(-8px);
+  }
+
+  .panel.active {
+    border-color: var(--kid-accent);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .panel-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    transition: all 0.4s;
+  }
+
+  .panel-library .panel-icon { 
+    background: linear-gradient(135deg, #FF6B6B, #FF85B3);
+    color: white;
+  }
+  
+  .panel-upload .panel-icon { 
+    background: linear-gradient(135deg, #4ECDC4, #45B7D1);
+    color: white;
+  }
+
+  .panel-title {
+    font-family: 'Comic Neue', cursive;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--kid-dark);
+  }
+
+  .panel-subtitle {
+    font-size: 0.8rem;
+    color: var(--kid-text-light);
+  }
+
+  /* Track list - colorful */
+  .track-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .track-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #F8F9FA, #FFFFFF);
+    border: 2px solid var(--kid-border);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .track-item:hover {
+    border-color: var(--kid-primary);
+    transform: translateX(6px);
+    box-shadow: 0 4px 12px rgba(255,107,107,0.2);
+  }
+
+  .track-item.playing {
+    border-color: var(--kid-secondary);
+    background: linear-gradient(135deg, #E8F8F5, #FFFFFF);
+    box-shadow: 0 4px 12px rgba(78,205,196,0.2);
+  }
+
+  .track-art {
+    width: 45px;
+    height: 45px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #FFE66D, #FFB347);
+  }
+
+  .track-info { flex: 1; min-width: 0; }
+
+  .track-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--kid-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .track-meta {
+    font-size: 0.7rem;
+    color: var(--kid-text-light);
+  }
+
+  .equalizer {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .eq-bar {
+    width: 3px;
+    background: linear-gradient(135deg, #FF6B6B, #FF85B3);
+    border-radius: 3px;
+    animation: bounceHappy 0.6s ease-in-out infinite alternate;
+  }
+  .eq-bar:nth-child(2) { animation-delay: 0.15s; background: linear-gradient(135deg, #4ECDC4, #45B7D1); }
+  .eq-bar:nth-child(3) { animation-delay: 0.3s; background: linear-gradient(135deg, #FFE66D, #FFB347); }
+
+  @keyframes bounceHappy {
+    from { height: 4px; }
+    to { height: 20px; }
+  }
+
+  /* Upload zone - fun */
+  .upload-zone {
+    border: 3px dashed var(--kid-secondary);
+    border-radius: var(--radius-lg);
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: linear-gradient(135deg, #F8F9FA, #FFFFFF);
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--kid-primary);
+    background: linear-gradient(135deg, #FFF5F5, #FFFFFF);
+    transform: scale(1.02);
+  }
+
+  .upload-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    display: inline-block;
+    animation: wiggle 2s ease-in-out infinite;
+  }
+
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(10deg); }
+    75% { transform: rotate(-10deg); }
+  }
+
+  .upload-zone p {
+    color: var(--kid-text);
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .upload-zone strong { 
+    color: var(--kid-primary);
+    font-weight: 700;
+  }
+
+  #fileInput { display: none; }
+
+  /* Main player - colorful */
+  .main-player {
+    max-width: 1000px;
+    margin: 0 auto 40px;
+    background: var(--kid-card-bg);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    box-shadow: var(--kid-shadow);
+    position: relative;
+    z-index: 2;
+  }
+
+  .now-playing-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: var(--kid-primary);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .now-playing-title {
+    font-family: 'Comic Neue', cursive;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--kid-dark);
+    margin-bottom: 25px;
+  }
+
+  /* Waveform canvas */
+  #waveformCanvas {
+    width: 100%;
+    height: 100px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #F8F9FA, #E8F0FE);
+    display: block;
+    margin-bottom: 20px;
+  }
+
+  /* Player controls */
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .ctrl-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 60px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all 0.3s;
+    flex-shrink: 0;
+    font-weight: bold;
+  }
+
+  .ctrl-play {
+    background: linear-gradient(135deg, #FF6B6B, #FF85B3);
+    color: white;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+  }
+
+  .ctrl-play:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255,107,107,0.5);
+  }
+
+  .ctrl-secondary {
+    background: linear-gradient(135deg, #4ECDC4, #45B7D1);
+    color: white;
+  }
+
+  .ctrl-secondary:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #45B7D1, #4ECDC4);
+  }
+
+  .progress-area {
+    flex: 1;
+    min-width: 150px;
+  }
+
+  .progress-slider {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    background: linear-gradient(90deg, #FF6B6B, #4ECDC4, #FFE66D);
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .progress-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--kid-primary);
+    cursor: pointer;
+    transition: transform 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  .progress-slider:hover::-webkit-slider-thumb {
+    transform: scale(1.3);
+  }
+
+  .time-display {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--kid-text-light);
+    margin-top: 8px;
+    font-weight: 500;
+  }
+
+  .volume-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    color: var(--kid-text);
+  }
+
+  .volume-slider {
+    width: 80px;
+    height: 6px;
+    -webkit-appearance: none;
+    background: linear-gradient(90deg, #4ECDC4, #45B7D1);
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--kid-secondary);
+    cursor: pointer;
+  }
+
+  /* Session area */
+  .session-area {
+    max-width: 1000px;
+    margin: 0 auto 40px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .timer-block {
+    background: linear-gradient(135deg, #FFE66D, #FFB347);
+    border-radius: var(--radius-lg);
+    padding: 25px 35px;
+    text-align: center;
+    box-shadow: var(--kid-shadow);
+  }
+
+  .timer-digits {
+    font-family: 'Comic Neue', cursive;
+    font-size: 3rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  }
+
+  .timer-label {
+    font-size: 0.8rem;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+
+  .session-controls {
+    background: var(--kid-card-bg);
+    border-radius: var(--radius-lg);
+    padding: 25px 30px;
+    box-shadow: var(--kid-shadow);
+  }
+
+  .duration-chips {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+  }
+
+  .chip {
+    padding: 8px 20px;
+    border-radius: 50px;
+    border: 2px solid var(--kid-border);
+    background: white;
+    color: var(--kid-text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .chip:hover { 
+    border-color: var(--kid-primary);
+    transform: translateY(-2px);
+  }
+  
+  .chip.active {
+    background: linear-gradient(135deg, #FF6B6B, #FF85B3);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 12px rgba(255,107,107,0.3);
+  }
+
+  .session-btns {
+    display: flex;
+    gap: 12px;
+  }
+
+  .session-btn {
+    padding: 12px 28px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .session-btn-start {
+    background: linear-gradient(135deg, #4ECDC4, #45B7D1);
+    color: white;
+    box-shadow: 0 4px 12px rgba(78,205,196,0.4);
+  }
+
+  .session-btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(78,205,196,0.5);
+  }
+
+  .session-btn-stop {
+    background: linear-gradient(135deg, #FF6B6B, #FF85B3);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255,107,107,0.3);
+  }
+
+  .session-btn-stop:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(255,107,107,0.4);
+  }
+
+  /* Feedback overlay */
+  .feedback-overlay {
+    display: none;
+    max-width: 1000px;
+    margin: 0 auto;
+    background: var(--kid-card-bg);
+    border-radius: var(--radius-lg);
+    padding: 45px;
+    box-shadow: var(--kid-shadow);
+    text-align: center;
+    animation: bounceIn 0.6s ease-out;
+    position: relative;
+    z-index: 2;
+  }
+
+  @keyframes bounceIn {
+    0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+    60% { opacity: 1; transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+
+  .feedback-overlay h3 {
+    font-family: 'Comic Neue', cursive;
+    font-size: 2rem;
+    color: var(--kid-primary);
+    margin-bottom: 10px;
+  }
+
+  .feedback-overlay p {
+    color: var(--kid-text-light);
+    margin-bottom: 30px;
+    font-size: 1rem;
+  }
+
+  .star-row {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+
+  .star-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 2.5rem;
+    transition: all 0.2s;
+    color: #FFD700;
+    line-height: 1;
+  }
+
+  .star-btn:hover { 
+    transform: scale(1.2); 
+  }
+
+  .note-field {
+    width: 100%;
+    background: linear-gradient(135deg, #F8F9FA, #FFFFFF);
+    border: 2px solid var(--kid-border);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    color: var(--kid-text);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    resize: vertical;
+    margin-bottom: 25px;
+    outline: none;
+    transition: all 0.3s;
+  }
+
+  .note-field:focus { 
+    border-color: var(--kid-primary);
+    box-shadow: 0 0 0 3px rgba(255,107,107,0.1);
+  }
+
+  .submit-btn {
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #FF6B6B, #FF85B3);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+  }
+
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+  }
+
+  @media (max-width: 768px) {
+    .dual-panel { 
+      grid-template-columns: 1fr; 
+      gap: 20px;
+    }
+    .session-area { 
+      grid-template-columns: 1fr; 
+    }
+    .player-controls { 
+      gap: 10px; 
+    }
+    .ctrl-play {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+    }
+    .volume-control { 
+      display: none; 
+    }
+  }
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="container-xxl py-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div class="bg-light rounded p-5 wow fadeInUp">
-                    <div class="text-center mb-4">
-                        <div class="activity-icon bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
-                            <i class="fas fa-music fa-3x text-white"></i>
-                        </div>
-                        <h2>Musique apaisante</h2>
-                        <p class="text-muted">Ferme les yeux et écoute cette musique relaxante</p>
-                    </div>
+<div class="music-studio">
+  <!-- Floating music notes -->
+  <div class="music-note-1" style="left: 5%; animation-duration: 25s;">♪</div>
+  <div class="music-note-2" style="left: 15%; animation-duration: 30s; animation-delay: 2s;">♫</div>
+  <div class="music-note-3" style="left: 85%; animation-duration: 28s; animation-delay: 4s;">♩</div>
+  <div class="music-note-1" style="left: 75%; animation-duration: 22s; animation-delay: 6s;">♪</div>
+  <div class="music-note-2" style="left: 45%; animation-duration: 35s; animation-delay: 1s;">♬</div>
 
-                    <!-- Lecteur audio -->
-                    <div class="audio-player text-center mb-5">
-                        <div class="bg-white rounded p-4">
-                            <div class="music-visualizer mb-4">
-                                <canvas id="visualizer" width="400" height="100" style="width: 100%; max-width: 400px; height: auto;"></canvas>
-                            </div>
-                            <audio id="musicAudio" controls class="w-100">
-                                <source src="{{ asset('audio/calm-music.mp3') }}" type="audio/mpeg">
-                                Ton navigateur ne supporte pas l'élément audio.
-                            </audio>
-                            <div class="mt-3">
-                                <p class="text-muted small">🎵 Musique douce pour se détendre</p>
-                            </div>
-                        </div>
-                    </div>
+  <div class="studio-header">
+    <h1>🎵 Studio Musical Magique 🎵</h1>
+    <p>Choisis ta musique préférée ou ajoute la tienne !</p>
+  </div>
 
-                    <!-- Timer de session -->
-                    <div class="timer-section text-center mb-5">
-                        <h4>⏱️ Durée de la session</h4>
-                        <div class="d-flex justify-content-center gap-3 mb-3">
-                            <button class="btn btn-outline-primary timer-btn" data-time="2">2 min</button>
-                            <button class="btn btn-outline-primary timer-btn" data-time="5">5 min</button>
-                            <button class="btn btn-outline-primary timer-btn" data-time="10">10 min</button>
-                            <button class="btn btn-outline-primary timer-btn" data-time="15">15 min</button>
-                        </div>
-                        <div class="timer-display bg-white rounded p-3 d-inline-block">
-                            <span id="timer" class="display-4 fw-bold">00:00</span>
-                        </div>
-                        <div class="mt-3">
-                            <button id="startTimer" class="btn btn-primary rounded-pill px-4">
-                                <i class="fas fa-play me-2"></i>Démarrer la session
-                            </button>
-                            <button id="stopTimer" class="btn btn-danger rounded-pill px-4" style="display: none;">
-                                <i class="fas fa-stop me-2"></i>Terminer
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Feedback après session -->
-                    <div id="feedbackSection" style="display: none;">
-                        <div class="feedback-form bg-white rounded p-4">
-                            <h4 class="text-center mb-4">Comment te sens-tu ?</h4>
-                            <form id="sessionFeedbackForm" method="post" action="{{ path('app_session_calme_save') }}">
-                                <input type="hidden" name="type_activite" value="musique">
-                                <input type="hidden" name="duree_prevue" id="dureePrevue">
-                                <input type="hidden" name="duree_reelle" id="dureeReelle">
-                                
-                                <div class="mb-4">
-                                    <label class="form-label d-block text-center mb-3">Donne une note à cette activité :</label>
-                                    <div class="feedback-stars text-center">
-                                        {% for i in 1..5 %}
-                                        <i class="far fa-star fa-2x star" data-value="{{ i }}"></i>
-                                        {% endfor %}
-                                    </div>
-                                    <input type="hidden" name="feedback_enfant" id="feedbackValue">
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label class="form-label">Un petit mot pour tes parents ? (optionnel)</label>
-                                    <textarea name="note_parent" class="form-control" rows="3" placeholder="Ex: Je me sens mieux maintenant..."></textarea>
-                                </div>
-                                
-                                <div class="text-center">
-                                    <button type="submit" class="btn btn-success rounded-pill px-5 py-2">
-                                        Terminer et sauvegarder <i class="fas fa-check ms-2"></i>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <!-- DUAL PANEL -->
+  <div class="dual-panel">
+    <!-- Panel Bibliothèque -->
+    <div class="panel panel-library active" id="panelLib">
+      <div class="panel-header">
+        <div class="panel-icon">🎧</div>
+        <div>
+          <div class="panel-title">Ma Bibliothèque</div>
+          <div class="panel-subtitle">Musiques prêtes à écouter</div>
         </div>
+      </div>
+      <div class="panel-content">
+        <div class="track-list">
+          <div class="track-item playing" data-src="{{ asset('audio/calm-music.mp3') }}" data-title="Mélodie des nuages" onclick="selectTrack(this)">
+            <div class="track-art">☁️</div>
+            <div class="track-info">
+              <div class="track-name">Mélodie des nuages</div>
+              <div class="track-meta">Ambiant · Calme · 3:24</div>
+            </div>
+            <div class="equalizer">
+              <div class="eq-bar" style="height:8px"></div>
+              <div class="eq-bar" style="height:14px"></div>
+              <div class="eq-bar" style="height:6px"></div>
+            </div>
+          </div>
+          <div class="track-item" data-src="{{ asset('audio/nature.mp3') }}" data-title="Forêt enchantée" onclick="selectTrack(this)">
+            <div class="track-art">🌿</div>
+            <div class="track-info">
+              <div class="track-name">Forêt enchantée</div>
+              <div class="track-meta">Nature · Sons doux · 4:12</div>
+            </div>
+            <div class="track-duration"></div>
+          </div>
+          <div class="track-item" data-src="{{ asset('audio/ocean.mp3') }}" data-title="Vagues de l'océan" onclick="selectTrack(this)">
+            <div class="track-art">🌊</div>
+            <div class="track-info">
+              <div class="track-name">Vagues de l'océan</div>
+              <div class="track-meta">Mer · Relaxant · 5:08</div>
+            </div>
+            <div class="track-duration"></div>
+          </div>
+          <div class="track-item" data-src="{{ asset('audio/piano.mp3') }}" data-title="Piano magique" onclick="selectTrack(this)">
+            <div class="track-art">🎹</div>
+            <div class="track-info">
+              <div class="track-name">Piano magique</div>
+              <div class="track-meta">Instrumental · Sérénité · 3:45</div>
+            </div>
+            <div class="track-duration"></div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Panel Upload -->
+    <div class="panel panel-upload" id="panelUpload">
+      <div class="panel-header">
+        <div class="panel-icon">🎵</div>
+        <div>
+          <div class="panel-title">Ajouter ma musique</div>
+          <div class="panel-subtitle">Partage ta chanson préférée</div>
+        </div>
+      </div>
+      <div class="panel-content">
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-icon">🎸</div>
+          <p><strong>📂 Clique pour choisir un fichier</strong><br>ou glisse-dépose ici<br><span style="font-size:0.7rem">🎵 MP3, WAV, OGG · Max 10 Mo</span></p>
+          <input type="file" id="fileInput" accept="audio/*">
+        </div>
+        <div class="upload-progress" id="uploadProgress" style="display:none">
+          <p style="font-size:0.8rem; color:var(--kid-text); margin-bottom:8px">✨ Chargement en cours...</p>
+          <div style="height: 6px; background: var(--kid-border); border-radius: 6px; overflow: hidden;">
+            <div class="progress-bar-fill" id="progressFill" style="height:100%; background: linear-gradient(90deg, #FF6B6B, #4ECDC4); border-radius: 6px; transition: width 0.3s; width:0%"></div>
+          </div>
+        </div>
+        <div class="uploaded-track" id="uploadedTrack" style="display:none; margin-top: 20px;">
+          <div style="padding: 12px; background: linear-gradient(135deg, #E8F8F5, #FFFFFF); border-radius: var(--radius-md); display: flex; align-items: center; gap: 12px;">
+            <div style="font-size: 24px;">🎵</div>
+            <div style="flex:1">
+              <div class="track-name" id="uploadedName" style="font-weight: 600;">—</div>
+              <div style="font-size:0.7rem; color: var(--kid-text-light);">Nouveau titre</div>
+            </div>
+            <button onclick="playUploaded()" style="background: linear-gradient(135deg, #4ECDC4, #45B7D1); border:none; border-radius:50px; color:white; padding:8px 20px; font-size:0.85rem; font-weight:600; cursor:pointer;">▶ Lire</button>
+          </div>
+        </div>
+
+        <div style="margin-top: 25px; padding: 15px; background: linear-gradient(135deg, #FFF5F5, #FFFFFF); border-radius: var(--radius-md); border-left: 4px solid var(--kid-primary);">
+          <p style="font-size:0.75rem; color: var(--kid-primary); margin-bottom: 5px; font-weight:600;">⚙️ Info pratique</p>
+          <p style="font-size:0.7rem; color: var(--kid-text-light); margin:0; line-height:1.5;">
+            ✨ Ta musique sera sauvegardée et pourra être réécoutée plus tard !
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN PLAYER -->
+  <div class="main-player" id="mainPlayer">
+    <div class="now-playing-label">🎵 EN CE MOMENT</div>
+    <div class="now-playing-title" id="playerTitle">Mélodie des nuages</div>
+
+    <canvas id="waveformCanvas" height="100"></canvas>
+
+    <audio id="mainAudio" preload="none">
+      <source src="{{ asset('audio/calm-music.mp3') }}" type="audio/mpeg">
+    </audio>
+
+    <div class="player-controls">
+      <button class="ctrl-btn ctrl-secondary" onclick="seekRelative(-10)">⏪ -10s</button>
+      <button class="ctrl-btn ctrl-play" id="playPauseBtn" onclick="togglePlayPause()">▶</button>
+      <button class="ctrl-btn ctrl-secondary" onclick="seekRelative(10)">+10s ⏩</button>
+
+      <div class="progress-area">
+        <input type="range" class="progress-slider" id="progressSlider" min="0" max="100" value="0" oninput="seekTo(this.value)">
+        <div class="time-display">
+          <span id="currentTime">0:00</span>
+          <span id="totalTime">0:00</span>
+        </div>
+      </div>
+
+      <div class="volume-control">
+        <span>🔊</span>
+        <input type="range" class="volume-slider" min="0" max="1" step="0.05" value="0.7" oninput="setVolume(this.value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- SESSION AREA -->
+  <div class="session-area">
+    <div class="timer-block">
+      <div class="timer-digits" id="timerDisplay">00:00</div>
+      <div class="timer-label">⏰ Temps de calme</div>
+    </div>
+    <div class="session-controls">
+      <p style="font-size:0.85rem; color:var(--kid-text); margin-bottom:12px; font-weight:600;">⏱️ Choisis ta durée :</p>
+      <div class="duration-chips">
+        <button class="chip" data-time="2" onclick="selectDuration(this)">☕ 2 min</button>
+        <button class="chip active" data-time="5" onclick="selectDuration(this)">✨ 5 min</button>
+        <button class="chip" data-time="10" onclick="selectDuration(this)">🌟 10 min</button>
+        <button class="chip" data-time="15" onclick="selectDuration(this)">⭐ 15 min</button>
+      </div>
+      <div class="session-btns">
+        <button class="session-btn session-btn-start" id="btnStart" onclick="startSession()">🎬 Commencer la session</button>
+        <button class="session-btn session-btn-stop" id="btnStop" style="display:none" onclick="stopSession()">✓ Terminer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEEDBACK FORM -->
+  <div class="feedback-overlay" id="feedbackOverlay">
+    <h3>🎉 Bravo pour ta session !</h3>
+    <p>Comment te sens-tu après cette musique ?</p>
+    <form method="post" action="{{ path('app_session_calme_save') }}">
+      <input type="hidden" name="type_activite" value="musique">
+      <input type="hidden" name="duree_prevue" id="fDureePrevue">
+      <input type="hidden" name="duree_reelle" id="fDureeReelle">
+      <input type="hidden" name="feedback_enfant" id="fFeedback">
+
+      <div class="star-row">
+        {% for i in 1..5 %}
+        <button type="button" class="star-btn" data-val="{{ i }}" onclick="rateStar({{ i }})">☆</button>
+        {% endfor %}
+      </div>
+
+      <textarea class="note-field" name="note_parent" rows="3" placeholder="📝 Écris un petit mot... (optionnel)"></textarea>
+
+      <button type="submit" class="submit-btn">✨ Sauvegarder ma session ✨</button>
+    </form>
+  </div>
 </div>
 {% endblock %}
 
 {% block javascripts %}
 {{ parent() }}
 <script>
-    let timerInterval;
-    let timeLeft = 0;
-    let startTime;
-    let endTime;
+const audio = document.getElementById('mainAudio');
+const canvas = document.getElementById('waveformCanvas');
+const ctx2d = canvas.getContext('2d');
+let sessionTimer, sessionSeconds = 0, chosenDuration = 5 * 60;
+let sessionStartTime;
+let audioCtx, analyser, source, animFrameId;
+let isPlaying = false;
+let lastSelectedTime = 0;
 
-    // Gestion des boutons de durée
-    document.querySelectorAll('.timer-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            timeLeft = parseInt(this.dataset.time) * 60;
-            updateTimerDisplay();
-        });
-    });
+// ── WAVEFORM ──────────────────────────────────────────────
+function initAudioContext() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 256;
+  source = audioCtx.createMediaElementSource(audio);
+  source.connect(analyser);
+  analyser.connect(audioCtx.destination);
+}
 
-    // Démarrer la session
-    document.getElementById('startTimer').addEventListener('click', function() {
-        if (timeLeft <= 0) {
-            alert('Veuillez choisir une durée');
-            return;
-        }
-        
-        startTime = Date.now();
-        document.getElementById('dureePrevue').value = timeLeft / 60;
-        
-        // Démarrer la musique
-        const audio = document.getElementById('musicAudio');
-        audio.play();
-        
-        // Démarrer le timer
-        timerInterval = setInterval(function() {
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                endSession();
-            } else {
-                timeLeft--;
-                updateTimerDisplay();
-            }
-        }, 1000);
-        
-        this.style.display = 'none';
-        document.getElementById('stopTimer').style.display = 'inline-block';
-    });
+function drawWaveform() {
+  const W = canvas.offsetWidth;
+  canvas.width = W;
+  canvas.height = 100;
 
-    // Terminer manuellement
-    document.getElementById('stopTimer').addEventListener('click', function() {
-        if (confirm('Veux-tu vraiment terminer la session maintenant ?')) {
-            clearInterval(timerInterval);
-            endSession();
-        }
-    });
+  if (!analyser) {
+    drawHappyBars(W);
+    return;
+  }
 
-    function endSession() {
-        endTime = Date.now();
-        const dureeReelle = Math.round((endTime - startTime) / 1000 / 60);
-        document.getElementById('dureeReelle').value = dureeReelle;
-        
-        // Arrêter la musique
-        const audio = document.getElementById('musicAudio');
-        audio.pause();
-        audio.currentTime = 0;
-        
-        // Afficher le formulaire de feedback
-        document.getElementById('feedbackSection').style.display = 'block';
-        document.getElementById('startTimer').style.display = 'none';
-        document.getElementById('stopTimer').style.display = 'none';
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+  analyser.getByteFrequencyData(dataArray);
+
+  ctx2d.clearRect(0, 0, W, 100);
+
+  const barWidth = Math.max(2, (W / bufferLength) * 1.5);
+  let x = 0;
+
+  for (let i = 0; i < bufferLength; i++) {
+    const barHeight = (dataArray[i] / 255) * 80;
+    // Couleurs arc-en-ciel pour l'égaliseur
+    const colors = ['#FF6B6B', '#FF85B3', '#FFB347', '#FFE66D', '#4ECDC4', '#45B7D1'];
+    const colorIndex = i % colors.length;
+    ctx2d.fillStyle = colors[colorIndex];
+    ctx2d.fillRect(x, 100 - barHeight, barWidth - 1, barHeight);
+    x += barWidth;
+  }
+
+  animFrameId = requestAnimationFrame(drawWaveform);
+}
+
+function drawHappyBars(W) {
+  ctx2d.clearRect(0, 0, W, 100);
+  const bars = 60;
+  const bw = W / bars;
+  const time = Date.now() * 0.003;
+  
+  for (let i = 0; i < bars; i++) {
+    const h = 8 + Math.sin(time + i * 0.15) * 10;
+    const colors = ['#FF6B6B', '#FF85B3', '#FFB347', '#FFE66D', '#4ECDC4', '#45B7D1'];
+    const colorIndex = i % colors.length;
+    ctx2d.fillStyle = colors[colorIndex];
+    ctx2d.fillRect(i * bw, 100 - h, bw - 2, h);
+  }
+  animFrameId = requestAnimationFrame(() => drawHappyBars(W));
+}
+
+drawHappyBars(canvas.offsetWidth || 600);
+
+// ── PLAYER ────────────────────────────────────────────────
+function togglePlayPause() {
+  if (!audioCtx) initAudioContext();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  if (audio.paused) {
+    audio.play();
+    document.getElementById('playPauseBtn').textContent = '⏸';
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+    drawWaveform();
+    isPlaying = true;
+  } else {
+    audio.pause();
+    document.getElementById('playPauseBtn').textContent = '▶';
+    isPlaying = false;
+  }
+}
+
+function seekRelative(sec) {
+  if (audio.duration) {
+    audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + sec));
+  }
+}
+
+function seekTo(val) {
+  if (audio.duration) audio.currentTime = (val / 100) * audio.duration;
+}
+
+function setVolume(val) {
+  audio.volume = val;
+}
+
+function formatTime(sec) {
+  if (isNaN(sec)) return '0:00';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+audio.addEventListener('timeupdate', () => {
+  if (!audio.duration) return;
+  const percent = (audio.currentTime / audio.duration) * 100;
+  document.getElementById('progressSlider').value = percent;
+  document.getElementById('currentTime').textContent = formatTime(audio.currentTime);
+});
+
+audio.addEventListener('loadedmetadata', () => {
+  document.getElementById('totalTime').textContent = formatTime(audio.duration);
+});
+
+audio.addEventListener('ended', () => {
+  document.getElementById('playPauseBtn').textContent = '▶';
+  isPlaying = false;
+});
+
+// ── TRACK SELECTION ────────────────────────────────────────
+function selectTrack(el) {
+  document.querySelectorAll('.track-item').forEach(t => t.classList.remove('playing'));
+  el.classList.add('playing');
+  const src = el.dataset.src;
+  const title = el.dataset.title;
+  document.getElementById('playerTitle').textContent = title;
+  if (src !== audio.src) {
+    audio.src = src;
+    audio.load();
+    if (isPlaying) {
+      setTimeout(() => audio.play(), 100);
     }
+  }
+}
 
-    function updateTimerDisplay() {
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        document.getElementById('timer').textContent = 
-            `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+// ── UPLOAD ────────────────────────────────────────────────
+const fileInput = document.getElementById('fileInput');
+const uploadZone = document.getElementById('uploadZone');
+
+fileInput.addEventListener('change', handleFileUpload);
+
+uploadZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  uploadZone.classList.add('drag-over');
+});
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('audio/')) processUploadedFile(file);
+});
+
+function handleFileUpload(e) {
+  const file = e.target.files[0];
+  if (file) processUploadedFile(file);
+}
+
+function processUploadedFile(file) {
+  const progressDiv = document.getElementById('uploadProgress');
+  const fill = document.getElementById('progressFill');
+  progressDiv.style.display = 'block';
+
+  let p = 0;
+  const interval = setInterval(() => {
+    p += Math.random() * 20 + 5;
+    if (p >= 100) { 
+      p = 100; 
+      clearInterval(interval); 
+      setTimeout(() => showUploaded(file), 300);
     }
+    fill.style.width = p + '%';
+  }, 100);
+}
 
-    // Gestion des étoiles de feedback
-    document.querySelectorAll('.star').forEach(star => {
-        star.addEventListener('click', function() {
-            const value = this.dataset.value;
-            document.getElementById('feedbackValue').value = value;
-            
-            document.querySelectorAll('.star').forEach(s => {
-                if(s.dataset.value <= value) {
-                    s.classList.remove('far');
-                    s.classList.add('fas');
-                    s.style.color = '#ffc107';
-                } else {
-                    s.classList.remove('fas');
-                    s.classList.add('far');
-                    s.style.color = '#ddd';
-                }
-            });
-        });
-    });
+function showUploaded(file) {
+  document.getElementById('uploadProgress').style.display = 'none';
+  const track = document.getElementById('uploadedTrack');
+  track.style.display = 'block';
+  document.getElementById('uploadedName').textContent = file.name.replace(/\.[^.]+$/, '');
+  
+  const url = URL.createObjectURL(file);
+  audio.src = url;
+  document.getElementById('playerTitle').textContent = file.name.replace(/\.[^.]+$/, '');
+  
+  setTimeout(() => {
+    track.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 100);
+}
+
+function playUploaded() {
+  if (!audioCtx) initAudioContext();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  audio.play();
+  document.getElementById('playPauseBtn').textContent = '⏸';
+  if (animFrameId) cancelAnimationFrame(animFrameId);
+  drawWaveform();
+  isPlaying = true;
+}
+
+// ── DURATION CHIPS ────────────────────────────────────────
+function selectDuration(el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  chosenDuration = parseInt(el.dataset.time) * 60;
+}
+
+// ── SESSION ───────────────────────────────────────────────
+function startSession() {
+  if (sessionTimer) clearInterval(sessionTimer);
+  
+  sessionStartTime = Date.now();
+  sessionSeconds = chosenDuration;
+  document.getElementById('fDureePrevue').value = chosenDuration / 60;
+  document.getElementById('btnStart').style.display = 'none';
+  document.getElementById('btnStop').style.display = 'flex';
+
+  if (!isPlaying) togglePlayPause();
+
+  sessionTimer = setInterval(() => {
+    if (sessionSeconds > 0) {
+      sessionSeconds--;
+      const m = Math.floor(sessionSeconds / 60);
+      const s = sessionSeconds % 60;
+      document.getElementById('timerDisplay').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      if (sessionSeconds <= 0) { 
+        clearInterval(sessionTimer); 
+        stopSession(); 
+      }
+    }
+  }, 1000);
+}
+
+function stopSession() {
+  clearInterval(sessionTimer);
+  audio.pause();
+  document.getElementById('playPauseBtn').textContent = '▶';
+  isPlaying = false;
+  
+  const dur = Math.round((Date.now() - sessionStartTime) / 60000);
+  const finalDur = dur < 1 ? 1 : dur;
+  document.getElementById('fDureeReelle').value = finalDur;
+  
+  document.getElementById('btnStop').style.display = 'none';
+  document.getElementById('feedbackOverlay').style.display = 'block';
+  document.getElementById('feedbackOverlay').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── STARS ─────────────────────────────────────────────────
+function rateStar(val) {
+  document.getElementById('fFeedback').value = val;
+  document.querySelectorAll('.star-btn').forEach((s, idx) => {
+    if (idx < val) {
+      s.textContent = '⭐';
+      s.classList.add('lit');
+    } else {
+      s.textContent = '☆';
+      s.classList.remove('lit');
+    }
+  });
+}
+
+// Initialisation
+audio.volume = 0.7;
 </script>
 {% endblock %}
