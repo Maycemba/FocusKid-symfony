@@ -47,20 +47,20 @@
                     <ul class="dropdown-menu dropdown-menu-end w-100 shadow border-0 mt-2">
                         <li>
                             <a class="dropdown-item {{ current_sort == 'asc' ? 'active' : '' }}" 
-                               href="{{ path('app_front_jeu_list', {search: current_search, sort: 'asc'}) }}">
+                               href="{{ path('app_front_jeu_list', {search: current_search, sortBy: 'asc'}) }}">
                                 <i class="fa fa-sort-alpha-down me-2"></i>Ordre alphabétique (A-Z)
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item {{ current_sort == 'desc' ? 'active' : '' }}" 
-                               href="{{ path('app_front_jeu_list', {search: current_search, sort: 'desc'}) }}">
+                               href="{{ path('app_front_jeu_list', {search: current_search, sortBy: 'desc'}) }}">
                                 <i class="fa fa-sort-alpha-up me-2"></i>Ordre inverse (Z-A)
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item {{ current_sort == 'niveau' ? 'active' : '' }}" 
-                               href="{{ path('app_front_jeu_list', {search: current_search, sort: 'niveau'}) }}">
+                               href="{{ path('app_front_jeu_list', {search: current_search, sortBy: 'niveau'}) }}">
                                 <i class="fa fa-layer-group me-2"></i>Par Niveau d'apprentissage
                             </a>
                         </li>

@@ -24,7 +24,7 @@ final class FrontJeuController extends AbstractController
     public function list(Request $request, JeuRepository $jeuRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search');
-        $sort = $request->query->get('sort', 'asc');
+        $sortBy = $request->query->get('sortBy', 'asc');
 
         $queryBuilder = $jeuRepository->createQueryBuilder('j');
 
@@ -33,11 +33,11 @@ final class FrontJeuController extends AbstractController
                          ->setParameter('search', '%' . $search . '%');
         }
 
-        if ($sort === 'asc') {
+        if ($sortBy === 'asc') {
             $queryBuilder->orderBy('j.titre', 'ASC');
-        } elseif ($sort === 'desc') {
+        } elseif ($sortBy === 'desc') {
             $queryBuilder->orderBy('j.titre', 'DESC');
-        } elseif ($sort === 'niveau') {
+        } elseif ($sortBy === 'niveau') {
             $queryBuilder->orderBy('j.niveau', 'ASC');
         }
 
@@ -50,7 +50,7 @@ final class FrontJeuController extends AbstractController
         return $this->render('front/jeu/list.html.twig', [
             'jeus' => $pagination,
             'current_search' => $search,
-            'current_sort' => $sort,
+            'current_sort' => $sortBy,
         ]);
     }
 
