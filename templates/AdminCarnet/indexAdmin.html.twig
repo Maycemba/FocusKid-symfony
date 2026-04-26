@@ -75,7 +75,6 @@
             <a href="{{ path('admin_carnet_stats') }}" class="btn btn-outline-success me-2">
                 📊 Statistiques
             </a>
-            <a href="{{ path('admin_carnet_index') }}" class="btn btn-outline-secondary">⟳ Actualiser</a>
         </div>
     </div>
 
@@ -98,7 +97,7 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label fw-semibold">✅ Travail terminé</label>
+                <label class="form-label fw-semibold">✅ Travail </label>
                 <select name="travail_termine" class="form-select">
                     <option value="">Tous</option>
                     <option value="1" {% if travail_termine == '1' %}selected{% endif %}>Terminé</option>

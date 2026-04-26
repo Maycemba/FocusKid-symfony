@@ -1,0 +1,41 @@
+{# templates/carnet_educatif/whatsapp_notification.html.twig #}
+<div style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; max-width: 350px; animation: slideInWhatsApp 0.3s ease-out;">
+    <div style="background: #075E54; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); overflow: hidden;">
+        <!-- En-tête WhatsApp -->
+        <div style="background: #128C7E; padding: 12px 15px; display: flex; align-items: center; gap: 10px;">
+            <div style="background: #25D366; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fab fa-whatsapp" style="color: white; font-size: 20px;"></i>
+            </div>
+            <div style="color: white;">
+                <div style="font-weight: bold; font-size: 14px;">FocusKid</div>
+                <div style="font-size: 11px; opacity: 0.8;">Notification WhatsApp</div>
+            </div>
+            <button onclick="this.closest('div').remove()" style="margin-left: auto; background: none; border: none; color: white; cursor: pointer; font-size: 18px;">✕</button>
+        </div>
+        <!-- Corps du message -->
+        <div style="background: white; padding: 15px;">
+            <div style="background: #DCF8C6; padding: 10px 12px; border-radius: 10px; display: inline-block; max-width: 100%;">
+                <div style="font-size: 14px; line-height: 1.4; color: #111b21; white-space: pre-line;">
+                    {{ message|raw }}
+                </div>
+                <div style="font-size: 10px; color: #667781; text-align: right; margin-top: 5px;">
+                    {{ 'now'|date('H:i') }}
+                    <i class="fas fa-check-double" style="margin-left: 3px;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes slideInWhatsApp {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+</style>

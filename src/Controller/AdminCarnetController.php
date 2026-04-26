@@ -61,14 +61,16 @@ class AdminCarnetController extends AbstractController
         ]);
     }
 
-    #[Route('/statistiques', name: 'stats', methods: ['GET'])]  // ← Route corrigée
+    #[Route('/statistiques', name: 'stats', methods: ['GET'])]
     public function stats(
         CarnetEducatifRepository $carnetRepo,
         CommentaireRepository $commentaireRepo
     ): Response {
+        // Statistiques de base
         $totalCarnets = $carnetRepo->count([]);
         $totalCommentaires = $commentaireRepo->count([]);
         
+        // Distribution par matière
         $statsParMatiere = $carnetRepo->createQueryBuilder('c')
             ->select('c.matiere, COUNT(c.id) as count')
             ->groupBy('c.matiere')
@@ -80,6 +82,7 @@ class AdminCarnetController extends AbstractController
             $statsParMatiereArray[$stat['matiere']] = $stat['count'];
         }
         
+        // Distribution des niveaux de concentration
         $statsConcentration = [];
         for ($i = 1; $i <= 5; $i++) {
             $count = $carnetRepo->createQueryBuilder('c')
@@ -91,6 +94,57 @@ class AdminCarnetController extends AbstractController
             $statsConcentration[$i] = $count;
         }
         
+        // Distribution des niveaux d'agitation
+        $statsAgitation = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $count = $carnetRepo->createQueryBuilder('c')
+                ->select('COUNT(c.id)')
+                ->where('c.niveau_agitation = :niveau')
+                ->setParameter('niveau', $i)
+                ->getQuery()
+                ->getSingleScalarResult();
+            $statsAgitation[$i] = $count;
+        }
+        
+        // Distribution des niveaux d'autonomie
+        $statsAutonomie = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $count = $carnetRepo->createQueryBuilder('c')
+                ->select('COUNT(c.id)')
+                ->where('c.niveau_autonomie = :niveau')
+                ->setParameter('niveau', $i)
+                ->getQuery()
+                ->getSingleScalarResult();
+            $statsAutonomie[$i] = $count;
+        }
+        
+        // Statistiques par mois
+        $statsParMois = $carnetRepo->createQueryBuilder('c')
+            ->select('SUBSTRING(c.date_etude, 1, 7) as mois, COUNT(c.id) as count')
+            ->groupBy('mois')
+            ->orderBy('mois', 'DESC')
+            ->setMaxResults(6)
+            ->getQuery()
+            ->getResult();
+        
+        $statsParMoisArray = [];
+        foreach ($statsParMois as $stat) {
+            $statsParMoisArray[$stat['mois']] = $stat['count'];
+        }
+        
+        // Niveaux de difficulté
+        $statsDifficulte = $carnetRepo->createQueryBuilder('c')
+            ->select('c.niveau_difficulte, COUNT(c.id) as count')
+            ->groupBy('c.niveau_difficulte')
+            ->getQuery()
+            ->getResult();
+        
+        $statsDifficulteArray = [];
+        foreach ($statsDifficulte as $stat) {
+            $statsDifficulteArray[$stat['niveau_difficulte']] = $stat['count'];
+        }
+        
+        // Travail terminé vs non terminé
         $totalTermine = $carnetRepo->createQueryBuilder('c')
             ->select('COUNT(c.id)')
             ->where('c.travail_termine = :termine')
@@ -100,14 +154,66 @@ class AdminCarnetController extends AbstractController
         
         $tauxTermine = $totalCarnets > 0 ? round(($totalTermine / $totalCarnets) * 100, 2) : 0;
         
+        // Moyennes
+        $moyenneConcentration = $carnetRepo->createQueryBuilder('c')
+            ->select('AVG(c.niveau_concentration)')
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0;
+        
+        $moyenneAgitation = $carnetRepo->createQueryBuilder('c')
+            ->select('AVG(c.niveau_agitation)')
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0;
+        
+        $moyenneAutonomie = $carnetRepo->createQueryBuilder('c')
+            ->select('AVG(c.niveau_autonomie)')
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0;
+        
+        // Interruptions moyennes
+        $moyenneInterruptions = $carnetRepo->createQueryBuilder('c')
+            ->select('AVG(c.nombre_interruptions)')
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0;
+        
+        // Top matières avec meilleure concentration
+        $topMatieres = $carnetRepo->createQueryBuilder('c')
+            ->select('c.matiere, AVG(c.niveau_concentration) as avg_concentration')
+            ->groupBy('c.matiere')
+            ->orderBy('avg_concentration', 'DESC')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+        
+        $topMatieresArray = [];
+        foreach ($topMatieres as $stat) {
+            $topMatieresArray[$stat['matiere']] = round($stat['avg_concentration'], 2);
+        }
+        
         return $this->render('AdminCarnet/stats.html.twig', [
+            // Statistiques de base
             'total_carnets' => $totalCarnets,
             'total_commentaires' => $totalCommentaires,
-            'stats_par_matiere' => $statsParMatiereArray,
-            'stats_concentration' => $statsConcentration,
             'taux_termine' => $tauxTermine,
             'total_termine' => $totalTermine,
             'total_non_termine' => $totalCarnets - $totalTermine,
+            
+            // Distributions
+            'stats_par_matiere' => $statsParMatiereArray,
+            'stats_concentration' => $statsConcentration,
+            'stats_agitation' => $statsAgitation,
+            'stats_autonomie' => $statsAutonomie,
+            'stats_par_mois' => $statsParMoisArray,
+            'stats_difficulte' => $statsDifficulteArray,
+            
+            // Moyennes
+            'moyenne_concentration' => round($moyenneConcentration, 2),
+            'moyenne_agitation' => round($moyenneAgitation, 2),
+            'moyenne_autonomie' => round($moyenneAutonomie, 2),
+            'moyenne_interruptions' => round($moyenneInterruptions, 2),
+            
+            // Top matières
+            'top_matieres' => $topMatieresArray,
         ]);
     }
 
