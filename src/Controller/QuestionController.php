@@ -26,13 +26,31 @@ final class QuestionController extends AbstractController
     #[Route('/new/{jeu_id}', name: 'app_question_new', methods: ['GET', 'POST'], defaults: ['jeu_id' => null])]
     public function new(Request $request, EntityManagerInterface $entityManager, JeuRepository $jeuRepository, $jeu_id = null): Response
     {
-        $question = new Question();
+        $jeu = $jeu_id ? $jeuRepository->find($jeu_id) : null;
         
-        if ($jeu_id) {
-            $jeu = $jeuRepository->find($jeu_id);
-            if ($jeu) {
-                $question->setJeu($jeu);
+        // On gère la soumission multiple manuelle
+        if ($request->isMethod('POST') && $request->request->has('multi_questions')) {
+            $questionsData = $request->request->all('questions');
+            foreach ($questionsData as $data) {
+                if (!empty($data['question_text'])) {
+                    $question = new Question();
+                    $question->setJeu($jeu);
+                    $question->setQuestionText($data['question_text']);
+                    $question->setOptionA($data['option_a']);
+                    $question->setOptionB($data['option_b']);
+                    $question->setOptionC($data['option_c']);
+                    $question->setBonneReponse($data['bonne_reponse']);
+                    $entityManager->persist($question);
+                }
             }
+            $entityManager->flush();
+            $this->addFlash('success', 'Questions ajoutées avec succès !');
+            return $this->redirectToRoute('app_question_new', ['jeu_id' => $jeu_id]);
+        }
+
+        $question = new Question();
+        if ($jeu) {
+            $question->setJeu($jeu);
         }
 
         $form = $this->createForm(QuestionType::class, $question, [
@@ -43,21 +61,15 @@ final class QuestionController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($question);
             $entityManager->flush();
-
             $this->addFlash('success', 'Question ajoutée avec succès !');
-
-            // Si on vient d'un jeu, on reste sur l'ajout de question pour ce jeu
-            if ($jeu_id) {
-                return $this->redirectToRoute('app_question_new', ['jeu_id' => $jeu_id], Response::HTTP_SEE_OTHER);
-            }
-
-            return $this->redirectToRoute('app_question_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_question_new', ['jeu_id' => $jeu_id]);
         }
 
         return $this->render('question/new.html.twig', [
             'question' => $question,
-            'form' => $form,
+            'form' => $form->createView(),
             'jeu_id' => $jeu_id,
+            'jeu' => $jeu
         ]);
     }
 

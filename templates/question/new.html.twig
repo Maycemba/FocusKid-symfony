@@ -19,9 +19,110 @@
                 </div>
             {% endfor %}
 
-            <p class="text-muted">Remplissez les détails de la question ci-dessous. Vous pouvez ajouter plusieurs questions l'une après l'autre.</p>
+            <div class="card shadow-sm border-0 mb-4 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title mb-3 fs-6">Combien de questions voulez-vous ajouter à la fois ?</h5>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="count_selector" id="count1" value="1" checked>
+                        <label class="btn btn-outline-primary" for="count1">1 Question (Formulaire complet)</label>
 
-            {{ include('question/_form.html.twig') }}
+                        <input type="radio" class="btn-check" name="count_selector" id="count3" value="3">
+                        <label class="btn btn-outline-primary" for="count3">3 Questions (Mode rapide)</label>
+
+                        <input type="radio" class="btn-check" name="count_selector" id="count5" value="5">
+                        <label class="btn btn-outline-primary" for="count5">5 Questions (Mode rapide)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="single-question-form">
+                {{ include('question/_form.html.twig') }}
+            </div>
+
+            <div id="multi-question-form" style="display: none;">
+                <form action="{{ path('app_question_new', {'jeu_id': jeu_id}) }}" method="POST">
+                    <input type="hidden" name="multi_questions" value="1">
+                    <div id="multi-questions-container">
+                        {# Le contenu sera généré par JS #}
+                    </div>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-success btn-lg shadow">
+                            <iconify-icon icon="solar:check-read-line-duotone" class="me-2"></iconify-icon>
+                            Enregistrer toutes les questions
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <template id="question-template">
+                <div class="card shadow-sm border-0 mb-4 question-block">
+                    <div class="card-header bg-primary text-white py-2">
+                        <h6 class="mb-0 fs-6">Question #INDEX#</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-bold small">Texte de la question</label>
+                                <input type="text" name="questions[#INDEX#][question_text]" class="form-control form-control-sm" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold small">Option A</label>
+                                <input type="text" name="questions[#INDEX#][option_a]" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold small">Option B</label>
+                                <input type="text" name="questions[#INDEX#][option_b]" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold small">Option C</label>
+                                <input type="text" name="questions[#INDEX#][option_c]" class="form-control form-control-sm" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small">Bonne Réponse</label>
+                                <select name="questions[#INDEX#][bonne_reponse]" class="form-select form-select-sm">
+                                    <option value="A">Option A</option>
+                                    <option value="B">Option B</option>
+                                    <option value="C">Option C</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const radios = document.querySelectorAll('input[name="count_selector"]');
+                    radios.forEach(radio => {
+                        radio.addEventListener('change', function() {
+                            const count = parseInt(this.value);
+                            const singleForm = document.getElementById('single-question-form');
+                            const multiForm = document.getElementById('multi-question-form');
+                            const container = document.getElementById('multi-questions-container');
+                            const template = document.getElementById('question-template').innerHTML;
+
+                            if (count === 1) {
+                                singleForm.style.display = 'block';
+                                multiForm.style.display = 'none';
+                            } else {
+                                singleForm.style.display = 'none';
+                                multiForm.style.display = 'block';
+                                container.innerHTML = '';
+                                
+                                for (let i = 1; i <= count; i++) {
+                                    container.innerHTML += template.replace(/#INDEX#/g, i);
+                                }
+                            }
+                        });
+                    });
+                });
+            </script>
+
+
 
             <div class="mt-4 d-flex justify-content-between">
                 <a href="{{ path('app_jeu_index') }}" class="btn btn-secondary">
