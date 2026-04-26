@@ -4,9 +4,9 @@ namespace App\Controller;
 
 use App\Repository\CourRepository;
 use App\Repository\EmotionRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\ScenarioRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -30,11 +30,9 @@ final class FrontController extends AbstractController
     public function listeLecons(int $id_cours, CourRepository $courRepository): Response
     {
         $cour = $courRepository->find($id_cours);
-
         if (!$cour) {
             throw $this->createNotFoundException('Cours introuvable');
         }
-
         return $this->render('front/lecons.html.twig', [
             'cour'   => $cour,
             'lecons' => $cour->getLecons(),
@@ -50,5 +48,22 @@ final class FrontController extends AbstractController
         return $this->render('front/emotions.html.twig', [
             'emotions' => $emotionRepository->findAll(),
         ]);
+    }
+
+    /**
+     * Endpoint AJAX : retourne les scénarios associés à une émotion
+     */
+    #[Route('/enfant/emotions/{emotionId}/scenarios', name: 'app_enfant_scenarios_emotion', methods: ['GET'])]
+    public function scenariosParEmotion(int $emotionId, ScenarioRepository $scenarioRepository): JsonResponse
+    {
+        $scenarios = $scenarioRepository->findBy(['emotion' => $emotionId]);
+
+        $data = array_map(fn($s) => [
+            'id'          => $s->getId(),
+            'description' => $s->getDescription(),
+            'animation'   => $s->getAnimation(),
+        ], $scenarios);
+
+        return new JsonResponse(['scenarios' => $data]);
     }
 }

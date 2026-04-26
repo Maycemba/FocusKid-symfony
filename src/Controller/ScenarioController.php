@@ -11,21 +11,29 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/scenario')]
 final class ScenarioController extends AbstractController
 {
     #[Route(name: 'app_scenario_index', methods: ['GET'])]
-    public function index(Request $request, ScenarioRepository $scenarioRepository, EmotionRepository $emotionRepository): Response
+    public function index(Request $request, ScenarioRepository $scenarioRepository, EmotionRepository $emotionRepository, PaginatorInterface $paginator): Response
     {
         $search    = $request->query->get('search', '');
         $emotionId = $request->query->get('emotion_id') ? (int) $request->query->get('emotion_id') : null;
 
-        $scenarios = $scenarioRepository->findWithFilters($search ?: null, $emotionId);
-        $emotions  = $emotionRepository->findAll();
+        // ✅ findWithFiltersQuery (pas findWithFilters)
+        $query    = $scenarioRepository->findWithFiltersQuery($search ?: null, $emotionId);
+        $emotions = $emotionRepository->findAll();
+
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            5
+        );
 
         return $this->render('scenario/index.html.twig', [
-            'scenarios'        => $scenarios,
+            'scenarios'        => $pagination,
             'emotions'         => $emotions,
             'search'           => $search,
             'selected_emotion' => $emotionId,
@@ -42,7 +50,10 @@ final class ScenarioController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $file = $form->get('animation')->getData();
             if ($file) {
-                $scenario->setAnimation($file);
+                // ✅ Stockage avec data URI complet
+                $mimeType = $file->getMimeType();
+                $base64   = base64_encode(file_get_contents($file->getPathname()));
+                $scenario->setAnimation('data:' . $mimeType . ';base64,' . $base64);
             }
             $entityManager->persist($scenario);
             $entityManager->flush();
@@ -56,6 +67,8 @@ final class ScenarioController extends AbstractController
             'form'     => $form,
         ]);
     }
+
+
 
     #[Route('/{id}', name: 'app_scenario_show', methods: ['GET'])]
     public function show(Scenario $scenario): Response
@@ -74,7 +87,10 @@ final class ScenarioController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $file = $form->get('animation')->getData();
             if ($file) {
-                $scenario->setAnimation($file);
+                // ✅ Même correction que new() — data URI complet
+                $mimeType = $file->getMimeType();
+                $base64   = base64_encode(file_get_contents($file->getPathname()));
+                $scenario->setAnimation('data:' . $mimeType . ';base64,' . $base64);
             }
             $entityManager->flush();
 
@@ -99,4 +115,5 @@ final class ScenarioController extends AbstractController
 
         return $this->redirectToRoute('app_scenario_index', [], Response::HTTP_SEE_OTHER);
     }
+
 }

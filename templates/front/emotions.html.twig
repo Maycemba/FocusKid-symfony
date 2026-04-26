@@ -4,13 +4,11 @@
 
 {% block stylesheets %}
 <style>
-/* ── Page wrapper ──────────────────────────────────────────────────────── */
 .emotions-section {
     padding: 60px 0 80px;
     background: linear-gradient(160deg, #f0f4ff 0%, #fef9ff 60%, #fff5f7 100%);
     min-height: 60vh;
 }
-
 .emotions-section .section-title {
     font-family: 'Lobster Two', cursive;
     font-size: clamp(2rem, 5vw, 3rem);
@@ -18,20 +16,13 @@
     text-align: center;
     margin-bottom: 8px;
 }
-
 .emotions-section .section-subtitle {
     text-align: center;
     color: #7c7c9a;
     font-size: 1.1rem;
     margin-bottom: 48px;
 }
-
-/* ── Horizontal scroll container ──────────────────────────────────────── */
-.emotions-scroll-wrapper {
-    position: relative;
-    padding: 0 20px;
-}
-
+.emotions-scroll-wrapper { position: relative; padding: 0 20px; }
 .emotions-track {
     display: flex;
     gap: 24px;
@@ -42,12 +33,10 @@
     scrollbar-width: thin;
     scrollbar-color: #c8b8ff #f0f0f0;
 }
-
 .emotions-track::-webkit-scrollbar { height: 6px; }
 .emotions-track::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 10px; }
 .emotions-track::-webkit-scrollbar-thumb { background: #c8b8ff; border-radius: 10px; }
 
-/* ── Emotion card ──────────────────────────────────────────────────────── */
 .emotion-card {
     flex: 0 0 160px;
     display: flex;
@@ -61,17 +50,12 @@
     transition: transform 0.25s cubic-bezier(.34,1.56,.64,1);
     position: relative;
 }
-
 .emotion-card:focus { outline: 3px solid #4361ee; outline-offset: 4px; border-radius: 50%; }
-
 .emotion-card:hover { transform: translateY(-8px) scale(1.04); }
-
 .emotion-card.selected { transform: translateY(-12px) scale(1.08); }
 
-/* Photo circle */
 .emotion-photo-wrap {
-    width: 130px;
-    height: 130px;
+    width: 130px; height: 130px;
     border-radius: 50%;
     border: 4px solid #e8dfff;
     overflow: hidden;
@@ -80,130 +64,210 @@
     box-shadow: 0 8px 24px rgba(67,97,238,0.15);
     transition: border-color 0.2s, box-shadow 0.2s;
 }
-
 .emotion-card:hover .emotion-photo-wrap,
 .emotion-card.selected .emotion-photo-wrap {
     border-color: #4361ee;
     box-shadow: 0 12px 32px rgba(67,97,238,0.3);
 }
-
-.emotion-photo-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-/* Placeholder when no photo */
+.emotion-photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .emotion-photo-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
     background: linear-gradient(135deg, #f0f4ff, #fce4ff);
     font-size: 3.5rem;
 }
-
-/* Checkmark overlay when selected */
 .emotion-check {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #4361ee;
-    color: #fff;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    box-shadow: 0 2px 8px rgba(67,97,238,0.4);
+    position: absolute; top: 4px; right: 4px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #4361ee; color: #fff;
+    display: none; align-items: center; justify-content: center;
+    font-size: 1rem; box-shadow: 0 2px 8px rgba(67,97,238,0.4);
 }
-
 .emotion-card.selected .emotion-check { display: flex; }
-
-/* Label */
 .emotion-label {
     font-family: 'Heebo', sans-serif;
-    font-weight: 700;
-    font-size: 1rem;
-    color: #3a0ca3;
-    text-align: center;
-    letter-spacing: 0.02em;
+    font-weight: 700; font-size: 1rem;
+    color: #3a0ca3; text-align: center; letter-spacing: 0.02em;
     transition: color 0.2s;
 }
-
 .emotion-card:hover .emotion-label,
 .emotion-card.selected .emotion-label { color: #4361ee; }
 
-/* ── Toast notification ────────────────────────────────────────────────── */
-.emotion-toast-container {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
+/* ── Webcam overlay ── */
+.webcam-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(30, 20, 80, 0.6);
+    backdrop-filter: blur(6px);
+    z-index: 9997;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
 }
+.webcam-overlay.active { display: flex; }
 
-.emotion-toast {
+.webcam-box {
     background: #fff;
-    border-radius: 50px;
-    padding: 14px 28px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 1rem;
+    border-radius: 24px;
+    padding: 32px 28px 24px;
+    max-width: 480px;
+    width: 92%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(67,97,238,0.25);
+    animation: modalPop 0.35s cubic-bezier(.34,1.56,.64,1) forwards;
+    position: relative;
+}
+.webcam-box h3 {
+    font-size: 1.3rem; font-weight: 700;
+    color: #3a0ca3; margin-bottom: 6px;
+}
+.webcam-box p {
+    color: #7c7c9a; font-size: 0.95rem; margin-bottom: 20px;
+}
+#webcamVideo {
+    width: 100%;
+    border-radius: 16px;
+    background: #111;
+    max-height: 300px;
+    object-fit: cover;
+    display: block;
+    margin-bottom: 16px;
+}
+#webcamCanvas { display: none; }
+
+.webcam-result {
+    display: none;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-top: 14px;
+    font-size: 0.95rem;
     font-weight: 600;
+    text-align: left;
+}
+.webcam-result.success { background: #e8fff4; border-left: 4px solid #28a745; color: #1a6632; }
+.webcam-result.warning { background: #fff8e1; border-left: 4px solid #ffc107; color: #7a5800; }
+.webcam-result.error   { background: #fff0f3; border-left: 4px solid #f72585; color: #9b1a3e; }
+
+.webcam-loader {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #4361ee;
+    font-weight: 600;
+    margin-top: 12px;
+}
+.webcam-loader .spinner {
+    width: 22px; height: 22px;
+    border: 3px solid #dde4ff;
+    border-top-color: #4361ee;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn-webcam-close {
+    margin-top: 16px;
+    background: #f0f4ff;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 28px;
     color: #3a0ca3;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-webcam-close:hover { background: #dde4ff; }
+
+/* ── Scenario modal ── */
+.scenario-modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(30, 20, 80, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+    align-items: center;
+    justify-content: center;
+}
+.scenario-modal-overlay.active { display: flex; }
+
+.scenario-modal-box {
+    background: #fff;
+    border-radius: 24px;
+    padding: 36px 32px 28px;
+    max-width: 520px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(67,97,238,0.2);
+    animation: modalPop 0.35s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes modalPop {
+    from { opacity: 0; transform: scale(0.85) translateY(30px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.scenario-modal-close {
+    position: absolute; top: 16px; right: 16px;
+    background: #f0f4ff; border: none; border-radius: 50%;
+    width: 36px; height: 36px; font-size: 1.1rem;
+    cursor: pointer; color: #3a0ca3;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+}
+.scenario-modal-close:hover { background: #dde4ff; }
+.scenario-emotion-header {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+}
+.scenario-emotion-header img {
+    width: 60px; height: 60px; border-radius: 50%; object-fit: cover;
+    border: 3px solid #dde4ff;
+}
+.scenario-emotion-header .emotion-name { font-size: 1.4rem; font-weight: 700; color: #3a0ca3; }
+.scenario-emotion-header .emotion-subtitle { font-size: 0.9rem; color: #7c7c9a; }
+.scenario-item {
+    background: #f8f9ff; border-radius: 14px;
+    padding: 16px 18px; margin-bottom: 14px;
+    border-left: 4px solid #4361ee;
+}
+.scenario-item:last-child { margin-bottom: 0; }
+.scenario-item .scenario-desc { font-size: 0.95rem; color: #333; line-height: 1.6; margin-bottom: 10px; }
+.scenario-item .scenario-media-wrap { text-align: center; margin-top: 8px; }
+.scenario-item .scenario-media-wrap img,
+.scenario-item .scenario-media-wrap video { max-width: 100%; max-height: 180px; border-radius: 10px; object-fit: cover; }
+.scenario-empty { text-align: center; padding: 30px 0; color: #aaa; }
+.scenario-empty span { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+
+/* Toast */
+.emotion-toast-container {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999; display: flex; flex-direction: column;
+    align-items: center; gap: 10px;
+}
+.emotion-toast {
+    background: #fff; border-radius: 50px; padding: 14px 28px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    display: flex; align-items: center; gap: 12px;
+    font-size: 1rem; font-weight: 600; color: #3a0ca3;
     animation: toastIn 0.4s cubic-bezier(.34,1.56,.64,1) forwards;
     border-left: 5px solid #4361ee;
 }
-
 .emotion-toast.error { border-left-color: #f72585; color: #f72585; }
-
-.emotion-toast .toast-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
+.emotion-toast .toast-icon { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
 @keyframes toastIn {
     from { opacity: 0; transform: translateY(20px) scale(0.9); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+@keyframes toastOut { to { opacity: 0; transform: translateY(10px) scale(0.95); } }
 
-@keyframes toastOut {
-    to { opacity: 0; transform: translateY(10px) scale(0.95); }
-}
-
-/* ── Loading pulse ─────────────────────────────────────────────────────── */
 .emotion-card.loading .emotion-photo-wrap {
     animation: pulse 0.8s ease-in-out infinite alternate;
 }
+@keyframes pulse { from { opacity: 1; } to { opacity: 0.5; } }
 
-@keyframes pulse {
-    from { opacity: 1; }
-    to   { opacity: 0.5; }
-}
-
-/* ── Empty state ───────────────────────────────────────────────────────── */
-.empty-emotions {
-    text-align: center;
-    padding: 60px 20px;
-    color: #9999bb;
-}
-
+.empty-emotions { text-align: center; padding: 60px 20px; color: #9999bb; }
 .empty-emotions i { font-size: 4rem; margin-bottom: 16px; display: block; }
 
-/* ── Responsive ────────────────────────────────────────────────────────── */
 @media (max-width: 576px) {
     .emotion-card { flex: 0 0 120px; }
     .emotion-photo-wrap { width: 100px; height: 100px; }
@@ -214,17 +278,12 @@
 
 {% block body %}
 
-{# ══ Hero / Titre ══════════════════════════════════════════════════════════ #}
 <section class="emotions-section">
     <div class="container">
-
         <h2 class="section-title">Comment tu te sens aujourd'hui ? 😊</h2>
-        <p class="section-subtitle">
-            Clique sur l'émotion qui te correspond le mieux !
-        </p>
+        <p class="section-subtitle">Clique sur l'émotion qui te correspond le mieux !</p>
 
         {% if emotions|length > 0 %}
-
             <div class="emotions-scroll-wrapper">
                 <div class="emotions-track" id="emotionsTrack">
                     {% for emotion in emotions %}
@@ -233,16 +292,14 @@
                         type="button"
                         data-emotion-id="{{ emotion.id }}"
                         data-emotion-nom="{{ emotion.nom }}"
-                        data-emotion-photo="{% if emotion.photo %}data:image/png;base64,{{ emotion.photo }}{% endif %}"
+                        data-emotion-photo="{{ emotion.photo }}"
                         onclick="selectEmotion(this)"
                         title="{{ emotion.nom }}"
                         aria-label="Sélectionner l'émotion : {{ emotion.nom }}"
                     >
                         <div class="emotion-photo-wrap">
                             {% if emotion.photo %}
-                                <img src="data:image/png;base64,{{ emotion.photo }}"
-                                     alt="{{ emotion.nom }}"
-                                     draggable="false">
+                                <img src="{{ emotion.photo }}" alt="{{ emotion.nom }}" draggable="false">
                             {% else %}
                                 <div class="emotion-photo-placeholder">😶</div>
                             {% endif %}
@@ -253,66 +310,89 @@
                     {% endfor %}
                 </div>
             </div>
-
         {% else %}
             <div class="empty-emotions">
                 <i class="bi bi-emoji-smile"></i>
                 <p>Aucune émotion disponible pour le moment.</p>
             </div>
         {% endif %}
-
     </div>
 </section>
 
-{# ══ Toast container ══════════════════════════════════════════════════════ #}
+{# ── Webcam overlay (s'ouvre après enregistrement humeur) ── #}
+<div class="webcam-overlay" id="webcamOverlay">
+    <div class="webcam-box">
+        <h3 id="webcamTitle">📸 Montre ton visage !</h3>
+        <p id="webcamSubtitle">On va vérifier si ton visage correspond à ton émotion 😊</p>
+        <video id="webcamVideo" autoplay playsinline muted></video>
+        <canvas id="webcamCanvas"></canvas>
+        <div class="webcam-loader" id="webcamLoader">
+            <div class="spinner"></div>
+            <span>Analyse en cours…</span>
+        </div>
+        <div class="webcam-result" id="webcamResult"></div>
+        <button class="btn-webcam-close" id="webcamCloseBtn" onclick="closeWebcam()">
+            Continuer →
+        </button>
+    </div>
+</div>
+
+{# ── Modal scénarios ── #}
+<div class="scenario-modal-overlay" id="scenarioOverlay" onclick="closeScenarioModal(event)">
+    <div class="scenario-modal-box" id="scenarioBox">
+        <button class="scenario-modal-close" onclick="closeModal()" title="Fermer">✕</button>
+        <div id="scenarioContent">
+            <div class="scenario-empty"><span>⏳</span>Chargement…</div>
+        </div>
+    </div>
+</div>
+
 <div class="emotion-toast-container" id="toastContainer"></div>
 
 {% endblock %}
 
 {% block javascripts %}
 <script>
-// URL de l'endpoint Symfony pour enregistrer l'humeur
-// On construit dynamiquement en remplaçant le placeholder d'id
-const REGISTER_URL_TEMPLATE = '{{ path('app_humeur_enregistrer', {'emotionId': '__ID__'}) }}';
-const CSRF_TOKEN             = '{{ csrf_token('humeur_enregistrer') }}'; // optionnel, non requis ici
+const REGISTER_URL_TEMPLATE  = '{{ path('app_humeur_enregistrer', {'emotionId': '__ID__'}) }}';
+const DETECTER_URL_TEMPLATE  = '{{ path('humeur_journaliere_detecter', {'humeurId': '__ID__'}) }}';
+const SCENARIOS_URL_TEMPLATE = '{{ path('app_enfant_scenarios_emotion', {'emotionId': '__ID__'}) }}';
 
-let activeCard = null;
+let activeCard      = null;
+let webcamStream    = null;
+let currentHumeurId = null;
+let currentEmotion  = { id: null, nom: null, photo: null };
 
-/**
- * Appelé au clic sur une émotion
- */
+// ─── 1. Clic sur une émotion ───────────────────────────────────────────────
 async function selectEmotion(card) {
     if (card.classList.contains('loading')) return;
 
-    const emotionId  = card.dataset.emotionId;
-    const emotionNom = card.dataset.emotionNom;
+    const emotionId    = card.dataset.emotionId;
+    const emotionNom   = card.dataset.emotionNom;
     const emotionPhoto = card.dataset.emotionPhoto;
 
-    // Désélectionner l'ancienne carte
-    if (activeCard && activeCard !== card) {
-        activeCard.classList.remove('selected');
-    }
-
-    // Marquer comme loading
+    if (activeCard && activeCard !== card) activeCard.classList.remove('selected');
     card.classList.add('loading');
 
-    const url = REGISTER_URL_TEMPLATE.replace('__ID__', emotionId);
-
+    // Enregistrer l'humeur
+    const registerUrl = REGISTER_URL_TEMPLATE.replace('__ID__', emotionId);
     try {
-        const response = await fetch(url, {
-            method : 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        const res  = await fetch(registerUrl, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
-
-        const data = await response.json();
+        const data = await res.json();
+        card.classList.remove('loading');
 
         if (data.success) {
-            card.classList.remove('loading');
             card.classList.add('selected');
             activeCard = card;
+            currentHumeurId = data.humeurId;
+            currentEmotion  = { id: emotionId, nom: emotionNom, photo: emotionPhoto };
             showToast(emotionNom, emotionPhoto, false);
+
+            // Ouvrir la webcam directement dans cette page
+            ouvrirWebcam(emotionNom);
         } else {
-            card.classList.remove('loading');
             showToast('Erreur : ' + (data.message || 'Impossible d\'enregistrer'), null, true);
         }
     } catch (err) {
@@ -322,28 +402,192 @@ async function selectEmotion(card) {
     }
 }
 
-/**
- * Affiche un toast de confirmation
- */
-function showToast(nom, photoSrc, isError = false) {
-    const container = document.getElementById('toastContainer');
+// ─── 2. Ouvrir la webcam ───────────────────────────────────────────────────
+async function ouvrirWebcam(emotionNom) {
+    document.getElementById('webcamTitle').textContent   = '📸 Montre ton visage !';
+    document.getElementById('webcamSubtitle').textContent = `Tu as choisi "${emotionNom}" — montre-nous ton expression !`;
+    document.getElementById('webcamResult').style.display = 'none';
+    document.getElementById('webcamResult').className     = 'webcam-result';
+    document.getElementById('webcamLoader').style.display = 'none';
+    document.getElementById('webcamCloseBtn').textContent = 'Continuer →';
+    document.getElementById('webcamOverlay').classList.add('active');
 
-    const toast = document.createElement('div');
-    toast.className = 'emotion-toast' + (isError ? ' error' : '');
+    try {
+        webcamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        document.getElementById('webcamVideo').srcObject = webcamStream;
 
-    let iconHtml = '';
-    if (!isError && photoSrc) {
-        iconHtml = `<img src="${photoSrc}" class="toast-icon" alt="">`;
-    } else if (!isError) {
-        iconHtml = `<span style="font-size:1.4rem;">✅</span>`;
-    } else {
-        iconHtml = `<span style="font-size:1.4rem;">⚠️</span>`;
+        // Capturer et analyser automatiquement après 2 secondes
+        setTimeout(() => analyserPhoto(emotionNom), 2000);
+
+    } catch (err) {
+        afficherResultatWebcam('error', '⚠️ Caméra inaccessible : ' + err.message);
+    }
+}
+
+// ─── 3. Capturer la photo et appeler Face++ ────────────────────────────────
+async function analyserPhoto(emotionNom) {
+    const video  = document.getElementById('webcamVideo');
+    const canvas = document.getElementById('webcamCanvas');
+    const loader = document.getElementById('webcamLoader');
+
+    // Capturer la frame
+    canvas.width  = video.videoWidth  || 640;
+    canvas.height = video.videoHeight || 480;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const photoBase64 = canvas.toDataURL('image/jpeg', 0.8);
+
+    // Afficher le loader
+    loader.style.display = 'flex';
+
+    // Appeler l'endpoint Face++
+    const url = DETECTER_URL_TEMPLATE.replace('__ID__', currentHumeurId);
+    try {
+        const res  = await fetch(url, {
+            method : 'POST',
+            headers: {
+                'Content-Type'     : 'application/json',
+                'X-Requested-With' : 'XMLHttpRequest',
+            },
+            body: JSON.stringify({
+                photo         : photoBase64,
+                emotionChoisie: emotionNom,
+            }),
+        });
+        const data = await res.json();
+        loader.style.display = 'none';
+
+        if (data.success) {
+            if (data.correspondance) {
+                afficherResultatWebcam('success',
+                    `✅ Bravo ! Ton visage exprime bien <strong>${data.emotionDetectee}</strong> (confiance : ${data.confiance}%)`
+                );
+            } else {
+                const detectee = data.emotionDetectee || 'aucune émotion détectée';
+                afficherResultatWebcam('warning',
+                    `🤔 Tu as choisi <strong>${emotionNom}</strong> mais ton visage exprime plutôt <strong>${detectee}</strong> (${data.confiance}%)`
+                );
+            }
+        } else {
+            afficherResultatWebcam('error', '⚠️ ' + (data.error || 'Erreur lors de l\'analyse'));
+        }
+
+    } catch (err) {
+        loader.style.display = 'none';
+        afficherResultatWebcam('error', '⚠️ Erreur de connexion lors de l\'analyse.');
+        console.error(err);
     }
 
+    // Après le résultat, charger les scénarios en arrière-plan
+    chargerScenarios(currentEmotion.id, currentEmotion.nom, currentEmotion.photo);
+}
+
+function afficherResultatWebcam(type, message) {
+    const zone = document.getElementById('webcamResult');
+    zone.className        = 'webcam-result ' + type;
+    zone.innerHTML        = message;
+    zone.style.display    = 'block';
+    document.getElementById('webcamCloseBtn').textContent = 'Voir les scénarios →';
+}
+
+// ─── 4. Fermer la webcam → ouvrir les scénarios ───────────────────────────
+function closeWebcam() {
+    // Arrêter le flux caméra
+    if (webcamStream) {
+        webcamStream.getTracks().forEach(t => t.stop());
+        webcamStream = null;
+    }
+    document.getElementById('webcamVideo').srcObject = null;
+    document.getElementById('webcamOverlay').classList.remove('active');
+
+    // Ouvrir les scénarios
+    openScenarioModal(currentEmotion.id, currentEmotion.nom, currentEmotion.photo);
+}
+
+// ─── 5. Scénarios ─────────────────────────────────────────────────────────
+let scenariosCache = null;
+
+async function chargerScenarios(emotionId, emotionNom, emotionPhoto) {
+    const url = SCENARIOS_URL_TEMPLATE.replace('__ID__', emotionId);
+    try {
+        const res  = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        scenariosCache = { data: await res.json(), emotionNom, emotionPhoto };
+    } catch (err) {
+        scenariosCache = null;
+    }
+}
+
+async function openScenarioModal(emotionId, emotionNom, emotionPhoto) {
+    document.getElementById('scenarioContent').innerHTML =
+        '<div class="scenario-empty"><span>⏳</span>Chargement…</div>';
+    document.getElementById('scenarioOverlay').classList.add('active');
+
+    if (scenariosCache) {
+        renderScenarios(scenariosCache.data, scenariosCache.emotionNom, scenariosCache.emotionPhoto);
+        return;
+    }
+
+    const url = SCENARIOS_URL_TEMPLATE.replace('__ID__', emotionId);
+    try {
+        const res  = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const data = await res.json();
+        renderScenarios(data, emotionNom, emotionPhoto);
+    } catch (err) {
+        document.getElementById('scenarioContent').innerHTML =
+            '<div class="scenario-empty"><span>⚠️</span>Impossible de charger les scénarios.</div>';
+    }
+}
+
+function renderScenarios(data, emotionNom, emotionPhoto) {
+    let html = `<div class="scenario-emotion-header">`;
+    if (emotionPhoto) html += `<img src="${emotionPhoto}" alt="${emotionNom}">`;
+    html += `<div>
+        <div class="emotion-name">${emotionNom}</div>
+        <div class="emotion-subtitle">Scénarios associés</div>
+    </div></div>`;
+
+    if (!data.scenarios || data.scenarios.length === 0) {
+        html += `<div class="scenario-empty"><span>😶</span>Aucun scénario pour cette émotion.</div>`;
+    } else {
+        data.scenarios.forEach(s => {
+            html += `<div class="scenario-item">
+                <div class="scenario-desc">${s.description || ''}</div>`;
+            if (s.animation) {
+                html += `<div class="scenario-media-wrap">`;
+                if (s.animation.includes('video/')) {
+                    html += `<video autoplay muted loop playsinline controls>
+                        <source src="${s.animation}" type="video/mp4">
+                    </video>`;
+                } else {
+                    html += `<img src="${s.animation}" alt="animation">`;
+                }
+                html += `</div>`;
+            }
+            html += `</div>`;
+        });
+    }
+
+    document.getElementById('scenarioContent').innerHTML = html;
+}
+
+function closeModal() {
+    document.getElementById('scenarioOverlay').classList.remove('active');
+    scenariosCache = null;
+}
+
+function closeScenarioModal(event) {
+    if (event.target === document.getElementById('scenarioOverlay')) closeModal();
+}
+
+// ─── Toast ─────────────────────────────────────────────────────────────────
+function showToast(nom, photoSrc, isError = false) {
+    const container = document.getElementById('toastContainer');
+    const toast     = document.createElement('div');
+    toast.className = 'emotion-toast' + (isError ? ' error' : '');
+    const iconHtml  = !isError && photoSrc
+        ? `<img src="${photoSrc}" class="toast-icon" alt="">`
+        : `<span style="font-size:1.4rem;">${isError ? '⚠️' : '✅'}</span>`;
     toast.innerHTML = iconHtml + `<span>${isError ? nom : 'Humeur « ' + nom + ' » enregistrée !'}</span>`;
     container.appendChild(toast);
-
-    // Auto-dismiss after 3s
     setTimeout(() => {
         toast.style.animation = 'toastOut 0.3s ease forwards';
         setTimeout(() => toast.remove(), 350);

@@ -1,0 +1,125 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Webcam — Comment tu te sens ?{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    <h1 class="mb-4">Comment tu te sens aujourd'hui ? 😊</h1>
+
+    {# Flux caméra #}
+    <div class="mb-3">
+        <video id="webcam" autoplay playsinline
+               style="width:100%; max-width:480px; border-radius:12px; background:#000;"></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+    </div>
+
+    {# Boutons émotions #}
+    <div id="emotions-container" class="d-flex flex-wrap gap-2 mb-3">
+        {% for emotion in emotions %}
+            <button class="btn btn-outline-primary btn-lg emotion-btn"
+                    data-emotion-id="{{ emotion.id }}"
+                    data-emotion-nom="{{ emotion.nom }}">
+                {{ emotion.nom }}
+            </button>
+        {% endfor %}
+    </div>
+
+    {# Zone de résultat (cachée au départ) #}
+    <div id="resultat" class="alert" style="display:none;"></div>
+
+    {# Loader #}
+    <div id="loader" style="display:none;">
+        <div class="spinner-border text-primary" role="status"></div>
+        <span class="ms-2">Analyse en cours…</span>
+    </div>
+</div>
+
+<script>
+// ——— 1. Démarrer la caméra ———
+const video  = document.getElementById('webcam');
+const canvas = document.getElementById('canvas');
+
+navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+    .then(stream => { video.srcObject = stream; })
+    .catch(err => {
+        document.getElementById('resultat').style.display = 'block';
+        document.getElementById('resultat').className = 'alert alert-danger';
+        document.getElementById('resultat').textContent = 'Caméra inaccessible : ' + err.message;
+    });
+
+// ——— 2. Clic sur une émotion ———
+document.querySelectorAll('.emotion-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const emotionId  = btn.dataset.emotionId;
+        const emotionNom = btn.dataset.emotionNom;
+
+        // Désactiver les boutons pendant l'analyse
+        document.querySelectorAll('.emotion-btn').forEach(b => b.disabled = true);
+        document.getElementById('loader').style.display = 'flex';
+        document.getElementById('resultat').style.display = 'none';
+
+        try {
+            // ——— 3. Capturer la photo ———
+            canvas.width  = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const photoBase64 = canvas.toDataURL('image/jpeg', 0.8);
+
+            // ——— 4. Enregistrer l'humeur (votre endpoint existant) ———
+            const resHumeur = await fetch(`/humeur/journaliere/enregistrer/${emotionId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({}),
+            });
+            const dataHumeur = await resHumeur.json();
+
+            if (!dataHumeur.success) throw new Error('Erreur enregistrement humeur');
+
+            const humeurId = dataHumeur.humeurId;
+
+            // ——— 5. Envoyer la photo à Face++ ———
+            const resDetection = await fetch(`/humeur/journaliere/detecter/${humeurId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({
+                    photo: photoBase64,
+                    emotionChoisie: emotionNom,
+                }),
+            });
+            const dataDetection = await resDetection.json();
+
+            // ——— 6. Afficher le résultat ———
+            const zone = document.getElementById('resultat');
+            zone.style.display = 'block';
+
+            if (dataDetection.correspondance) {
+                zone.className = 'alert alert-success';
+                zone.innerHTML = `
+                    <strong>✅ Bravo !</strong> Ton visage exprime bien <strong>${dataDetection.emotionDetectee}</strong>
+                    (confiance : ${dataDetection.confiance}%).
+                `;
+            } else {
+                zone.className = 'alert alert-warning';
+                zone.innerHTML = `
+                    <strong>🤔 Intéressant !</strong> Tu as choisi <strong>${emotionNom}</strong>
+                    mais ton visage exprime plutôt <strong>${dataDetection.emotionDetectee || 'aucune émotion détectée'}</strong>
+                    (confiance : ${dataDetection.confiance}%).
+                `;
+            }
+
+        } catch (err) {
+            const zone = document.getElementById('resultat');
+            zone.style.display  = 'block';
+            zone.className = 'alert alert-danger';
+            zone.textContent = 'Une erreur est survenue : ' + err.message;
+        } finally {
+            document.getElementById('loader').style.display = 'none';
+            // Réactiver après 3 secondes
+            setTimeout(() => {
+                document.querySelectorAll('.emotion-btn').forEach(b => b.disabled = false);
+            }, 3000);
+        }
+    });
+});
+</script>
+{% endblock %}

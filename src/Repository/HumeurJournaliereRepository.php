@@ -62,17 +62,14 @@ class HumeurJournaliereRepository extends ServiceEntityRepository
     }
 
     /**
-     * Statistiques : humeurs par jour pour la courbe (30 derniers jours)
+     * Statistiques : humeurs par jour pour la courbe
+     * Toutes les humeurs enregistrées, sans limite de date.
      */
     public function countByDay(): array
     {
-        $since = new \DateTime('-30 days');
-
         $humeurs = $this->createQueryBuilder('h')
             ->leftJoin('h.emotion', 'e')
             ->addSelect('e')
-            ->where('h.dateHeure >= :since')
-            ->setParameter('since', $since)
             ->orderBy('h.dateHeure', 'ASC')
             ->getQuery()
             ->getResult();

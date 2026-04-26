@@ -11,7 +11,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Vich\UploaderBundle\Form\Type\VichImageType;
 class ScenarioType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -35,11 +34,7 @@ class ScenarioType extends AbstractType
                 'attr' => ['class' => 'form-control'],
                 'required' => false
             ])
-            ->add('imageFile', VichImageType::class, [
-    'required' => false,
-    'allow_delete' => true,
-    'download_uri' => false,
-])
+
         ;
     }
 

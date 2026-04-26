@@ -8,14 +8,12 @@
 .stat-card:hover { transform: translateY(-3px); }
 .chart-container { position: relative; height: 320px; }
 .emotion-badge { display:inline-flex; align-items:center; gap:6px; background:#f0f4ff; border:1px solid #dde4ff; border-radius:20px; padding:4px 10px; font-size:0.82rem; }
-.emotion-badge img { width:24px; height:24px; border-radius:50%; object-fit:cover; }
 </style>
 {% endblock %}
 
 {% block body %}
 <div class="container-fluid">
 
-    {# Breadcrumb #}
     <div class="card bg-light-info shadow-none position-relative overflow-hidden mb-4">
         <div class="card-body px-4 py-3">
             <h4 class="fw-semibold mb-8">Humeurs journalières</h4>
@@ -35,11 +33,9 @@
         </div>
     {% endfor %}
 
-    {# ── Statistiques ─────────────────────────────────────────────────── #}
     {% if stats_by_emotion|length > 0 %}
     <div class="row g-4 mb-4">
 
-        {# Pie chart #}
         <div class="col-lg-5">
             <div class="card stat-card h-100">
                 <div class="card-header bg-white border-0 pt-4 pb-0">
@@ -63,7 +59,6 @@
             </div>
         </div>
 
-        {# Courbe par jour #}
         <div class="col-lg-7">
             <div class="card stat-card h-100">
                 <div class="card-header bg-white border-0 pt-4 pb-0">
@@ -86,65 +81,16 @@
         </div>
     {% endif %}
 
-    {# ── Tableau des humeurs ──────────────────────────────────────────── #}
     <div class="card shadow-sm">
         <div class="card-header">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <h5 class="card-title fw-semibold mb-0">
                     <i class="ti ti-list me-2 text-primary"></i>Historique des humeurs
                 </h5>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-success" type="button"
-                            data-bs-toggle="collapse" data-bs-target="#exportPanel"
-                            aria-expanded="false" aria-controls="exportPanel">
-                        <i class="ti ti-file-spreadsheet me-1"></i>Exporter Excel
-                    </button>
-                    <a href="{{ path('app_humeur_journaliere_new') }}" class="btn btn-primary">
-                        <i class="ti ti-plus me-1"></i>Enregistrer une humeur
-                    </a>
-                </div>
+                <a href="{{ path('app_humeur_export_excel') }}" class="btn btn-success" id="btnExport">
+                    <i class="ti ti-file-spreadsheet me-1"></i>Exporter Excel
+                </a>
             </div>
-
-            {# ── Panneau de filtres + bouton de téléchargement ─────────── #}
-            <div class="collapse mt-3" id="exportPanel">
-                <div class="p-3 rounded-3 border" style="background:#f6fff8; border-color:#b7ebc8 !important;">
-                    <p class="mb-2 fw-semibold text-success small">
-                        <i class="ti ti-filter me-1"></i>Filtres optionnels avant export
-                    </p>
-                    <div class="row g-2 align-items-end">
-                        <div class="col-md-3">
-                            <label class="form-label form-label-sm text-muted mb-1">Date de début</label>
-                            <input type="date" id="export_date_debut" class="form-control form-control-sm">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label form-label-sm text-muted mb-1">Date de fin</label>
-                            <input type="date" id="export_date_fin" class="form-control form-control-sm">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label form-label-sm text-muted mb-1">Émotion</label>
-                            <select id="export_emotion" class="form-select form-select-sm">
-                                <option value="">— Toutes —</option>
-                                {% for stat in stats_by_emotion %}
-                                    <option value="{{ stat.nom }}">{{ stat.nom }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <button type="button" id="btnTelecharger" class="btn btn-success btn-sm w-100"
-                                    onclick="lancerExportExcel()">
-                                <i class="ti ti-download me-1"></i>Télécharger .xlsx
-                            </button>
-                        </div>
-                    </div>
-                    <p class="mt-2 mb-0 text-muted" style="font-size:0.78rem;">
-                        <i class="ti ti-info-circle me-1"></i>
-                        Sans filtre, toutes les humeurs sont exportées.
-                        Le fichier contient 4 onglets : vue complète (données + stats), stats par émotion, stats par jour, données brutes.
-                        Chaque émotion est colorée différemment.
-                    </p>
-                </div>
-            </div>
-            {# iframe caché pour déclencher le téléchargement sans quitter la page #}
             <iframe id="downloadFrame" style="display:none;" title="download"></iframe>
         </div>
 
@@ -157,20 +103,20 @@
                             <th>Émotion</th>
                             <th>Date et heure</th>
                             <th class="text-center">Actions</th>
+                            <th>Émotion choisie</th>
+                            <th>Détection Face++</th>
+                            <th>Correspondance</th>
+                            <th>Confiance</th>
                         </tr>
                     </thead>
                     <tbody>
                     {% for h in humeur_journalieres %}
+                        {% set detection = detections[h.id] ?? null %}
                         <tr>
                             <td><span class="badge bg-light text-dark fw-bold">{{ h.id }}</span></td>
                             <td>
                                 {% if h.emotion %}
-                                    <span class="emotion-badge">
-                                        {% if h.emotion.photo %}
-                                            <img src="data:image/png;base64,{{ h.emotion.photo }}" alt="">
-                                        {% endif %}
-                                        {{ h.emotion.nom }}
-                                    </span>
+                                    <span class="emotion-badge">{{ h.emotion.nom }}</span>
                                 {% else %}
                                     <span class="text-muted fst-italic">Non définie</span>
                                 {% endif %}
@@ -184,42 +130,40 @@
                                 {% endif %}
                             </td>
                             <td class="text-center">
-                                <div class="d-flex justify-content-center gap-1">
-                                    <a href="{{ path('app_humeur_journaliere_show', {'id': h.id}) }}" class="btn btn-sm btn-outline-info" title="Voir">
-                                        <i class="ti ti-eye"></i>
-                                    </a>
-                                    <a href="{{ path('app_humeur_journaliere_edit', {'id': h.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier">
-                                        <i class="ti ti-pencil"></i>
-                                    </a>
-                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteHumeur{{ h.id }}">
-                                        <i class="ti ti-trash"></i>
-                                    </button>
-                                </div>
-                                <div class="modal fade" id="deleteHumeur{{ h.id }}" tabindex="-1">
-                                    <div class="modal-dialog modal-sm">
-                                        <div class="modal-content">
-                                            <div class="modal-header bg-danger text-white">
-                                                <h6 class="modal-title">Confirmer</h6>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body text-center py-3">
-                                                <p class="mb-0">Supprimer cette humeur ?</p>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                                <form method="post" action="{{ path('app_humeur_journaliere_delete', {'id': h.id}) }}" style="display:inline">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ h.id) }}">
-                                                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <a href="{{ path('app_humeur_journaliere_show', {'id': h.id}) }}" class="btn btn-sm btn-outline-info" title="Voir">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                            </td>
+                            <td>{{ h.emotion ? h.emotion.nom : '—' }}</td>
+                            <td>
+                                {% if detection and detection.emotionDetectee %}
+                                    {{ detection.emotionDetectee }}
+                                {% else %}
+                                    <span class="text-muted">Non analysé</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if detection %}
+                                    {% if detection.correspondance %}
+                                        <span class="badge bg-success">✅ Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">❌ Non</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if detection and detection.scoreConfiance %}
+                                    {{ detection.scoreConfiance }}%
+                                {% else %}
+                                    —
+                                {% endif %}
                             </td>
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="4" class="text-center py-5 text-muted">
+                            <td colspan="8" class="text-center py-5 text-muted">
                                 <i class="ti ti-mood-sad fs-2 d-block mb-2"></i>
                                 Aucune humeur journalière enregistrée.
                             </td>
@@ -237,31 +181,17 @@
 {% block javascripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-function lancerExportExcel() {
-    const baseUrl  = '{{ path('app_humeur_export_excel') }}';
-    const dateDebut = document.getElementById('export_date_debut').value;
-    const dateFin   = document.getElementById('export_date_fin').value;
-    const emotion   = document.getElementById('export_emotion').value;
-
-    const params = new URLSearchParams();
-    if (dateDebut) params.append('date_debut', dateDebut);
-    if (dateFin)   params.append('date_fin',   dateFin);
-    if (emotion)   params.append('emotion',    emotion);
-
-    const url = baseUrl + (params.toString() ? '?' + params.toString() : '');
-
-    // Déclenche le téléchargement sans quitter la page
-    document.getElementById('downloadFrame').src = url;
-
-    // Feedback visuel sur le bouton
-    const btn = document.getElementById('btnTelecharger');
-    btn.disabled = true;
+document.getElementById('btnExport').addEventListener('click', function(e) {
+    e.preventDefault();
+    const btn = this;
+    document.getElementById('downloadFrame').src = btn.href;
+    btn.classList.add('disabled');
     btn.innerHTML = '<i class="ti ti-loader me-1"></i>Génération…';
     setTimeout(() => {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="ti ti-download me-1"></i>Télécharger .xlsx';
+        btn.classList.remove('disabled');
+        btn.innerHTML = '<i class="ti ti-file-spreadsheet me-1"></i>Exporter Excel';
     }, 3000);
-}
+});
 </script>
 <script>
 const statsByEmotion = {{ stats_by_emotion|json_encode|raw }};

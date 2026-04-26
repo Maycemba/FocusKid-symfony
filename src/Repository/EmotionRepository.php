@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Emotion;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query;
 
 /**
  * @extends ServiceEntityRepository<Emotion>
@@ -38,4 +39,12 @@ class EmotionRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+public function findWithFiltersQuery(?string $search, string $sort, string $order): Query
+{
+    $qb = $this->createQueryBuilder('e');
+    if ($search) {
+        $qb->where('e.nom LIKE :search')->setParameter('search', '%'.$search.'%');
+    }
+    return $qb->orderBy('e.'.$sort, $order)->getQuery();
+}
 }

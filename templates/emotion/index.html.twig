@@ -30,7 +30,8 @@
                     </nav>
                 </div>
                 <div class="col-3 text-end">
-                    <span class="badge-emotion">{{ emotions|length }} émotion(s)</span>
+                    {# ✅ getTotalItemCount() donne le nombre total toutes pages confondues #}
+<span class="badge-emotion">{{ emotions.totalItemCount }} émotion(s)</span>
                 </div>
             </div>
         </div>
@@ -106,9 +107,8 @@
                             <td class="fw-semibold">{{ emotion.nom }}</td>
                             <td>
                                 {% if emotion.photo %}
-                                    <img src="data:image/png;base64,{{ emotion.photo }}"
-                                         alt="{{ emotion.nom }}"
-                                         class="emotion-photo">
+                                    {# ✅ Après — le data URI est déjà complet #}
+<img src="{{ emotion.photo }}" class="emotion-photo" alt="{{ emotion.nom }}">
                                 {% else %}
                                     <div class="d-flex align-items-center justify-content-center bg-light rounded" style="width:50px;height:50px;">
                                         <i class="ti ti-photo text-muted"></i>
@@ -145,7 +145,8 @@
                                             </div>
                                             <div class="modal-body text-center py-3">
                                                 {% if emotion.photo %}
-                                                    <img src="data:image/png;base64,{{ emotion.photo }}" class="emotion-photo mb-2">
+                                                    {# ✅ Après — le data URI est déjà complet #}
+<img src="{{ emotion.photo }}" class="emotion-photo" alt="{{ emotion.nom }}">
                                                 {% endif %}
                                                 <p class="mb-0">Supprimer <strong>{{ emotion.nom }}</strong> ?</p>
                                                 <small class="text-muted">Cette action est irréversible.</small>
@@ -178,6 +179,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
+                {{ knp_pagination_render(emotions) }}
             </div>
         </div>
     </div>

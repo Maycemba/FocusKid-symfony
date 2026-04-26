@@ -29,7 +29,7 @@
                     </nav>
                 </div>
                 <div class="col-3 text-end">
-                    <span class="badge-scenario">{{ scenarios|length }} scénario(s)</span>
+                    <span class="badge-scenario">{{ scenarios.totalItemCount }} scénario(s)</span>
                 </div>
             </div>
         </div>
@@ -110,10 +110,18 @@
                             <td>
                                 {% if scenario.animation %}
                                     {% set anim = scenario.animation %}
-                                    {% if anim starts with 'GIF' or anim starts with 'gif' or anim starts with 'R0lG' %}
+                                    {% if 'image/gif' in anim %}
+                                        <img src="{{ anim }}" class="scenario-media" alt="GIF">
+                                    {% elseif 'image/png' in anim or 'image/jpeg' in anim or 'image/webp' in anim %}
+                                        <img src="{{ anim }}" class="scenario-media" alt="image">
+                                    {% elseif 'video/' in anim %}
+                                        <video class="scenario-media" autoplay muted loop playsinline>
+                                            <source src="{{ anim }}" type="video/mp4">
+                                        </video>
+                                    {% elseif anim starts with 'R0lG' %}
                                         <img src="data:image/gif;base64,{{ anim }}" class="scenario-media" alt="GIF">
                                     {% else %}
-                                        <video class="scenario-media" muted loop>
+                                        <video class="scenario-media" autoplay muted loop playsinline>
                                             <source src="data:video/mp4;base64,{{ anim }}" type="video/mp4">
                                         </video>
                                     {% endif %}
@@ -187,6 +195,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
+                {{ knp_pagination_render(scenarios) }}
             </div>
         </div>
     </div>

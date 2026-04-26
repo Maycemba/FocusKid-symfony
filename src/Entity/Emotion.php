@@ -27,8 +27,13 @@ class Emotion
     #[ORM\OneToMany(targetEntity: HumeurJournaliere::class, mappedBy: 'emotion')]
     private Collection $humeurJournalieres;
 
-    #[ORM\OneToMany(targetEntity: Scenario::class, mappedBy: 'emotion')]
-    private Collection $scenarios;
+#[ORM\OneToMany(
+    targetEntity: Scenario::class,
+    mappedBy: 'emotion',
+    cascade: ['remove'],
+    orphanRemoval: true
+)]
+private Collection $scenarios;
 
     public function __construct()
     {
@@ -63,39 +68,28 @@ class Emotion
         return $this->photo;
     }
 
-    public function setPhoto($photo): self
-    {
-        if ($photo === null) {
-            $this->photo = null;
-            return $this;
-        }
+public function setPhoto($photo): self
+{
+    if ($photo === null) {
+        $this->photo = null;
+        return $this;
+    }
 
-        // Si c'est un objet UploadedFile de Symfony
-        if (is_object($photo) && method_exists($photo, 'getPathname')) {
-            $photo = file_get_contents($photo->getPathname());
-        }
-        
-        // Si c'est un chemin de fichier
-        if (is_string($photo) && file_exists($photo)) {
-            $photo = file_get_contents($photo);
-        }
-        
-        // Si c'est une ressource (flux)
-        if (is_resource($photo)) {
-            $photo = stream_get_contents($photo);
-        }
-        
-        // Si c'est une chaîne binaire, convertir en base64
-        if (is_string($photo) && !empty($photo)) {
-            // Vérifier si ce n'est pas déjà du base64
-            if (!preg_match('/^[A-Za-z0-9+\/=]+$/', $photo) || strlen($photo) % 4 != 0) {
-                $photo = base64_encode($photo);
-            }
-        }
-        
+    // Si c'est déjà un data URI complet (venant du controller), on stocke directement
+    if (is_string($photo) && str_starts_with($photo, 'data:')) {
         $this->photo = $photo;
         return $this;
     }
+
+    // Si c'est un UploadedFile (ne devrait plus arriver, mais sécurité)
+    if (is_object($photo) && method_exists($photo, 'getPathname')) {
+        $this->photo = base64_encode(file_get_contents($photo->getPathname()));
+        return $this;
+    }
+
+    $this->photo = $photo;
+    return $this;
+}
 
     public function getHumeurJournalieres(): Collection
     {

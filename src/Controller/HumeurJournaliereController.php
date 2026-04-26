@@ -14,17 +14,32 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Entity\DetectionEmotion;
+use App\Service\FacePlusPlusService;
+use App\Entity\Emotion;
 
 #[Route('/humeur/journaliere')]
 final class HumeurJournaliereController extends AbstractController
 {
     #[Route(name: 'app_humeur_journaliere_index', methods: ['GET'])]
-    public function index(HumeurJournaliereRepository $repo): Response
+    public function index(HumeurJournaliereRepository $repo, EntityManagerInterface $entityManager): Response
     {
+        $humeurs = $entityManager->getRepository(HumeurJournaliere::class)
+            ->findBy([], ['dateHeure' => 'DESC']);
+
+        $detections = [];
+        foreach ($humeurs as $humeur) {
+            $detection = $entityManager
+                ->getRepository(DetectionEmotion::class)
+                ->findByHumeur($humeur->getId());
+            $detections[$humeur->getId()] = $detection;
+        }
+
         return $this->render('humeur_journaliere/index.html.twig', [
             'humeur_journalieres' => $repo->findAll(),
             'stats_by_emotion'    => $repo->countByEmotion(),
             'stats_by_day'        => $repo->countByDay(),
+            'detections'          => $detections,
         ]);
     }
 
@@ -49,9 +64,6 @@ final class HumeurJournaliereController extends AbstractController
         ]);
     }
 
-    /**
-     * Export Excel des humeurs journalières — déclenché uniquement par le formulaire du bouton
-     */
     #[Route('/export/excel', name: 'app_humeur_export_excel', methods: ['GET', 'POST'])]
     public function exportExcel(Request $request, HumeurExportService $exportService): StreamedResponse
     {
@@ -62,9 +74,6 @@ final class HumeurJournaliereController extends AbstractController
         return $exportService->exportExcel($dateDebut, $dateFin, $emotion);
     }
 
-    /**
-     * Endpoint AJAX appelé depuis le front-office quand l'enfant clique sur une émotion
-     */
     #[Route('/enregistrer/{emotionId}', name: 'app_humeur_enregistrer', methods: ['POST'])]
     public function enregistrer(int $emotionId, EmotionRepository $emotionRepo, EntityManagerInterface $em): JsonResponse
     {
@@ -82,8 +91,69 @@ final class HumeurJournaliereController extends AbstractController
         $em->flush();
 
         return new JsonResponse([
-            'success' => true,
-            'message' => 'Humeur enregistrée : ' . $emotion->getNom(),
+            'success'  => true,
+            'message'  => 'Humeur enregistrée : ' . $emotion->getNom(),
+            'humeurId' => $humeur->getId(),
+        ]);
+    }
+
+    // IMPORTANT : webcam et detecter AVANT /{id} pour éviter les conflits de routing
+    #[Route('/webcam', name: 'humeur_journaliere_webcam', methods: ['GET'])]
+    public function webcam(EntityManagerInterface $entityManager): Response
+    {
+        $emotions = $entityManager->getRepository(Emotion::class)->findAll();
+
+        return $this->render('humeur_journaliere/webcam.html.twig', [
+            'emotions' => $emotions,
+        ]);
+    }
+
+    #[Route('/detecter/{humeurId}', name: 'humeur_journaliere_detecter', methods: ['POST'])]
+    public function detecterEtEnregistrer(
+        int $humeurId,
+        Request $request,
+        FacePlusPlusService $facePlusPlusService,
+        EntityManagerInterface $entityManager,
+    ): JsonResponse {
+        $humeur = $entityManager->getRepository(HumeurJournaliere::class)->find($humeurId);
+
+        if (!$humeur) {
+            return $this->json(['error' => 'Humeur introuvable'], 404);
+        }
+
+        $body           = json_decode($request->getContent(), true);
+        $photoBase64    = $body['photo']          ?? null;
+        $emotionChoisie = $body['emotionChoisie'] ?? null;
+
+        if (!$photoBase64 || !$emotionChoisie) {
+            return $this->json(['error' => 'Données manquantes'], 400);
+        }
+
+        $resultat = $facePlusPlusService->analyserImage($photoBase64);
+
+        $correspondance = $facePlusPlusService->verifierCorrespondance(
+            $emotionChoisie,
+            $resultat['emotionDominanteNormalisee']
+        );
+
+        $detection = new DetectionEmotion();
+        $detection->setHumeurJournaliere($humeur);
+        $detection->setEmotionChoisie($emotionChoisie);
+        $detection->setEmotionDetectee($resultat['emotionDominanteNormalisee']);
+        $detection->setScoresDetection($resultat['scores']);
+        $detection->setPhotoCapture($photoBase64);
+        $detection->setCorrespondance($correspondance);
+        $detection->setScoreConfiance($resultat['confiance']);
+
+        $entityManager->persist($detection);
+        $entityManager->flush();
+
+        return $this->json([
+            'success'         => true,
+            'correspondance'  => $correspondance,
+            'emotionDetectee' => $resultat['emotionDominanteNormalisee'],
+            'confiance'       => $resultat['confiance'],
+            'detectionId'     => $detection->getId(),
         ]);
     }
 
