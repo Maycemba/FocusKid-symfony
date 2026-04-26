@@ -56,28 +56,56 @@
 
             <template id="question-template">
                 <div class="card shadow-sm border-0 mb-4 question-block">
-                    <div class="card-header bg-primary text-white py-2">
+                    <div class="card-header bg-primary text-white py-2 d-flex justify-content-between align-items-center">
                         <h6 class="mb-0 fs-6">Question #INDEX#</h6>
+                        <div class="d-flex align-items-center">
+                            <label class="me-2 small mb-0">Traduire vers :</label>
+                            <select class="form-select form-select-sm py-0 lang-selector-multi" style="width: auto;">
+                                <option value="ar">Arabe</option>
+                                <option value="en">Anglais</option>
+                                <option value="fr">Français</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <label class="form-label fw-bold small">Texte de la question</label>
-                                <input type="text" name="questions[#INDEX#][question_text]" class="form-control form-control-sm" required>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" name="questions[#INDEX#][question_text]" class="form-control" required>
+                                    <button type="button" class="btn btn-outline-info btn-translate-multi">
+                                        <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label class="form-label fw-bold small">Option A</label>
-                                <input type="text" name="questions[#INDEX#][option_a]" class="form-control form-control-sm" required>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" name="questions[#INDEX#][option_a]" class="form-control" required>
+                                    <button type="button" class="btn btn-outline-info btn-translate-multi">
+                                        <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                                    </button>
+                                </div>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label fw-bold small">Option B</label>
-                                <input type="text" name="questions[#INDEX#][option_b]" class="form-control form-control-sm" required>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" name="questions[#INDEX#][option_b]" class="form-control" required>
+                                    <button type="button" class="btn btn-outline-info btn-translate-multi">
+                                        <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                                    </button>
+                                </div>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label fw-bold small">Option C</label>
-                                <input type="text" name="questions[#INDEX#][option_c]" class="form-control form-control-sm" required>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" name="questions[#INDEX#][option_c]" class="form-control" required>
+                                    <button type="button" class="btn btn-outline-info btn-translate-multi">
+                                        <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="row">
@@ -95,15 +123,45 @@
             </template>
 
             <script>
+                // Fonction globale de traduction
+                async function translateFieldMulti(btn) {
+                    const inputGroup = btn.closest('.input-group');
+                    const input = inputGroup.querySelector('input');
+                    const card = btn.closest('.question-block');
+                    const targetLang = card.querySelector('.lang-selector-multi').value;
+                    const text = input.value;
+
+                    if (!text) return;
+
+                    console.log('Traduction multi en cours...', text, targetLang);
+                    btn.disabled = true;
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                    try {
+                        const response = await fetch(`/api/translate?text=${encodeURIComponent(text)}&target=${targetLang}`);
+                        const data = await response.json();
+                        if (data.translatedText) {
+                            input.value = data.translatedText;
+                        }
+                    } catch (error) {
+                        console.error('Erreur API Traduction:', error);
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                    }
+                }
+
                 document.addEventListener('DOMContentLoaded', function() {
                     const radios = document.querySelectorAll('input[name="count_selector"]');
+                    const multiContainer = document.getElementById('multi-questions-container');
+                    const templateContent = document.getElementById('question-template').innerHTML;
+
                     radios.forEach(radio => {
                         radio.addEventListener('change', function() {
                             const count = parseInt(this.value);
                             const singleForm = document.getElementById('single-question-form');
                             const multiForm = document.getElementById('multi-question-form');
-                            const container = document.getElementById('multi-questions-container');
-                            const template = document.getElementById('question-template').innerHTML;
 
                             if (count === 1) {
                                 singleForm.style.display = 'block';
@@ -111,10 +169,31 @@
                             } else {
                                 singleForm.style.display = 'none';
                                 multiForm.style.display = 'block';
-                                container.innerHTML = '';
+                                multiContainer.innerHTML = '';
                                 
                                 for (let i = 1; i <= count; i++) {
-                                    container.innerHTML += template.replace(/#INDEX#/g, i);
+                                    const html = templateContent.replace(/#INDEX#/g, i);
+                                    const wrapper = document.createElement('div');
+                                    wrapper.innerHTML = html;
+                                    const block = wrapper.firstElementChild;
+                                    multiContainer.appendChild(block);
+
+                                    // Event listener direct sur le sélecteur
+                                    const selector = block.querySelector('.lang-selector-multi');
+                                    selector.addEventListener('change', async function() {
+                                        const btns = block.querySelectorAll('.btn-translate-multi');
+                                        for (const b of btns) {
+                                            const inp = b.closest('.input-group').querySelector('input');
+                                            if (inp.value.trim() !== '') {
+                                                await translateFieldMulti(b);
+                                            }
+                                        }
+                                    });
+
+                                    // Event listener sur les boutons individuels
+                                    block.querySelectorAll('.btn-translate-multi').forEach(b => {
+                                        b.addEventListener('click', () => translateFieldMulti(b));
+                                    });
                                 }
                             }
                         });
