@@ -14,8 +14,9 @@ services:
             - '../src/Kernel.php'
             - '../src/Command/'
 
-    App\Service\MailtrapApiService:
-        autowire: true
+    
 
     App\Service\ConseilIACarnetService:
+        autowire: true
+    App\Service\WhatsAppService:
         autowire: true

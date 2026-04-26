@@ -1,0 +1,513 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Modifier la tâche{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.edit-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.edit-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.edit-header h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #2d3561;
+  font-size: 0.9rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e0e4e8;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #1CC88A;
+  box-shadow: 0 0 0 3px rgba(28,200,138,0.1);
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Style pour le fichier actuel */
+.current-file {
+  background: #f8faff;
+  padding: 1rem;
+  border-radius: 12px;
+  margin: 0.5rem 0 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  border: 1px solid #e8ecf5;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.file-icon {
+  font-size: 1.8rem;
+}
+
+.file-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.file-name {
+  font-weight: 700;
+  color: #2d3561;
+  font-size: 0.95rem;
+}
+
+.file-size {
+  font-size: 0.7rem;
+  color: #8590a5;
+}
+
+.file-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #4E73DF, #2c5acf);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-download:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(78,115,223,0.3);
+}
+
+.btn-delete-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: #fdecea;
+  color: #e74c3c;
+  border: 1px solid #f9cdc9;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-delete-file:hover {
+  background: #fce4e2;
+  border-color: #e74c3c;
+}
+
+/* Zone d'upload */
+.upload-area {
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.2s;
+  background: #fafcff;
+}
+
+.upload-area:hover {
+  border-color: #1CC88A;
+  background: #f0fdf4;
+}
+
+.upload-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: #1CC88A;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.upload-label:hover {
+  background: #0eae70;
+  transform: translateY(-1px);
+}
+
+.upload-area input[type="file"] {
+  display: none;
+}
+
+.selected-file {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #e8edfd;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #4E73DF;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.selected-file.show {
+  display: flex;
+}
+
+.remove-selected {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0 0.5rem;
+}
+
+.file-hint {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.7rem;
+  color: #8590a5;
+}
+
+/* Boutons d'action */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e8ecf5;
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #1CC88A, #0eae70);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.8rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(28,200,138,0.4);
+}
+
+.btn-cancel {
+  background: #f1f2f4;
+  color: #5e6c84;
+  border: none;
+  padding: 0.75rem 1.8rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #e4e6ea;
+  color: #172b4d;
+}
+
+/* Alert */
+.alert {
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.alert-success {
+  background: #d4f7ec;
+  color: #0a7a52;
+  border-left: 4px solid #1CC88A;
+}
+
+.alert-danger {
+  background: #fdecea;
+  color: #c0392b;
+  border-left: 4px solid #e74c3c;
+}
+
+/* Message si aucun fichier */
+.no-file-message {
+  background: #f8f9fc;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  color: #8590a5;
+  border: 1px dashed #cbd5e1;
+  margin: 0.5rem 0 1rem 0;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="edit-container">
+    <div class="edit-header">
+      <h1>
+        <span>✏️</span> Modifier la tâche
+      </h1>
+    </div>
+    
+    <form method="post" action="{{ path('app_trello_edit', {'id': task.id}) }}" enctype="multipart/form-data" id="editForm">
+      
+      {# Titre #}
+      <div class="form-group">
+        <label>Titre de la tâche *</label>
+        <input type="text" name="title" class="form-control" required value="{{ task.title }}">
+      </div>
+      
+      {# Description #}
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" class="form-control" placeholder="Description détaillée...">{{ task.description }}</textarea>
+      </div>
+      
+      {# Date d'échéance #}
+      <div class="form-group">
+        <label>📅 Date d'échéance</label>
+        <input type="date" name="dueDate" class="form-control" 
+               value="{{ task.dueDate ? task.dueDate|date('Y-m-d') : '' }}">
+      </div>
+      
+      {# === SECTION FICHIER ACTUEL === #}
+      <div class="form-group">
+        <label>📎 Fichier joint actuel</label>
+        
+        {% if task.fileName %}
+          <div class="current-file" id="currentFileBlock">
+            <div class="file-info">
+              <div class="file-icon">
+                {% set extension = task.fileName|split('.')|last|lower %}
+                {% if extension in ['pdf'] %}
+                  📄
+                {% elseif extension in ['jpg', 'jpeg', 'png', 'gif'] %}
+                  🖼️
+                {% elseif extension in ['doc', 'docx'] %}
+                  📝
+                {% elseif extension in ['xls', 'xlsx'] %}
+                  📊
+                {% else %}
+                  📎
+                {% endif %}
+              </div>
+              <div class="file-details">
+                <span class="file-name">{{ task.fileName }}</span>
+                <span class="file-size">{{ (task.fileSize / 1024)|round }} Ko</span>
+              </div>
+            </div>
+            <div class="file-actions">
+              <a href="{{ asset(task.filePath) }}" target="_blank" class="btn-download">
+                📥 Télécharger
+              </a>
+              <button type="button" class="btn-delete-file" onclick="deleteFile({{ task.id }})">
+                🗑 Supprimer
+              </button>
+            </div>
+          </div>
+        {% else %}
+          <div class="no-file-message">
+            📭 Aucun fichier joint pour le moment
+          </div>
+        {% endif %}
+      </div>
+      
+      {# === SECTION UPLOAD NOUVEAU FICHIER === #}
+      <div class="form-group">
+        <label>📎 Remplacer / Ajouter un fichier</label>
+        
+        <div class="upload-area" id="uploadArea">
+          <label for="attachmentInput" class="upload-label">
+            📂 Choisir un fichier
+          </label>
+          <input type="file" name="attachment" id="attachmentInput" class="form-control" 
+                 accept=".pdf,.jpg,.jpeg,.png,.docx,.doc,.txt,.xlsx,.xls">
+          
+          <div id="selectedFileInfo" class="selected-file">
+            <span id="selectedFileName"></span>
+            <button type="button" class="remove-selected" onclick="clearSelectedFile()">✖</button>
+          </div>
+          
+          <small class="file-hint">
+            🔒 Formats acceptés : PDF, JPG, PNG, DOC, DOCX, XLS, XLSX, TXT (Max 5 Mo)
+          </small>
+        </div>
+      </div>
+      
+      {# Boutons d'action #}
+      <div class="form-actions">
+        <button type="submit" class="btn-save">
+          💾 Enregistrer les modifications
+        </button>
+        <a href="{{ path('app_trello_index') }}" class="btn-cancel">
+          ❌ Annuler
+        </a>
+      </div>
+      
+    </form>
+  </div>
+</div>
+
+<script>
+// Afficher le fichier sélectionné
+const attachmentInput = document.getElementById('attachmentInput');
+const selectedFileInfo = document.getElementById('selectedFileInfo');
+const selectedFileName = document.getElementById('selectedFileName');
+
+attachmentInput.addEventListener('change', function(e) {
+  if (this.files && this.files[0]) {
+    const file = this.files[0];
+    const fileSize = (file.size / 1024).toFixed(1);
+    selectedFileName.innerHTML = `📎 ${file.name} (${fileSize} Ko)`;
+    selectedFileInfo.classList.add('show');
+  } else {
+    clearSelectedFile();
+  }
+});
+
+function clearSelectedFile() {
+  attachmentInput.value = '';
+  selectedFileInfo.classList.remove('show');
+  selectedFileName.innerHTML = '';
+}
+
+// Supprimer le fichier existant
+async function deleteFile(taskId) {
+  if (confirm('⚠️ Supprimer définitivement ce fichier ?')) {
+    try {
+      const response = await fetch(`/trello/task/delete-file/${taskId}`, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+      
+      if (response.ok) {
+        // Cacher le bloc du fichier
+        const fileBlock = document.getElementById('currentFileBlock');
+        if (fileBlock) {
+          fileBlock.style.display = 'none';
+        }
+        
+        // Afficher un message
+        const noFileHtml = `
+          <div class="no-file-message">
+            📭 Fichier supprimé. Vous pouvez en ajouter un nouveau.
+          </div>
+        `;
+        
+        const parentGroup = document.querySelector('.current-file')?.parentElement;
+        if (parentGroup && !document.querySelector('.no-file-message')) {
+          parentGroup.insertAdjacentHTML('beforeend', noFileHtml);
+          if (fileBlock) fileBlock.remove();
+        }
+        
+        showNotification('✅ Fichier supprimé avec succès!', 'success');
+      } else {
+        showNotification('❌ Erreur lors de la suppression', 'error');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showNotification('❌ Erreur réseau', 'error');
+    }
+  }
+}
+
+// Notification
+function showNotification(message, type) {
+  const notification = document.createElement('div');
+  notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'}`;
+  notification.style.position = 'fixed';
+  notification.style.top = '20px';
+  notification.style.right = '20px';
+  notification.style.zIndex = '9999';
+  notification.style.animation = 'slideIn 0.3s ease-out';
+  notification.innerHTML = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transition = 'opacity 0.3s';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// Animation pour le slideIn
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

@@ -11,14 +11,13 @@
         }
 
         body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-family: 'DejaVu Sans', 'Arial Unicode MS', 'Arial', sans-serif;
             background: #4a7c2f;
             padding: 20px;
             font-size: 11px;
             color: #333;
         }
 
-        /* ── Conteneur principal ── */
         .pdf-container {
             max-width: 750px;
             margin: 0 auto;
@@ -44,6 +43,7 @@
             font-size: 10px;
             margin-top: 5px;
             opacity: 0.9;
+            letter-spacing: 1px;
         }
         .header-badge {
             background: #7ab648;
@@ -54,23 +54,60 @@
             font-size: 9px;
         }
 
-        /* ── Titres de sections ── */
+        /* ── Motif fleurs CSS pur ── */
+        .flowers-row {
+            text-align: center;
+            margin: 8px 0 14px 0;
+        }
+        /* Chaque fleur = cercle central + 4 pétales via pseudo + siblings */
+        .flower {
+            display: inline-block;
+            position: relative;
+            width: 18px;
+            height: 18px;
+            margin: 0 6px;
+            vertical-align: middle;
+        }
+        /* Centre de la fleur */
+        .flower-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #f5d020;
+            margin-top: -3.5px;
+            margin-left: -3.5px;
+            z-index: 2;
+        }
+        /* Pétales */
+        .petal {
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+        .petal-top    { top: 0;    left: 50%; margin-left: -3.5px; }
+        .petal-bottom { bottom: 0; left: 50%; margin-left: -3.5px; }
+        .petal-left   { left: 0;   top: 50%;  margin-top: -3.5px;  }
+        .petal-right  { right: 0;  top: 50%;  margin-top: -3.5px;  }
+
+        /* Couleurs des fleurs */
+        .flower-pink   .petal { background: #f48fb1; }
+        .flower-yellow .petal { background: #fff176; }
+        .flower-orange .petal { background: #ffb74d; }
+        .flower-lavender .petal { background: #ce93d8; }
+        .flower-green  .petal { background: #a5d6a7; }
+
+        /* ── Titres sections ── */
         .section-title {
             font-size: 12px;
             font-weight: bold;
-            margin: 15px 0 8px 0;
+            margin: 15px 0 10px 0;
             padding: 8px 14px;
             border-radius: 8px;
             color: white;
-            display: table;
-            width: 100%;
-        }
-        .section-title span {
-            display: table-cell;
-            vertical-align: middle;
-        }
-        .section-title .s-icon {
-            width: 24px;
         }
         .title-green  { background: #2d5016; }
         .title-blue   { background: #2a6490; }
@@ -78,23 +115,9 @@
         .title-purple { background: #7c3d8a; }
         .title-pink   { background: #c0385a; }
 
-        /* ── Fleurs décoratives ── */
-        .flowers {
-            text-align: center;
-            font-size: 12px;
-            margin: 6px 0 10px 0;
-            color: #8bc34a;
-        }
-
         /* ── Grille ── */
-        .grid {
-            display: table;
-            width: 100%;
-            border-spacing: 0;
-        }
-        .grid-row {
-            display: table-row;
-        }
+        .grid { display: table; width: 100%; border-spacing: 0; }
+        .grid-row { display: table-row; }
         .grid-cell {
             display: table-cell;
             padding: 0 6px 10px 0;
@@ -102,7 +125,6 @@
         }
         .grid-cell:last-child { padding-right: 0; }
         .col-3 { width: 33.33%; }
-        .col-2 { width: 50%; }
 
         /* ── Carte ── */
         .card {
@@ -118,7 +140,7 @@
             color: #7ab648;
             font-weight: bold;
             letter-spacing: 0.5px;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
         }
         .card-value {
             font-size: 13px;
@@ -131,33 +153,21 @@
             margin-top: 2px;
         }
 
-        /* ── Score avec barre ── */
+        /* ── Score + barre ── */
         .score-wrap { display: table; width: 100%; }
-        .score-num  { display: table-cell; vertical-align: middle; }
-        .score-bar  { display: table-cell; vertical-align: middle; padding-left: 8px; width: 100%; }
+        .score-num  { display: table-cell; vertical-align: middle; width: 36px; }
+        .score-bar  { display: table-cell; vertical-align: middle; padding-left: 8px; }
+        .score-value { font-size: 20px; font-weight: bold; line-height: 1; }
+        .score-max   { font-size: 9px; color: #999; display: block; }
 
-        .score-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #4a7c2f;
-            line-height: 1;
-        }
-        .score-max {
-            font-size: 9px;
-            color: #999;
-        }
-
-        /* ── Barres de progression ── */
         .progress-bar {
             background: #e0e0e0;
             border-radius: 6px;
             height: 6px;
             overflow: hidden;
+            width: 100%;
         }
-        .progress-fill {
-            height: 6px;
-            border-radius: 6px;
-        }
+        .progress-fill { height: 6px; border-radius: 6px; }
         .fill-green  { background: #4a7c2f; }
         .fill-orange { background: #e8a020; }
         .fill-blue   { background: #4eaad4; }
@@ -165,23 +175,15 @@
         /* ── Badges ── */
         .badge {
             display: inline-block;
-            padding: 3px 12px;
+            padding: 4px 14px;
             border-radius: 15px;
             font-size: 10px;
             font-weight: bold;
         }
-        .badge-yes {
-            background: #d4f5e2;
-            color: #2d5016;
-            border: 1px solid #7ab648;
-        }
-        .badge-no {
-            background: #fde8ec;
-            color: #c0385a;
-            border: 1px solid #e87090;
-        }
+        .badge-yes { background: #d4f5e2; color: #2d5016; border: 1px solid #7ab648; }
+        .badge-no  { background: #fde8ec; color: #c0385a; border: 1px solid #e87090; }
 
-        /* ── Niveau de difficulté ── */
+        /* ── Difficulté ── */
         .difficulty {
             display: inline-block;
             padding: 3px 10px;
@@ -189,45 +191,58 @@
             font-size: 10px;
             font-weight: bold;
         }
-        .diff-easy   { background: #e8f5e0; color: #4a7c2f; }
-        .diff-medium { background: #fef5e0; color: #e8a020; }
-        .diff-hard   { background: #fde8ec; color: #e8637a; }
+        .diff-easy   { background: #e8f5e0; color: #4a7c2f;  border: 1px solid #a8d87a; }
+        .diff-medium { background: #fef5e0; color: #b87a10;  border: 1px solid #e8c870; }
+        .diff-hard   { background: #fde8ec; color: #c03858;  border: 1px solid #e87090; }
 
-        /* ── Blocs de texte ── */
+        /* Indicateur coloré difficulté */
+        .diff-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        .dot-green  { background: #4a7c2f; }
+        .dot-yellow { background: #e8c820; }
+        .dot-red    { background: #e8304a; }
+
+        /* ── Blocs texte ── */
         .text-block {
             background: #fefdf8;
-            border-left: 3px solid #7ab648;
-            padding: 12px;
+            border-left: 4px solid #7ab648;
+            border-top: 1px solid #d8ecb8;
+            border-right: 1px solid #d8ecb8;
+            border-bottom: 1px solid #d8ecb8;
+            border-radius: 0 8px 8px 0;
+            padding: 12px 14px;
             font-size: 11px;
-            line-height: 1.5;
+            line-height: 1.6;
             color: #4a5a3a;
             min-height: 48px;
         }
         .text-block.pink {
             border-left-color: #e8637a;
             background: #fff8fa;
+            border-top-color: #f0c0cc;
+            border-right-color: #f0c0cc;
+            border-bottom-color: #f0c0cc;
         }
-        .text-block.empty {
-            color: #aaa;
-            font-style: italic;
-        }
+        .text-block.empty { color: #aaa; font-style: italic; }
 
         /* ── Séparateur ── */
-        hr {
-            margin: 12px 0;
-            border: none;
-            border-top: 1px solid #c8e6a5;
-        }
+        hr { margin: 15px 0; border: none; border-top: 1px solid #c8e6a5; }
 
-        /* ── Récapitulatif rapide ── */
+        /* ── Récapitulatif ── */
         .recap-row {
             display: table;
             width: 100%;
             background: #f0f8e8;
             border: 1px solid #c4dea0;
             border-radius: 10px;
-            padding: 10px 14px;
-            margin: 4px 0 12px 0;
+            padding: 12px 16px;
+            margin-bottom: 4px;
         }
         .recap-item {
             display: table-cell;
@@ -237,8 +252,8 @@
             border-right: 1px solid #c4dea0;
         }
         .recap-item:last-child { border-right: none; }
-        .recap-num   { font-size: 18px; font-weight: bold; color: #2d5016; }
-        .recap-label { font-size: 8px; color: #6a8a4a; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+        .recap-num   { font-size: 20px; font-weight: bold; color: #2d5016; }
+        .recap-label { font-size: 8px; color: #6a8a4a; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
 
         /* ── Pied de page ── */
         .footer {
@@ -248,12 +263,10 @@
             background: #2d5016;
             border-radius: 10px;
             color: #c8e6a5;
-            font-size: 8px;
+            font-size: 8.5px;
+            letter-spacing: 0.5px;
         }
-        .footer-flowers {
-            font-size: 11px;
-            margin-bottom: 5px;
-        }
+        .footer-flowers { margin-bottom: 8px; }
 
         .no-break { page-break-inside: avoid; }
     </style>
@@ -262,49 +275,85 @@
 
 <div class="pdf-container">
 
-    <!-- ════════════════════════════════
-         EN-TÊTE
-    ════════════════════════════════ -->
+    <!-- ══ EN-TÊTE ══ -->
     <div class="header no-break">
-        <div class="header-title">📗 FocusKid — Carnet Éducatif</div>
-        <div class="header-sub">✦ Suivi pédagogique personnalisé ✦</div>
+        <div class="header-title">FocusKid &mdash; Carnet &Eacute;ducatif</div>
+        <div class="header-sub">&#10022; Suivi p&eacute;dagogique personnalis&eacute; &#10022;</div>
         <div class="header-badge">
-            Généré le {{ 'now'|date('d/m/Y à H:i') }}
+            G&eacute;n&eacute;r&eacute; le {{ 'now'|date('d/m/Y \&agrave; H:i') }}
         </div>
     </div>
 
-    <!-- ════════════════════════════════
-         SECTION 1 — INFORMATIONS DE SESSION
-    ════════════════════════════════ -->
-    <div class="section-title title-green no-break">
-        <span class="s-icon">🌿</span>
-        <span>Informations de session</span>
+    <!-- ══ SECTION 1 — INFORMATIONS ══ -->
+    <div class="section-title title-green no-break">Informations de session</div>
+
+    <!-- Motif fleurs CSS -->
+    <div class="flowers-row no-break">
+        <!-- Fleur rose -->
+        <span class="flower flower-pink">
+            <span class="petal petal-top"></span>
+            <span class="petal petal-bottom"></span>
+            <span class="petal petal-left"></span>
+            <span class="petal petal-right"></span>
+            <span class="flower-center"></span>
+        </span>
+        <!-- Fleur jaune -->
+        <span class="flower flower-yellow">
+            <span class="petal petal-top"></span>
+            <span class="petal petal-bottom"></span>
+            <span class="petal petal-left"></span>
+            <span class="petal petal-right"></span>
+            <span class="flower-center" style="background:#e8a020;"></span>
+        </span>
+        <!-- Fleur orange -->
+        <span class="flower flower-orange">
+            <span class="petal petal-top"></span>
+            <span class="petal petal-bottom"></span>
+            <span class="petal petal-left"></span>
+            <span class="petal petal-right"></span>
+            <span class="flower-center"></span>
+        </span>
+        <!-- Fleur lavande -->
+        <span class="flower flower-lavender">
+            <span class="petal petal-top"></span>
+            <span class="petal petal-bottom"></span>
+            <span class="petal petal-left"></span>
+            <span class="petal petal-right"></span>
+            <span class="flower-center" style="background:#ab47bc;"></span>
+        </span>
+        <!-- Fleur verte -->
+        <span class="flower flower-green">
+            <span class="petal petal-top"></span>
+            <span class="petal petal-bottom"></span>
+            <span class="petal petal-left"></span>
+            <span class="petal petal-right"></span>
+            <span class="flower-center" style="background:#388e3c;"></span>
+        </span>
     </div>
-    <div class="flowers no-break">🌸 🌼 🌺 🌻</div>
 
     <div class="grid no-break">
         <div class="grid-row">
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">📅 Date</div>
+                    <div class="card-label">Date</div>
                     <div class="card-value">
-                        {{ carnet_educatif.dateEtude ? carnet_educatif.dateEtude|date('d/m/Y') : '—' }}
+                        {{ carnet_educatif.dateEtude ? carnet_educatif.dateEtude|date('d/m/Y') : '&mdash;' }}
                     </div>
                 </div>
             </div>
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">🕐 Heure début</div>
+                    <div class="card-label">Heure d&eacute;but</div>
                     <div class="card-value">
-                        {{ carnet_educatif.heureDebut ? carnet_educatif.heureDebut|date('H:i') : '—' }}
+                        {{ carnet_educatif.heureDebut ? carnet_educatif.heureDebut|date('H:i') : '&mdash;' }}
                     </div>
                 </div>
             </div>
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">🕔 Heure fin</div>
+                    <div class="card-label">Heure fin</div>
                     <div class="card-value">
-                        {{ carnet_educatif.heureFin ? carnet_educatif.heureFin|date('H:i') : '—' }}
+                        {{ carnet_educatif.heureFin ? carnet_educatif.heureFin|date('H:i') : '&mdash;' }}
                     </div>
                 </div>
             </div>
@@ -312,39 +361,34 @@
         <div class="grid-row">
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">⏱️ Durée totale</div>
+                    <div class="card-label">Dur&eacute;e totale</div>
                     <div class="card-value">{{ carnet_educatif.dureeTotale }}</div>
                     <div class="card-sub">minutes</div>
                 </div>
             </div>
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">📍 Lieu</div>
-                    <div class="card-value">{{ carnet_educatif.lieu ?: '—' }}</div>
+                    <div class="card-label">Lieu</div>
+                    <div class="card-value">{{ carnet_educatif.lieu ?: '&mdash;' }}</div>
                 </div>
             </div>
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">🎨 Type d'activité</div>
-                    <div class="card-value">{{ carnet_educatif.typeActivite ?: '—' }}</div>
+                    <div class="card-label">Type d&apos;activit&eacute;</div>
+                    <div class="card-value">{{ carnet_educatif.typeActivite ?: '&mdash;' }}</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ════════════════════════════════
-         SECTION 2 — ÉVALUATION COGNITIVE
-    ════════════════════════════════ -->
-    <div class="section-title title-blue no-break">
-        <span class="s-icon">🧠</span>
-        <span>Évaluation cognitive</span>
-    </div>
+    <!-- ══ SECTION 2 — ÉVALUATION COGNITIVE ══ -->
+    <div class="section-title title-blue no-break">&#127944; &Eacute;valuation cognitive</div>
 
     <div class="grid no-break">
         <div class="grid-row">
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">🎯 Concentration</div>
+                    <div class="card-label">Concentration</div>
                     <div class="score-wrap">
                         <div class="score-num">
                             <span class="score-value" style="color:#2d5016;">{{ carnet_educatif.niveauConcentration }}</span>
@@ -360,7 +404,7 @@
             </div>
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">⚡ Agitation</div>
+                    <div class="card-label">Agitation</div>
                     <div class="score-wrap">
                         <div class="score-num">
                             <span class="score-value" style="color:#e8a020;">{{ carnet_educatif.niveauAgitation }}</span>
@@ -376,7 +420,7 @@
             </div>
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">🌟 Autonomie</div>
+                    <div class="card-label">Autonomie</div>
                     <div class="score-wrap">
                         <div class="score-num">
                             <span class="score-value" style="color:#4eaad4;">{{ carnet_educatif.niveauAutonomie }}</span>
@@ -394,29 +438,35 @@
         <div class="grid-row">
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">📖 Matière</div>
-                    <div class="card-value">{{ carnet_educatif.matiere ?: '—' }}</div>
+                    <div class="card-label">Mati&egrave;re</div>
+                    <div class="card-value">{{ carnet_educatif.matiere ?: '&mdash;' }}</div>
                 </div>
             </div>
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">🎓 Niveau de difficulté</div>
+                    <div class="card-label">Niveau de difficult&eacute;</div>
                     <div style="margin-top:6px;">
                         {% if carnet_educatif.niveauDifficulte == 'Facile' %}
-                            <span class="difficulty diff-easy">🟢 Facile</span>
+                            <span class="difficulty diff-easy">
+                                <span class="diff-dot dot-green"></span>Facile
+                            </span>
                         {% elseif carnet_educatif.niveauDifficulte == 'Moyen' %}
-                            <span class="difficulty diff-medium">🟡 Moyen</span>
+                            <span class="difficulty diff-medium">
+                                <span class="diff-dot dot-yellow"></span>Moyen
+                            </span>
                         {% elseif carnet_educatif.niveauDifficulte == 'Difficile' %}
-                            <span class="difficulty diff-hard">🔴 Difficile</span>
+                            <span class="difficulty diff-hard">
+                                <span class="diff-dot dot-red"></span>Difficile
+                            </span>
                         {% else %}
-                            <span class="card-value">{{ carnet_educatif.niveauDifficulte ?: '—' }}</span>
+                            <span class="card-value">{{ carnet_educatif.niveauDifficulte ?: '&mdash;' }}</span>
                         {% endif %}
                     </div>
                 </div>
             </div>
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">🔔 Interruptions</div>
+                    <div class="card-label">Interruptions</div>
                     <div class="card-value">{{ carnet_educatif.nombreInterruptions ?: '0' }}</div>
                     <div class="card-sub">fois durant la session</div>
                 </div>
@@ -424,42 +474,37 @@
         </div>
     </div>
 
-    <!-- ════════════════════════════════
-         SECTION 3 — TRAVAIL & AUTONOMIE
-    ════════════════════════════════ -->
-    <div class="section-title title-gold no-break">
-        <span class="s-icon">⚙️</span>
-        <span>Travail &amp; autonomie</span>
-    </div>
+    <!-- ══ SECTION 3 — TRAVAIL & AUTONOMIE ══ -->
+    <div class="section-title title-gold no-break">Travail &amp; autonomie</div>
 
     <div class="grid no-break">
         <div class="grid-row">
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">✅ Travail terminé</div>
-                    <div style="margin-top:6px;">
+                    <div class="card-label">Travail termin&eacute;</div>
+                    <div style="margin-top:7px;">
                         <span class="badge {{ carnet_educatif.travailTermine ? 'badge-yes' : 'badge-no' }}">
-                            {{ carnet_educatif.travailTermine ? '✔ Terminé' : '✘ Non terminé' }}
+                            {{ carnet_educatif.travailTermine ? '&#10003; Termin&eacute;' : '&#10007; Non termin&eacute;' }}
                         </span>
                     </div>
                 </div>
             </div>
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">🧑 A travaillé seul</div>
-                    <div style="margin-top:6px;">
+                    <div class="card-label">A travaill&eacute; seul</div>
+                    <div style="margin-top:7px;">
                         <span class="badge {{ carnet_educatif.travailleSeul ? 'badge-yes' : 'badge-no' }}">
-                            {{ carnet_educatif.travailleSeul ? '✔ Oui' : '✘ Non' }}
+                            {{ carnet_educatif.travailleSeul ? '&#10003; Oui' : '&#10007; Non' }}
                         </span>
                     </div>
                 </div>
             </div>
             <div class="grid-cell col-3">
                 <div class="card">
-                    <div class="card-label">🤝 A demandé de l'aide</div>
-                    <div style="margin-top:6px;">
+                    <div class="card-label">A demand&eacute; de l&apos;aide</div>
+                    <div style="margin-top:7px;">
                         <span class="badge {{ carnet_educatif.demandeAide ? 'badge-yes' : 'badge-no' }}">
-                            {{ carnet_educatif.demandeAide ? '✔ Oui' : '✘ Non' }}
+                            {{ carnet_educatif.demandeAide ? '&#10003; Oui' : '&#10007; Non' }}
                         </span>
                     </div>
                 </div>
@@ -467,66 +512,88 @@
         </div>
     </div>
 
-    <!-- ════════════════════════════════
-         SECTION 4 — DIFFICULTÉS
-    ════════════════════════════════ -->
-    <div class="section-title title-purple no-break">
-        <span class="s-icon">📝</span>
-        <span>Difficultés rencontrées</span>
-    </div>
+    <!-- ══ SECTION 4 — DIFFICULTÉS ══ -->
+    <div class="section-title title-purple no-break">Difficult&eacute;s rencontr&eacute;es</div>
     {% if carnet_educatif.difficultes %}
         <div class="text-block no-break">{{ carnet_educatif.difficultes }}</div>
     {% else %}
-        <div class="text-block empty no-break">Aucune difficulté signalée pour cette session. Excellent travail !</div>
+        <div class="text-block empty no-break">Aucune difficult&eacute; signal&eacute;e pour cette session. Excellent travail !</div>
     {% endif %}
 
-    <!-- ════════════════════════════════
-         SECTION 5 — POINTS POSITIFS
-    ════════════════════════════════ -->
-    <div class="section-title title-pink no-break">
-        <span class="s-icon">⭐</span>
-        <span>Points positifs</span>
-    </div>
+    <!-- ══ SECTION 5 — POINTS POSITIFS ══ -->
+    <div class="section-title title-pink no-break">Points positifs</div>
     {% if carnet_educatif.pointsPositifs %}
         <div class="text-block pink no-break">{{ carnet_educatif.pointsPositifs }}</div>
     {% else %}
-        <div class="text-block pink empty no-break">Aucun point positif noté pour cette session.</div>
+        <div class="text-block pink empty no-break">Aucun point positif not&eacute; pour cette session.</div>
     {% endif %}
 
     <hr class="no-break">
 
-    <!-- ════════════════════════════════
-         RÉCAPITULATIF RAPIDE
-    ════════════════════════════════ -->
+    <!-- ══ RÉCAPITULATIF ══ -->
     <div class="recap-row no-break">
         <div class="recap-item">
             <div class="recap-num">{{ carnet_educatif.niveauConcentration }}/10</div>
-            <div class="recap-label">🎯 Concentration</div>
+            <div class="recap-label">Concentration</div>
         </div>
         <div class="recap-item">
             <div class="recap-num">{{ carnet_educatif.niveauAgitation }}/10</div>
-            <div class="recap-label">⚡ Agitation</div>
+            <div class="recap-label">Agitation</div>
         </div>
         <div class="recap-item">
             <div class="recap-num">{{ carnet_educatif.niveauAutonomie }}/10</div>
-            <div class="recap-label">🌟 Autonomie</div>
+            <div class="recap-label">Autonomie</div>
         </div>
         <div class="recap-item">
             <div class="recap-num">{{ carnet_educatif.dureeTotale }} min</div>
-            <div class="recap-label">⏱️ Durée</div>
+            <div class="recap-label">Dur&eacute;e</div>
         </div>
         <div class="recap-item">
             <div class="recap-num">{{ carnet_educatif.nombreInterruptions ?: '0' }}</div>
-            <div class="recap-label">🔔 Interruptions</div>
+            <div class="recap-label">Interruptions</div>
         </div>
     </div>
 
-    <!-- ════════════════════════════════
-         PIED DE PAGE
-    ════════════════════════════════ -->
+    <!-- ══ PIED DE PAGE ══ -->
     <div class="footer no-break">
-        <div class="footer-flowers">🌿 🌸 🍃 🌻 🌼</div>
-        FocusKid — Suivi éducatif personnalisé — Document généré automatiquement
+        <div class="footer-flowers">
+            <span class="flower flower-green" style="display:inline-block;position:relative;width:14px;height:14px;margin:0 4px;vertical-align:middle;">
+                <span class="petal petal-top" style="width:6px;height:6px;top:0;left:4px;background:#a5d6a7;border-radius:50%;position:absolute;"></span>
+                <span class="petal petal-bottom" style="width:6px;height:6px;bottom:0;left:4px;background:#a5d6a7;border-radius:50%;position:absolute;"></span>
+                <span class="petal petal-left" style="width:6px;height:6px;top:4px;left:0;background:#a5d6a7;border-radius:50%;position:absolute;"></span>
+                <span class="petal petal-right" style="width:6px;height:6px;top:4px;right:0;background:#a5d6a7;border-radius:50%;position:absolute;"></span>
+                <span class="flower-center" style="width:6px;height:6px;top:4px;left:4px;background:#f5d020;border-radius:50%;position:absolute;z-index:2;"></span>
+            </span>
+            <span class="flower flower-pink" style="display:inline-block;position:relative;width:14px;height:14px;margin:0 4px;vertical-align:middle;">
+                <span style="width:6px;height:6px;top:0;left:4px;background:#f48fb1;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;bottom:0;left:4px;background:#f48fb1;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;top:4px;left:0;background:#f48fb1;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;top:4px;right:0;background:#f48fb1;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;top:4px;left:4px;background:#f5d020;border-radius:50%;position:absolute;z-index:2;"></span>
+            </span>
+            <span style="display:inline-block;position:relative;width:14px;height:14px;margin:0 4px;vertical-align:middle;">
+                <span style="width:6px;height:6px;top:0;left:4px;background:#c8e6a5;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;bottom:0;left:4px;background:#c8e6a5;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;top:4px;left:0;background:#c8e6a5;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;top:4px;right:0;background:#c8e6a5;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;top:4px;left:4px;background:#f5d020;border-radius:50%;position:absolute;z-index:2;"></span>
+            </span>
+            <span style="display:inline-block;position:relative;width:14px;height:14px;margin:0 4px;vertical-align:middle;">
+                <span style="width:6px;height:6px;top:0;left:4px;background:#fff176;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;bottom:0;left:4px;background:#fff176;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;top:4px;left:0;background:#fff176;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;top:4px;right:0;background:#fff176;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;top:4px;left:4px;background:#e8a020;border-radius:50%;position:absolute;z-index:2;"></span>
+            </span>
+            <span style="display:inline-block;position:relative;width:14px;height:14px;margin:0 4px;vertical-align:middle;">
+                <span style="width:6px;height:6px;top:0;left:4px;background:#ce93d8;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;bottom:0;left:4px;background:#ce93d8;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;top:4px;left:0;background:#ce93d8;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;top:4px;right:0;background:#ce93d8;border-radius:50%;position:absolute;"></span>
+                <span style="width:6px;height:6px;top:4px;left:4px;background:#f5d020;border-radius:50%;position:absolute;z-index:2;"></span>
+            </span>
+        </div>
+        FocusKid &mdash; Suivi &eacute;ducatif personnalis&eacute; &mdash; Document g&eacute;n&eacute;r&eacute; automatiquement
     </div>
 
 </div>

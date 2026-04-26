@@ -1,6 +1,6 @@
 {% extends 'base-front.html.twig' %}
 
-{% block title %}Gestion des objectifs{% endblock %}
+{% block title %}Gestion des objectifs - FocusKid{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
@@ -33,6 +33,53 @@
     .stat-en-cours { background: #e3f2fd; color: #1976d2; }
     .stat-atteint { background: #d4f7ec; color: #0a7a52; }
     .stat-non-atteint { background: #fdecea; color: #c0392b; }
+    
+    /* Style WhatsApp */
+    .whatsapp-header {
+        background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .whatsapp-badge {
+        background: rgba(255,255,255,0.2);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+    }
+    .whatsapp-badge i {
+        margin-right: 5px;
+    }
+    .notification-toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    .btn-whatsapp {
+        background-color: #25D366;
+        color: white;
+        border: none;
+    }
+    .btn-whatsapp:hover {
+        background-color: #128C7E;
+        color: white;
+    }
 </style>
 {% endblock %}
 
@@ -40,7 +87,17 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
-            <h1 class="mb-4">🎯 Gestion des objectifs</h1>
+            <!-- En-tête avec WhatsApp -->
+            <div class="whatsapp-header">
+                <div>
+                    <h1 class="mb-0">🎯 Gestion des objectifs</h1>
+                    <small>Notifications automatiques par WhatsApp</small>
+                </div>
+                <div class="whatsapp-badge">
+                    <i class="fab fa-whatsapp"></i> 
+                    <strong>WhatsApp Actif</strong>
+                </div>
+            </div>
             
             <!-- Statistiques -->
             <div class="row mb-4" id="statsContainer">
@@ -120,7 +177,27 @@
     </div>
 </div>
 
+<!-- Toast de notification -->
+<div id="notificationToast" class="notification-toast" style="display: none;">
+    <div class="card shadow-lg">
+        <div class="card-body p-3">
+            <div class="d-flex align-items-center">
+                <div class="me-3" id="toastIcon"></div>
+                <div>
+                    <strong id="toastTitle"></strong>
+                    <p class="mb-0 small" id="toastMessage"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+    // ================================
+    // VOTRE NUMÉRO WHATSAPP
+    // ================================
+    const MON_NUMERO_WHATSAPP = '+21658397936';
+    
     // ================================
     // Variables globales
     // ================================
@@ -136,6 +213,42 @@
     document.getElementById('date_fin').value = dans7Jours;
 
     // ================================
+    // Fonction d'affichage des notifications
+    // ================================
+    function showNotification(type, title, message) {
+        const toast = document.getElementById('notificationToast');
+        const icon = document.getElementById('toastIcon');
+        const toastTitle = document.getElementById('toastTitle');
+        const toastMessage = document.getElementById('toastMessage');
+        
+        toast.style.display = 'block';
+        
+        if (type === 'success') {
+            icon.innerHTML = '<i class="fas fa-check-circle text-success fa-2x"></i>';
+            toastTitle.textContent = title;
+            toastTitle.style.color = '#28a745';
+        } else if (type === 'error') {
+            icon.innerHTML = '<i class="fas fa-times-circle text-danger fa-2x"></i>';
+            toastTitle.textContent = title;
+            toastTitle.style.color = '#dc3545';
+        } else if (type === 'whatsapp') {
+            icon.innerHTML = '<i class="fab fa-whatsapp text-success fa-2x"></i>';
+            toastTitle.textContent = title;
+            toastTitle.style.color = '#25D366';
+        } else {
+            icon.innerHTML = '<i class="fas fa-info-circle text-info fa-2x"></i>';
+            toastTitle.textContent = title;
+            toastTitle.style.color = '#17a2b8';
+        }
+        
+        toastMessage.textContent = message;
+        
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 5000);
+    }
+
+    // ================================
     // Création d'un objectif
     // ================================
     document.getElementById('objectifForm').addEventListener('submit', async function (e) {
@@ -147,12 +260,12 @@
         const submitButton = this.querySelector('button[type="submit"]');
 
         if (!description || !dateDebut || !dateFin) {
-            alert('Veuillez remplir tous les champs.');
+            showNotification('error', 'Erreur', 'Veuillez remplir tous les champs.');
             return;
         }
 
         if (new Date(dateFin) < new Date(dateDebut)) {
-            alert('La date de fin doit être postérieure à la date de début.');
+            showNotification('error', 'Erreur', 'La date de fin doit être postérieure à la date de début.');
             return;
         }
 
@@ -177,7 +290,7 @@
             const result = await response.json();
 
             if (response.ok && result.success) {
-                alert(result.message || 'Objectif créé avec succès !');
+                showNotification('success', 'Succès !', result.message || 'Objectif créé avec succès !');
 
                 document.getElementById('objectifForm').reset();
                 document.getElementById('date_debut').value = aujourdhui;
@@ -186,14 +299,11 @@
                 await chargerObjectifs();
                 await chargerStats();
             } else {
-                alert(
-                    result.error ||
-                    (result.errors ? result.errors.join('\n') : 'Erreur lors de la création.')
-                );
+                showNotification('error', 'Erreur', result.error || (result.errors ? result.errors.join('\n') : 'Erreur lors de la création.'));
             }
         } catch (error) {
             console.error(error);
-            alert('Erreur réseau : ' + error.message);
+            showNotification('error', 'Erreur réseau', error.message);
         } finally {
             submitButton.disabled = false;
             submitButton.innerHTML = originalText;
@@ -294,50 +404,68 @@
     }
 
     // ================================
-    // Mettre à jour le statut
+    // Mettre à jour le statut - VERSION CORRIGÉE
     // ================================
-    async function updateStatut(id, statut, button) {
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '⏳ Envoi...';
+async function updateStatut(id, statut, button) {
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mise à jour...';
+    
+    const statutLabel = statut === 'ATTEINT' ? '✅ ATTEINT' : '❌ NON ATTEINT';
+    
+    try {
+        const response = await fetch(`/objectifs/api/${id}/statut`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                statut: statut,
+                numero_whatsapp: MON_NUMERO_WHATSAPP
+            })
+        });
 
-        try {
-            const response = await fetch(`/objectifs/api/${id}/statut`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ statut })
-            });
+        const result = await response.json();
 
-            const result = await response.json();
-
-            if (response.ok) {
-                if (result.html) {
-                    const newWindow = window.open();
-                    newWindow.document.write(result.html);
-                    newWindow.document.close();
-                }
-
-                alert('Statut mis à jour avec succès !');
-                await chargerObjectifs();
-                await chargerStats();
-            } else {
-                alert(result.error || 'Erreur lors de la mise à jour.');
+        if (response.ok) {
+            // Afficher le faux message WhatsApp
+            if (result.whatsapp_html) {
+                // Ajouter le faux WhatsApp à la page
+                const div = document.createElement('div');
+                div.innerHTML = result.whatsapp_html;
+                document.body.appendChild(div.firstChild);
+                
+                // Disparaître après 8 secondes
+                setTimeout(() => {
+                    const whatsappDiv = document.querySelector('[style*="position: fixed; bottom: 20px; right: 20px"]');
+                    if (whatsappDiv) {
+                        whatsappDiv.remove();
+                    }
+                }, 8000);
             }
-        } catch (error) {
-            alert('Erreur réseau : ' + error.message);
-        } finally {
-            button.disabled = false;
-            button.innerHTML = originalText;
+            
+            // Notification de succès
+            showNotification('success', statutLabel, 'Statut mis à jour avec succès !');
+            
+            await chargerObjectifs();
+            await chargerStats();
+        } else {
+            showNotification('error', 'Erreur', result.error || 'Erreur lors de la mise à jour');
         }
+    } catch (error) {
+        console.error(error);
+        showNotification('error', 'Erreur réseau', error.message);
+    } finally {
+        button.disabled = false;
+        button.innerHTML = originalText;
     }
+}
 
     // ================================
     // Supprimer un objectif
     // ================================
     async function supprimerObjectif(id) {
-        if (!confirm('Supprimer cet objectif ?')) {
+        if (!confirm('⚠️ Supprimer définitivement cet objectif ?')) {
             return;
         }
 
@@ -349,14 +477,14 @@
             const result = await response.json();
 
             if (response.ok) {
-                alert(result.message || 'Objectif supprimé.');
+                showNotification('success', 'Supprimé', result.message || 'Objectif supprimé.');
                 await chargerObjectifs();
                 await chargerStats();
             } else {
-                alert(result.error || 'Erreur lors de la suppression.');
+                showNotification('error', 'Erreur', result.error || 'Erreur lors de la suppression.');
             }
         } catch (error) {
-            alert('Erreur réseau : ' + error.message);
+            showNotification('error', 'Erreur réseau', error.message);
         }
     }
 
@@ -381,9 +509,17 @@
     }
 
     // ================================
-    // Chargement initial
+    // Chargement initial - VERSION CORRIGÉE
     // ================================
     document.addEventListener('DOMContentLoaded', async () => {
+        if (MON_NUMERO_WHATSAPP) {
+            console.log('✅ WhatsApp configuré pour:', MON_NUMERO_WHATSAPP);
+            showNotification('success', 'WhatsApp prêt', 
+                `Notifications envoyées au ${MON_NUMERO_WHATSAPP}`);
+        } else {
+            console.warn('⚠️ WhatsApp non configuré');
+        }
+        
         await chargerObjectifs();
         await chargerStats();
 
