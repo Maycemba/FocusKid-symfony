@@ -5,11 +5,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}FocusKids Admin - Dashboard{% endblock %}</title>
-    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/logo.png') }}" />
+    
+    <!-- Favicon - logo.png -->
+    <link rel="shortcut icon" type="image/png" href="{{ asset('base-back/assets/images/logos/favicon.png') }}" />
+    <link rel="icon" type="image/png" href="{{ asset('base-back/assets/images/logos/favicon.png') }}" />
     <link rel="stylesheet" href="{{ asset('base-back/assets/css/styles.min.css') }}" />
-    {% block stylesheets %}{% endblock %}
+    
     <style>
-        /* Style pour minimiser le logo */
         .brand-logo img {
             height: 40px !important;
             width: auto !important;
@@ -26,20 +28,144 @@
             font-weight: bold;
             margin-left: 8px;
         }
-        /* Cacher le header (app-header) */
+        .logo-img img {
+            display: block !important;
+            visibility: visible !important;
+        }
         .app-header {
             display: none !important;
         }
-        /* Ajuster le body-wrapper pour qu'il prenne toute la place */
         .body-wrapper {
             margin-top: 0 !important;
             padding-top: 0 !important;
         }
+        
+        .sidebar-link {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .sidebar-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            border-radius: 10px;
+        }
+        .sidebar-link.active iconify-icon {
+            color: white !important;
+        }
+        
+        #dynamic-content {
+            min-height: 400px;
+        }
+        
+        .unlimited-access-img img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        iconify-icon {
+            font-size: 20px;
+            vertical-align: middle;
+        }
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #9C27B0;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .badge-type {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-memoire { background: #9C27B0; color: white; }
+        .badge-attention { background: #2196F3; color: white; }
+        .badge-logique { background: #FF9800; color: white; }
+        .badge-chrono { background: #F44336; color: white; }
+        .badge-actif { background: #4CAF50; color: white; }
+        .badge-inactif { background: #9E9E9E; color: white; }
+        .badge-archive { background: #E74C3C; color: white; }
+        
+        .btn-action {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin: 0 3px;
+        }
+        
+        .exercice-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-left: 5px solid #9C27B0;
+            height: 100%;
+            cursor: pointer;
+        }
+        .exercice-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .etoiles {
+            color: #FFC107;
+            font-size: 14px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #f8f9fa;
+            border-radius: 20px;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .exercice-card {
+            animation: fadeInUp 0.3s ease forwards;
+        }
     </style>
+    
+    {% block stylesheets %}{% endblock %}
 </head>
 
 <body>
-  
+
     <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
         data-sidebar-position="fixed" data-header-position="fixed">
 
@@ -55,7 +181,7 @@
         <aside class="left-sidebar">
             <div>
                 <div class="brand-logo d-flex align-items-center justify-content-between px-3 py-2">
-                    <a class="text-nowrap logo-img d-flex align-items-center" href="#">
+                    <a class="text-nowrap logo-img d-flex align-items-center" href="#" id="homeLink">
                         <img src="{{ asset('base-back/assets/images/logos/logo.png') }}" alt="FocusKids" />
                         <span class="fw-bold text-primary">FocusKids</span>
                     </a>
@@ -66,99 +192,89 @@
                 
                 <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
                     <ul id="sidebarnav">
-                        <!-- Dashboard -->
                         <li class="nav-small-cap">
                             <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
                             <span class="hide-menu">Navigation</span>
                         </li>
                         <li class="sidebar-item">
-                            <a href="#" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link ajax-link" data-url="{{ path('app_exercice_index') }}">
                                 <iconify-icon icon="solar:home-2-line-duotone"></iconify-icon>
                                 <span class="hide-menu">Tableau de bord</span>
                             </a>
                         </li>
                         
-                        <!-- Module 1: EXERCICES -->
                         <li class="nav-small-cap">
                             <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
                             <span class="hide-menu">Gestion Pédagogique</span>
                         </li>
                         <li class="sidebar-item">
-                            <a href="{{ path('app_exercice_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link ajax-link" data-url="{{ path('app_exercice_index') }}">
                                 <iconify-icon icon="solar:notebook-bookmark-line-duotone"></iconify-icon>
                                 <span class="hide-menu">📚 Exercices</span>
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a href="{{ path('app_suivi_index') }}" class="sidebar-link primary-hover-bg">
+                            <a href="#" class="sidebar-link ajax-link" data-url="{{ path('app_suivi_index') }}">
                                 <iconify-icon icon="solar:chart-2-line-duotone"></iconify-icon>
                                 <span class="hide-menu">📊 Suivi</span>
                             </a>
                         </li>
                         
-                        <!-- Module 2: JEUX -->
                         <li class="sidebar-item">
-                            <a href="{{ path('app_jeu_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link ajax-link" data-url="{{ path('app_jeu_index') }}">
                                 <iconify-icon icon="solar:gamepad-line-duotone"></iconify-icon>
                                 <span class="hide-menu">🎮 Jeux</span>
                             </a>
                         </li>
                         
-                        <!-- Module 3: SESSIONS DE CALME -->
                         <li class="sidebar-item">
-                            <a href="{{ path('app_sessions_de_calme_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link ajax-link" data-url="{{ path('app_sessions_de_calme_index') }}">
                                 <iconify-icon icon="solar:meditation-line-duotone"></iconify-icon>
                                 <span class="hide-menu">🧘 Sessions calmes</span>
                             </a>
                         </li>
                         
-                        <!-- Module 4: COURS / LEÇONS -->
                         <li class="sidebar-item">
-                            <a href="{{ path('app_cour_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link ajax-link" data-url="{{ path('app_cour_index') }}">
                                 <iconify-icon icon="solar:book-open-line-duotone"></iconify-icon>
                                 <span class="hide-menu">📖 Cours / Leçons</span>
                             </a>
                         </li>
                         
-                        <!-- Module 5: CARNET ÉDUCATIF -->
                         <li class="sidebar-item">
-                            <a href="{{ path('app_carnet_educatif_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link ajax-link" data-url="{{ path('app_carnet_educatif_index') }}">
                                 <iconify-icon icon="solar:diploma-line-duotone"></iconify-icon>
                                 <span class="hide-menu">📝 Carnet éducatif</span>
                             </a>
                         </li>
                         
-                        <!-- Module 6: ÉMOTIONS -->
                         <li class="sidebar-item">
-                            <a href="{{ path('app_emotion_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link ajax-link" data-url="{{ path('app_emotion_index') }}">
                                 <iconify-icon icon="solar:emoji-funny-square-line-duotone"></iconify-icon>
                                 <span class="hide-menu">😊 Émotions</span>
                             </a>
                         </li>
                         
-                        <!-- Module 7: SCÉNARIOS -->
                         <li class="sidebar-item">
-                            <a href="{{ path('app_scenario_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link ajax-link" data-url="{{ path('app_scenario_index') }}">
                                 <iconify-icon icon="solar:film-line-duotone"></iconify-icon>
                                 <span class="hide-menu">🎬 Scénarios</span>
                             </a>
                         </li>
                         
-                        <!-- Module 8: HUMEUR JOURNALIÈRE -->
                         <li class="sidebar-item">
-                            <a href="{{ path('app_humeur_journaliere_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link ajax-link" data-url="{{ path('app_humeur_journaliere_index') }}">
                                 <iconify-icon icon="solar:smile-circle-line-duotone"></iconify-icon>
                                 <span class="hide-menu">😊 Humeur journalière</span>
                             </a>
                         </li>
                         
-                        <!-- Module 9: UTILISATEURS -->
                         <li class="nav-small-cap">
                             <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
                             <span class="hide-menu">Administration</span>
                         </li>
                         <li class="sidebar-item">
-                            <a href="{{ path('app_utilisateur_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link ajax-link" data-url="{{ path('app_utilisateur_index') }}">
                                 <iconify-icon icon="solar:users-group-rounded-line-duotone"></iconify-icon>
                                 <span class="hide-menu">👥 Utilisateurs</span>
                             </a>
@@ -170,7 +286,7 @@
                                 <p class="small text-muted">Version 1.0</p>
                             </div>
                             <div class="unlimited-access-img">
-                                <img src="{{ asset('assets/images/backgrounds/sidebar-buynow-bg.png') }}" alt="" class="img-fluid">
+                                <img src="{{ asset('base-back/assets/images/backgrounds/sidebar-buynow-bg.png') }}" alt="" class="img-fluid">
                             </div>
                         </div>
                     </ul>
@@ -181,8 +297,9 @@
         <div class="body-wrapper">
             <div class="body-wrapper-inner">
                 <div class="container-fluid">
-                    {% block body %}{% endblock %}
-
+                    <div id="dynamic-content">
+                        {% block body %}{% endblock %}
+                    </div>
                     <div class="py-6 px-6 text-center">
                         <p class="mb-0 fs-4">© {{ 'now'|date('Y') }} FocusKids - Plateforme éducative pour enfants</p>
                     </div>
@@ -191,15 +308,80 @@
         </div>
     </div>
 
-    <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('assets/js/sidebarmenu.js') }}"></script>
-    <script src="{{ asset('assets/js/app.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/apexcharts/dist/apexcharts.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/simplebar/dist/simplebar.js') }}"></script>
-    <script src="{{ asset('assets/js/dashboard.js') }}"></script>
+    <!-- Scripts -->
+    <script src="{{ asset('base-back/assets/libs/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ asset('base-back/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('base-back/assets/js/sidebarmenu.js') }}"></script>
+    <script src="{{ asset('base-back/assets/js/app.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            console.log('✅ AJAX navigation initialized');
+            
+            var currentUrl = window.location.pathname;
+            
+            function loadContent(url) {
+                if (!url) return;
+                
+                console.log('📥 Chargement de:', url);
+                
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'html',
+                    success: function(data) {
+                        var newContent = $(data).find('#dynamic-content').html();
+                        if (newContent) {
+                            $('#dynamic-content').html(newContent);
+                        } else {
+                            $('#dynamic-content').html(data);
+                        }
+                        window.history.pushState({url: url}, '', url);
+                        var newTitle = $(data).filter('title').text();
+                        if (newTitle) document.title = newTitle;
+                        $('.sidebar-link').removeClass('active');
+                        $('.ajax-link[data-url="' + url + '"]').addClass('active');
+                        
+                        if (typeof bootstrap !== 'undefined') {
+                            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                                return new bootstrap.Tooltip(tooltipTriggerEl);
+                            });
+                        }
+                        console.log('✅ Contenu chargé');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('❌ Erreur AJAX:', error);
+                        window.location.href = url;
+                    }
+                });
+            }
+            
+            $(document).on('click', '.ajax-link', function(e) {
+                e.preventDefault();
+                var url = $(this).data('url');
+                if (url) loadContent(url);
+            });
+            
+            $('#homeLink').on('click', function(e) {
+                e.preventDefault();
+                loadContent("{{ path('app_exercice_index') }}");
+            });
+            
+            window.addEventListener('popstate', function(event) {
+                if (event.state && event.state.url) loadContent(event.state.url);
+            });
+            
+            $('.ajax-link').each(function() {
+                if (currentUrl.includes($(this).data('url'))) {
+                    $(this).addClass('active');
+                }
+            });
+            
+            console.log('✅ Liens AJAX trouvés:', $('.ajax-link').length);
+        });
+    </script>
 
     {% block javascripts %}
         {{ importmap('app') }}

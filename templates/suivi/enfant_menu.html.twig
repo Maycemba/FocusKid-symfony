@@ -45,6 +45,14 @@
             background: #F57C00;
             color: white;
         }
+        
+        /* Grille responsive */
+        .row-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
     </style>
 {% endblock %}
 
@@ -61,46 +69,41 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row-cards">
         <!-- Carte Exercices -->
-        <div class="col-md-3 mb-3">
-            <div class="menu-card" onclick="window.location.href='{{ path('app_suivi_enfant_exercices', {'id': enfant.id}) }}'">
-                <div class="menu-icon">📚</div>
-                <div class="menu-title">Exercices</div>
-                <div class="menu-subtitle">Voir tous les exercices</div>
-            </div>
+        <div class="menu-card" onclick="window.location.href='{{ path('app_suivi_enfant_exercices', {'id': enfant.id}) }}'">
+            <div class="menu-icon">📚</div>
+            <div class="menu-title">Exercices</div>
+            <div class="menu-subtitle">Voir tous les exercices</div>
         </div>
 
         <!-- Carte Heatmap -->
-        <div class="col-md-3 mb-3">
-            <div class="menu-card" onclick="window.location.href='{{ path('app_suivi_enfant_heatmap', {'id': enfant.id}) }}'">
-                <div class="menu-icon">🔥</div>
-                <div class="menu-title">Heatmap</div>
-                <div class="menu-subtitle">Performances par heure</div>
-            </div>
+        <div class="menu-card" onclick="window.location.href='{{ path('app_suivi_enfant_heatmap', {'id': enfant.id}) }}'">
+            <div class="menu-icon">🔥</div>
+            <div class="menu-title">Heatmap</div>
+            <div class="menu-subtitle">Performances par heure</div>
         </div>
 
         <!-- Carte Statistiques -->
-        <div class="col-md-3 mb-3">
-            <div class="menu-card" onclick="window.location.href='{{ path('app_suivi_enfant_stats', {'id': enfant.id}) }}'">
-                <div class="menu-icon">📊</div>
-                <div class="menu-title">Statistiques</div>
-                <div class="menu-subtitle">Taux de réussite, temps</div>
-            </div>
+        <div class="menu-card" onclick="window.location.href='{{ path('app_suivi_enfant_stats', {'id': enfant.id}) }}'">
+            <div class="menu-icon">📊</div>
+            <div class="menu-title">Statistiques</div>
+            <div class="menu-subtitle">Taux de réussite, temps</div>
         </div>
 
         <!-- Carte Planification -->
-        <div class="col-md-3 mb-3">
-            <div class="menu-card" onclick="window.location.href='{{ path('app_suivi_enfant_planning', {'id': enfant.id}) }}'">
-                <div class="menu-icon">📅</div>
-                <div class="menu-title">Planification</div>
-                <div class="menu-subtitle">Voir le planning</div>
-            </div>
+        <div class="menu-card" onclick="window.location.href='{{ path('app_suivi_enfant_planning', {'id': enfant.id}) }}'">
+            <div class="menu-icon">📅</div>
+            <div class="menu-title">Planification</div>
+            <div class="menu-subtitle">Voir le planning</div>
         </div>
-       <a href="{{ path('app_suivi_enfant_rapport_ia_avance', {'id': enfant.id}) }}" class="btn btn-info btn-lg">
-    <i class="ti ti-brain"></i>  Rapport  détaillé
-</a>
 
+        <!-- Carte Rapport (identique aux autres) -->
+        <div class="menu-card" onclick="window.location.href='{{ path('app_suivi_enfant_rapport_ia_avance', {'id': enfant.id}) }}'">
+            <div class="menu-icon">📄</div>
+            <div class="menu-title">Rapport</div>
+            <div class="menu-subtitle">Analyse détaillée</div>
+        </div>
     </div>
 </div>
 {% endblock %}
