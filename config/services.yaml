@@ -1,10 +1,15 @@
 parameters:
+    # Email administrateur par défaut
+    admin_email: 'parent@focuskid.com'
     admin_email: 'ayamosbeh91@gmail.com'
 
 services:
     _defaults:
-        autowire: true
-        autoconfigure: true
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            # Lie la valeur à tous les paramètres string $adminEmail dans les services
+            string $adminEmail: '%admin_email%'
 
     App\:
         resource: '../src/'
@@ -16,6 +21,14 @@ services:
 
     
 
-    App\Service\ConseilIACarnetService:
-        autowire: true
-    
+    # Configuration explicite pour NotificationService (optionnel, car le bind ci-dessus s'en charge)
+    App\Service\NotificationService:
+        arguments:
+            $adminEmail: '%admin_email%'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+    App\Controller\AnthropicProxyController:
+        arguments:
+            $anthropicApiKey: '%env(ANTHROPIC_API_KEY)%'
+        tags: ['controller.service_arguments']

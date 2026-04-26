@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\CarnetEducatif;
 use App\Form\CarnetEducatifType;
 use App\Repository\CarnetEducatifRepository;
+use App\Repository\CommentaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -49,14 +50,23 @@ public function index(Request $request, CarnetEducatifRepository $carnetEducatif
         ->getScalarResult();
     $matieres = array_column($matieres, 'matiere');
 
-    return $this->render('carnet_educatif/index.html.twig', [
-        'carnet_educatifs' => $carnets,
-        'matieres' => $matieres,
-        'search' => $search,
-        'selected_matiere' => $matiere,
-        'selected_travail_termine' => $travailTermine,
-    ]);
-}
+        $qb->orderBy('c.date_etude', 'DESC');
+        $carnets = $qb->getQuery()->getResult();
+
+        $matieres = $carnetEducatifRepository->createQueryBuilder('c')
+            ->select('DISTINCT c.matiere')
+            ->getQuery()
+            ->getScalarResult();
+        $matieres = array_column($matieres, 'matiere');
+
+        return $this->render('carnet_educatif/index.html.twig', [
+            'carnet_educatifs' => $carnets,
+            'matieres' => $matieres,
+            'search' => $search,
+            'selected_matiere' => $matiere,
+            'selected_travail_termine' => $travailTermine,
+        ]);
+    }
 
     #[Route('/new', name: 'app_carnet_educatif_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -67,7 +77,13 @@ public function index(Request $request, CarnetEducatifRepository $carnetEducatif
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $carnetEducatif->calculateDureeTotale();
+            $duree = $request->request->all()['carnet_educatif']['duree_totale'] ?? null;
+            if ($duree) {
+                $carnetEducatif->setDureeTotale((int)$duree);
+            } else {
+                $carnetEducatif->calculateDureeTotale();
+            }
+            
             $entityManager->persist($carnetEducatif);
             $entityManager->flush();
             $this->addFlash('success', 'Carnet créé avec succès.');
