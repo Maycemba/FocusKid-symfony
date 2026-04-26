@@ -18,5 +18,4 @@ services:
 
     App\Service\ConseilIACarnetService:
         autowire: true
-    App\Service\WhatsAppService:
-        autowire: true
+    

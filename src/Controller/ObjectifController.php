@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Objectif;
 use App\Repository\ObjectifRepository;
-use App\Service\WhatsAppService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -90,8 +89,7 @@ class ObjectifController extends AbstractController
         int $id, 
         Request $request, 
         EntityManagerInterface $em, 
-        ObjectifRepository $repository,
-        WhatsAppService $whatsAppService
+        ObjectifRepository $repository
     ): JsonResponse {
         try {
             $objectif = $repository->find($id);
@@ -101,7 +99,6 @@ class ObjectifController extends AbstractController
             
             $data = json_decode($request->getContent(), true);
             $nouveauStatut = $data['statut'] ?? null;
-            $numeroWhatsApp = $data['numero_whatsapp'] ?? '+21658397936';
             
             if (!in_array($nouveauStatut, ['ATTEINT', 'NON_ATTEINT'])) {
                 return $this->json(['error' => 'Statut invalide'], 400);
@@ -110,64 +107,30 @@ class ObjectifController extends AbstractController
             $objectif->setStatut($nouveauStatut);
             $em->flush();
             
-            // Générer le message WhatsApp stylisé
+            // Générer le message WhatsApp visuel
             $estAtteint = $nouveauStatut === 'ATTEINT';
             
             if ($estAtteint) {
-                $messageTexte = "🎉 FÉLICITATIONS ! 🎉\n\n";
-                $messageTexte .= "Objectif ATTEINT avec succès !\n\n";
-                $messageTexte .= "📝 " . $objectif->getDescription() . "\n";
-                $messageTexte .= "📅 Du " . $objectif->getDateDebut()->format('d/m/Y') . " au " . $objectif->getDateFin()->format('d/m/Y') . "\n";
-                $messageTexte .= "📊 Progression: " . $objectif->getProgression() . "%\n\n";
-                $messageTexte .= "⭐ Bravo ! Continuez sur cette lancée ! 💪";
+                $message = "🎉 FÉLICITATIONS ! 🎉\n\n";
+                $message .= "Objectif ATTEINT avec succès !\n\n";
+                $message .= "📝 " . $objectif->getDescription() . "\n";
+                $message .= "📅 Du " . $objectif->getDateDebut()->format('d/m/Y') . " au " . $objectif->getDateFin()->format('d/m/Y') . "\n";
+                $message .= "📊 Progression: " . $objectif->getProgression() . "%\n\n";
+                $message .= "⭐ Bravo ! Continuez sur cette lancée ! 💪";
             } else {
-                $messageTexte = "⚠️ OBJECTIF NON ATTEINT ⚠️\n\n";
-                $messageTexte .= "📝 " . $objectif->getDescription() . "\n";
-                $messageTexte .= "📅 Du " . $objectif->getDateDebut()->format('d/m/Y') . " au " . $objectif->getDateFin()->format('d/m/Y') . "\n";
-                $messageTexte .= "📊 Progression: " . $objectif->getProgression() . "%\n\n";
-                $messageTexte .= "💪 Ne vous découragez pas !\n";
-                $messageTexte .= "Chaque effort compte. Réessayez ! 🌟";
+                $message = "⚠️ OBJECTIF NON ATTEINT ⚠️\n\n";
+                $message .= "📝 " . $objectif->getDescription() . "\n";
+                $message .= "📅 Du " . $objectif->getDateDebut()->format('d/m/Y') . " au " . $objectif->getDateFin()->format('d/m/Y') . "\n";
+                $message .= "📊 Progression: " . $objectif->getProgression() . "%\n\n";
+                $message .= "💪 Ne vous découragez pas !\n";
+                $message .= "Chaque effort compte. Réessayez ! 🌟";
             }
-            
-            // ENVOI RÉEL VIA WHATSAPP (décommentez pour activer)
-            /*
-            try {
-                $whatsappResult = $whatsAppService->sendMessage($numeroWhatsApp, $messageTexte);
-                $whatsappSent = true;
-            } catch (\Exception $e) {
-                $whatsappSent = false;
-                $whatsappError = $e->getMessage();
-            }
-            */
-            
-            // Sauvegarde du message dans un fichier (mode test)
-            $logDir = __DIR__ . '/../../var/logs/whatsapp/';
-            if (!is_dir($logDir)) {
-                mkdir($logDir, 0777, true);
-            }
-            $filename = $logDir . 'whatsapp_messages_' . date('Y-m-d') . '.txt';
-            $logEntry = "[" . date('Y-m-d H:i:s') . "] Numéro: {$numeroWhatsApp}\n";
-            $logEntry .= "Message:\n{$messageTexte}\n";
-            $logEntry .= str_repeat("-", 50) . "\n\n";
-            file_put_contents($filename, $logEntry, FILE_APPEND);
-            
-            // Générer le HTML du message WhatsApp
-            $htmlMessage = $this->renderView('carnet_educatif/whatsapp_notification.html.twig', [
-                'message' => nl2br(htmlspecialchars($messageTexte))
-            ]);
             
             return $this->json([
                 'success' => true,
                 'statut' => $nouveauStatut,
                 'statut_label' => $objectif->getStatutLabel(),
-                'whatsapp' => [
-                    'message' => $messageTexte,
-                    'html' => $htmlMessage,
-                    'numero' => $numeroWhatsApp,
-                    'sauvegarde_dans' => $filename
-                    // 'envoye' => $whatsappSent ?? false,
-                    // 'erreur' => $whatsappError ?? null
-                ]
+                'message' => $message
             ]);
             
         } catch (\Exception $e) {
