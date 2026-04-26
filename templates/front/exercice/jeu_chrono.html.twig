@@ -50,9 +50,11 @@
             font-size: 16px;
             margin-top: 15px;
             cursor: pointer;
+            transition: transform 0.2s;
         }
         .btn-valider:hover {
             background: #45a049;
+            transform: scale(1.05);
         }
         .btn-terminer {
             background: #2196F3;
@@ -84,6 +86,33 @@
             font-weight: bold;
             font-size: 18px;
         }
+        
+        /* ========== STYLES VOIX ========== */
+        .voice-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .voice-toggle {
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 5px 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .voice-toggle:hover {
+            background: #1976D2;
+            transform: scale(1.05);
+        }
+        .voice-active {
+            background: #4CAF50;
+        }
+        .voice-active:hover {
+            background: #45a049;
+        }
     </style>
 {% endblock %}
 
@@ -92,7 +121,12 @@
     <div class="container">
         <div class="game-container">
             <div class="score-board d-flex justify-content-between align-items-center">
-                <h3>⏱️ Jeu Chrono</h3>
+                <div class="d-flex align-items-center">
+                    <h3 class="mb-0 me-3">⏱️ Jeu Chrono</h3>
+                    <div class="voice-controls">
+                        <button id="voiceToggleBtn" class="voice-toggle" title="Activer/désactiver la voix">🔊 Voix ON</button>
+                    </div>
+                </div>
                 <div>
                     <span class="me-3">⭐ Score: <span id="score">0</span></span>
                     <span id="chronoTimer" class="chrono-warning">⏱️ 00:00</span>
@@ -135,21 +169,85 @@
         let timerInterval = null;
         let gameActive = true;
         let reponsesDonnees = [];
-        let gameFinished = false;  // Évite les doubles enregistrements
+        let gameFinished = false;
         
         // Paramètres
         let pointsParQuestion = 10;
         let penalite = 5;
         let tempsMax = 120;
         
-        // Charger les questions
+        // ========== SYNTHÈSE VOCALE ==========
+        let speechEnabled = true;
+        let speechSynthesis = window.speechSynthesis;
+        let currentUtterance = null;
+        
+        function initVoice() {
+            if (!speechSynthesis) {
+                speechEnabled = false;
+                const btn = document.getElementById('voiceToggleBtn');
+                if (btn) btn.style.opacity = '0.5';
+                return;
+            }
+            const saved = localStorage.getItem('voice_enabled');
+            if (saved !== null) speechEnabled = saved === 'true';
+            updateVoiceButton();
+        }
+        
+        function updateVoiceButton() {
+            const btn = document.getElementById('voiceToggleBtn');
+            if (!btn) return;
+            if (speechEnabled) {
+                btn.innerHTML = '🔊 Voix ON';
+                btn.classList.add('voice-active');
+            } else {
+                btn.innerHTML = '🔇 Voix OFF';
+                btn.classList.remove('voice-active');
+            }
+        }
+        
+        function speakText(text) {
+            if (!speechEnabled) return;
+            if (currentUtterance) speechSynthesis.cancel();
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.lang = 'fr-FR';
+            currentUtterance.rate = 0.9;
+            currentUtterance.pitch = 1.1;
+            currentUtterance.volume = 1;
+            speechSynthesis.speak(currentUtterance);
+        }
+        
+        function speakQuestion(question) {
+            let cleanQuestion = question
+                .replace(/[?]/g, ' point d\'interrogation')
+                .replace(/[+]/g, ' plus ')
+                .replace(/[-]/g, ' moins ')
+                .replace(/[*]/g, ' fois ')
+                .replace(/[/]/g, ' divisé par ')
+                .replace(/[=]/g, ' égale ');
+            speakText(cleanQuestion);
+        }
+        
+        function speakSuccess() {
+            const messages = ['Bravo', 'Très bien', 'Excellent', 'Super', 'Bonne réponse'];
+            speakText(messages[Math.floor(Math.random() * messages.length)]);
+        }
+        
+        function speakError(correctAnswer) {
+            const messages = ['Essaie encore', 'Réessaie', 'Concentre-toi'];
+            speakText(messages[Math.floor(Math.random() * messages.length)] + '. La bonne réponse était ' + correctAnswer);
+        }
+        
+        function speakStartGame() {
+            speakText('Jeu chrono. Répondez aux questions le plus vite possible.');
+        }
+        
+        // ========== FONCTIONS DU JEU ==========
         function loadQuestions() {
             if (questionsData && questionsData.length > 0) {
                 questions = questionsData;
                 console.log('✅ ' + questions.length + ' questions chargées');
                 return true;
             }
-            console.log('❌ Aucune question trouvée');
             return false;
         }
         
@@ -175,8 +273,12 @@
                 
                 const msgDiv = document.getElementById('message');
                 if (msgDiv) msgDiv.innerHTML = `Question ${currentQuestionIndex + 1}/${questions.length}`;
+                
+                // Lire la question à voix haute
+                setTimeout(() => {
+                    speakQuestion(questionTexte);
+                }, 300);
             } else {
-                // Fin du jeu : toutes les questions ont été répondues
                 finishGame();
             }
         }
@@ -194,7 +296,6 @@
             
             const bonneReponse = currentQuestion.reponse || '';
             
-            // Stocker la réponse
             reponsesDonnees.push({
                 question: currentQuestion.question,
                 reponse_donnee: userReponse,
@@ -208,13 +309,15 @@
                 updateScore();
                 const msgDiv = document.getElementById('message');
                 if (msgDiv) msgDiv.innerHTML = '✅ Bonne réponse ! +' + points + ' points';
+                speakSuccess();
                 currentQuestionIndex++;
                 loadQuestion();
             } else {
                 score = Math.max(0, score - penalite);
                 updateScore();
                 const msgDiv = document.getElementById('message');
-                if (msgDiv) msgDiv.innerHTML = `❌ Mauvaise réponse ! La bonne réponse était ${bonneReponse}. -${penalite} points`;
+                if (msgDiv) msgDiv.innerHTML = `❌ Mauvaise réponse ! -${penalite} points`;
+                speakError(bonneReponse);
                 currentQuestionIndex++;
                 loadQuestion();
             }
@@ -233,10 +336,7 @@
                 if (gameActive && !gameFinished) {
                     timer++;
                     updateTimerDisplay();
-                    if (timer >= tempsMax) {
-                        // Temps écoulé
-                        finishGame();
-                    }
+                    if (timer >= tempsMax) finishGame();
                 }
             }, 1000);
         }
@@ -247,6 +347,7 @@
             const timerElement = document.getElementById('chronoTimer');
             if (timerElement) {
                 timerElement.innerHTML = `⏱️ ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                if (timer >= tempsMax) timerElement.style.color = '#FF9800';
             }
         }
         
@@ -263,14 +364,12 @@
                 score_final: score
             };
             
-            console.log('📤 Sauvegarde des résultats...');
-            
             return fetch('/exercice/api/exercice-complete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     exercice_id: exerciceId,
-                    enfant_id: 1,
+                    enfant_id: {{ app.user.id ?? 1 }},
                     score: score,
                     temps_passe: timer,
                     reponses: reponsesData,
@@ -279,7 +378,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log('✅ Résultat enregistré:', data);
+                console.log('✅ Enregistré:', data);
                 return data.success;
             })
             .catch(error => {
@@ -294,21 +393,20 @@
             gameActive = false;
             if (timerInterval) clearInterval(timerInterval);
             
-            // Désactiver les champs
             const inputField = document.getElementById('reponseInput');
             if (inputField) inputField.disabled = true;
             
             const validerBtn = document.getElementById('validerBtn');
             if (validerBtn) validerBtn.disabled = true;
             
-            // Afficher le message de fin
             const defiDiv = document.getElementById('defiText');
             if (defiDiv) defiDiv.innerHTML = `🎉 Jeu terminé ! Score final : ${score} 🎉`;
             
             const msgDiv = document.getElementById('message');
             if (msgDiv) msgDiv.innerHTML = '📝 Sauvegarde en cours...';
             
-            // Sauvegarder et rediriger
+            speakText('Jeu terminé. Votre score final est ' + score);
+            
             saveGameResult().then(success => {
                 if (success) {
                     alert('🎉 Exercice terminé et enregistré !');
@@ -319,13 +417,16 @@
             });
         }
         
-        // Initialisation
+        // ========== INITIALISATION ==========
         document.addEventListener('DOMContentLoaded', function() {
+            initVoice();
+            
             const hasQuestions = loadQuestions();
             
             if (hasQuestions && questions.length > 0) {
                 loadQuestion();
                 startTimer();
+                speakStartGame();
             } else {
                 const defiDiv = document.getElementById('defiText');
                 if (defiDiv) defiDiv.innerHTML = '❌ Aucune question trouvée pour cet exercice.';
@@ -335,13 +436,9 @@
                 if (validerBtn) validerBtn.disabled = true;
             }
             
-            // Écouteur pour le bouton Valider
             const validerBtn = document.getElementById('validerBtn');
-            if (validerBtn) {
-                validerBtn.addEventListener('click', verifierReponse);
-            }
+            if (validerBtn) validerBtn.addEventListener('click', verifierReponse);
             
-            // Écouteur pour la touche Entrée
             const inputField = document.getElementById('reponseInput');
             if (inputField) {
                 inputField.addEventListener('keypress', function(e) {
@@ -349,6 +446,17 @@
                         e.preventDefault();
                         verifierReponse();
                     }
+                });
+            }
+            
+            const voiceBtn = document.getElementById('voiceToggleBtn');
+            if (voiceBtn) {
+                voiceBtn.addEventListener('click', () => {
+                    speechEnabled = !speechEnabled;
+                    localStorage.setItem('voice_enabled', speechEnabled);
+                    updateVoiceButton();
+                    if (speechEnabled) speakText('Voix activée');
+                    else if (currentUtterance) speechSynthesis.cancel();
                 });
             }
         });

@@ -1,151 +1,164 @@
 // public/base-front/js/face-detection.js
 
 const FaceDetectionService = {
-    isInitialized: false,
-    enfantFaceDescriptor: null,
-    detectionActive: false,
-    videoElement: null,
-    stream: null,
-    detectionInterval: null,
+    videoStream: null,
+    checkInterval: null,
     alertCount: 0,
-    violationCallback: null,
-    confirmedCallback: null,
+    onViolation: null,
+    onConfirmed: null,
+    enfantReferenceSize: null,
+    isCalibrated: false,
+    
+    ADULT_THRESHOLD: 1.15,
+    CHILD_THRESHOLD: 0.85,
 
     async init() {
-        try {
-            // Utiliser unpkg CDN (plus fiable)
-            const MODEL_URL = 'https://unpkg.com/@vladmandic/face-api@1.7.12/model/';
-            
-            console.log('📦 Chargement des modèles...');
-            
-            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-            
-            this.isInitialized = true;
-            console.log('✅ Modèles chargés avec succès');
-            return true;
-        } catch (error) {
-            console.error('❌ Erreur chargement:', error);
-            return false;
-        }
-    },
-
-    async registerFace(videoElement) {
-        if (!this.isInitialized) {
-            console.log('❌ Service non initialisé');
-            return false;
-        }
-        
-        if (!videoElement || !videoElement.videoWidth) {
-            console.log('❌ Caméra non prête');
-            return false;
-        }
-        
-        console.log('🔍 Recherche visage...');
-        
-        const detection = await faceapi.detectSingleFace(
-            videoElement,
-            new faceapi.TinyFaceDetectorOptions()
-        ).withFaceLandmarks().withFaceDescriptor();
-        
-        if (detection && detection.descriptor) {
-            console.log('✅ Visage détecté et enregistré');
-            this.enfantFaceDescriptor = detection.descriptor;
-            localStorage.setItem('enfant_face', JSON.stringify(Array.from(detection.descriptor)));
-            return true;
-        } else {
-            console.log('❌ Aucun visage détecté');
-            return false;
-        }
-    },
-
-    loadSavedFace() {
-        const saved = localStorage.getItem('enfant_face');
+        console.log('✅ Service prêt');
+        const saved = localStorage.getItem('enfant_face_size');
         if (saved) {
-            this.enfantFaceDescriptor = new Float32Array(JSON.parse(saved));
-            console.log('✅ Visage chargé depuis localStorage');
+            this.enfantReferenceSize = parseFloat(saved);
+            this.isCalibrated = true;
+            console.log('✅ Calibration chargée:', this.enfantReferenceSize);
+        }
+        return true;
+    },
+
+    async calibrate(videoElement) {
+        console.log('📸 Début calibration...');
+        
+        // Prendre plusieurs mesures
+        let sizes = [];
+        for (let i = 0; i < 5; i++) {
+            const size = await this.getFaceSize(videoElement);
+            if (size > 5000) {
+                sizes.push(size);
+            }
+            await new Promise(r => setTimeout(r, 500));
+        }
+        
+        if (sizes.length > 0) {
+            const avgSize = sizes.reduce((a, b) => a + b, 0) / sizes.length;
+            this.enfantReferenceSize = avgSize;
+            this.isCalibrated = true;
+            localStorage.setItem('enfant_face_size', avgSize);
+            console.log('✅ Calibration réussie, taille:', avgSize);
             return true;
         }
-        console.log('❌ Aucun visage sauvegardé');
+        console.log('❌ Calibration échouée');
         return false;
     },
 
-    async verifyFace(videoElement) {
-        if (!this.isInitialized || !this.enfantFaceDescriptor) return false;
+    async getFaceSize(videoElement) {
+        if (!videoElement || videoElement.videoWidth === 0) return 0;
         
-        const detection = await faceapi.detectSingleFace(
-            videoElement,
-            new faceapi.TinyFaceDetectorOptions()
-        ).withFaceLandmarks().withFaceDescriptor();
-        
-        if (!detection || !detection.descriptor) return false;
-        
-        const distance = faceapi.euclideanDistance(this.enfantFaceDescriptor, detection.descriptor);
-        console.log('Distance:', distance);
-        return distance < 0.6;
-    },
-
-    startVerification(videoElement, onViolation, onConfirmed) {
-        this.detectionActive = true;
-        this.violationCallback = onViolation;
-        this.confirmedCallback = onConfirmed;
-        this.alertCount = 0;
-        
-        this.detectionInterval = setInterval(async () => {
-            if (!this.detectionActive) return;
+        return new Promise((resolve) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
             
-            try {
-                const isEnfant = await this.verifyFace(videoElement);
-                
-                if (!isEnfant) {
-                    this.alertCount++;
-                    if (this.violationCallback) {
-                        this.violationCallback(this.alertCount);
-                    }
-                } else {
-                    this.alertCount = 0;
-                    if (this.confirmedCallback) {
-                        this.confirmedCallback();
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const skinPixels = [];
+            const data = imageData.data;
+            
+            for (let y = 0; y < canvas.height; y += 4) {
+                for (let x = 0; x < canvas.width; x += 4) {
+                    const idx = (y * canvas.width + x) * 4;
+                    const r = data[idx];
+                    const g = data[idx + 1];
+                    const b = data[idx + 2];
+                    
+                    if (r > 60 && g > 40 && b > 20 && r > g && r > b && (r - g) > 15) {
+                        skinPixels.push({ x: x, y: y });
                     }
                 }
-            } catch (error) {
-                console.error('Erreur vérification:', error);
             }
-        }, 2000);
-    },
-
-    stopVerification() {
-        this.detectionActive = false;
-        if (this.detectionInterval) {
-            clearInterval(this.detectionInterval);
-            this.detectionInterval = null;
-        }
-        this.stopCamera();
+            
+            if (skinPixels.length > 20) {
+                let minX = canvas.width, maxX = 0, minY = canvas.height, maxY = 0;
+                for (const pixel of skinPixels) {
+                    minX = Math.min(minX, pixel.x);
+                    maxX = Math.max(maxX, pixel.x);
+                    minY = Math.min(minY, pixel.y);
+                    maxY = Math.max(maxY, pixel.y);
+                }
+                const width = maxX - minX;
+                const height = maxY - minY;
+                resolve(width * height);
+            } else {
+                resolve(0);
+            }
+        });
     },
 
     async startCamera(videoElement) {
         try {
-            this.stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: { ideal: 640 }, height: { ideal: 480 } }
+            this.videoStream = await navigator.mediaDevices.getUserMedia({
+                video: { width: 640, height: 480 }
             });
-            videoElement.srcObject = this.stream;
+            videoElement.srcObject = this.videoStream;
             await videoElement.play();
-            console.log('✅ Caméra démarrée');
+            console.log('✅ Caméra active');
             return true;
         } catch (error) {
             console.error('❌ Erreur caméra:', error);
-            alert('Impossible d\'accéder à la caméra. Vérifiez les permissions.');
             return false;
         }
     },
 
     stopCamera() {
-        if (this.stream) {
-            this.stream.getTracks().forEach(track => track.stop());
-            this.stream = null;
+        if (this.videoStream) {
+            this.videoStream.getTracks().forEach(t => t.stop());
+            this.videoStream = null;
         }
-    }
+        if (this.checkInterval) {
+            clearInterval(this.checkInterval);
+            this.checkInterval = null;
+        }
+    },
+
+    startVerification(videoElement, onAdult, onChild) {
+    this.alertCount = 0;
+
+    this.checkInterval = setInterval(async () => {
+        if (!this.isCalibrated || !this.enfantReferenceSize) return;
+
+        const currentSize = await this.getFaceSize(videoElement);
+        if (currentSize === 0) return;
+
+        const ratio = currentSize / this.enfantReferenceSize;
+        console.log('Ratio:', ratio.toFixed(2));
+
+        // adulte = proche de la calibration
+        if (ratio >= 0.90) {
+            this.alertCount++;
+
+            if (onAdult) {
+                onAdult(this.alertCount);
+            }
+        }
+
+        // enfant = beaucoup plus petit
+        else if (ratio < 0.75) {
+            this.alertCount = 0;
+
+            if (onChild) {
+                onChild();
+            }
+        }
+
+        // zone grise = on ne décide pas
+        else {
+            console.log("⚠️ Zone incertaine");
+        }
+
+        if (this.alertCount >= 3) {
+            clearInterval(this.checkInterval);
+        }
+    }, 2000);
+}
 };
 
 window.FaceDetectionService = FaceDetectionService;

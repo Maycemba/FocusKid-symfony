@@ -1,71 +1,58 @@
 // public/base-front/js/exercice-guardian.js
 
 const ExerciceGuardian = {
-    isActive: false,
-    violationCount: 0,
-    maxViolations: 3,
-    onStopCallback: null,
-    onViolationCallback: null,
-
     async init() {
-        console.log('🔧 Initialisation du guardian...');
-        const success = await FaceDetectionService.init();
-        const faceLoaded = FaceDetectionService.loadSavedFace();
-        console.log('Face chargée:', faceLoaded);
-        return { success, faceLoaded };
+        await FaceDetectionService.init();
+        return { success: true, faceLoaded: FaceDetectionService.isCalibrated };
     },
 
-    async registerFirstFace(videoElement) {
-        console.log('📸 Tentative d\'enregistrement...');
-        // Attendre que la caméra soit prête
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return await FaceDetectionService.registerFace(videoElement);
+    async calibrateAuto(videoElement) {
+        console.log('📸 Calibration automatique dans 3 secondes...');
+        // Compter à rebours visuel
+        for (let i = 3; i > 0; i--) {
+            console.log(`${i}...`);
+            await new Promise(r => setTimeout(r, 1000));
+        }
+        return await FaceDetectionService.calibrate(videoElement);
     },
 
     start(videoElement, onStop, onViolation) {
-        if (!FaceDetectionService.loadSavedFace()) {
-            console.warn('Aucun visage enregistré');
-            return false;
-        }
-        
-        console.log('🚀 Démarrage surveillance');
-        this.isActive = true;
-        this.violationCount = 0;
-        this.onStopCallback = onStop;
-        this.onViolationCallback = onViolation;
-        
-        FaceDetectionService.startCamera(videoElement);
-        
-        FaceDetectionService.startVerification(
-            videoElement,
-            (count) => {
-                console.log('Violation count:', count);
-                this.violationCount = count;
-                if (onViolation) onViolation(count);
-                
-                if (count >= this.maxViolations) {
-                    this.stop('⚠️ Personne non autorisée détectée !');
-                }
-            },
-            () => {
-                this.violationCount = 0;
-                if (onViolation) onViolation(0);
+        FaceDetectionService.startCamera(videoElement).then(async (success) => {
+            if (!success) {
+                if (onStop) onStop('❌ Impossible d\'accéder à la caméra');
+                return;
             }
-        );
-        
-        return true;
+            
+            // Si pas calibré, calibration AUTO
+            if (!FaceDetectionService.isCalibrated) {
+                console.log('🔧 Première utilisation - Calibration automatique...');
+                const calibrated = await this.calibrateAuto(videoElement);
+                if (!calibrated) {
+                    if (onStop) onStop('❌ Calibration échouée. Placez-vous face à la caméra.');
+                    return;
+                }
+                console.log('✅ Calibration terminée, démarrage du jeu...');
+            }
+            
+            // Démarrer la vérification
+            FaceDetectionService.startVerification(
+                videoElement,
+                (count) => {
+                    if (onViolation) onViolation(count);
+                    if (count >= 3) {
+                        this.stop();
+                        if (onStop) onStop('⚠️ Adulte détecté ! Exercice arrêté.');
+                    }
+                },
+                () => {
+                    if (onViolation) onViolation(0);
+                }
+            );
+        });
     },
 
-    stop(reason) {
-        if (!this.isActive) return;
-        
-        console.log('🛑 Arrêt surveillance:', reason);
-        this.isActive = false;
-        FaceDetectionService.stopVerification();
-        
-        if (this.onStopCallback) {
-            this.onStopCallback(reason);
-        }
+    stop() {
+        FaceDetectionService.stopCamera();
     }
 };
 

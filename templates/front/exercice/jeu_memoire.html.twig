@@ -30,6 +30,33 @@
         .score-board { background: white; border-radius: 15px; padding: 15px; margin-bottom: 20px; }
         .btn-game { background: #FF9800; color: white; border-radius: 25px; padding: 10px 25px; border: none; text-decoration: none; display: inline-block; }
         .btn-game:hover { background: #F57C00; }
+        
+        /* ========== STYLES VOIX ========== */
+        .voice-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .voice-toggle {
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 5px 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .voice-toggle:hover {
+            background: #1976D2;
+            transform: scale(1.05);
+        }
+        .voice-active {
+            background: #4CAF50;
+        }
+        .voice-active:hover {
+            background: #45a049;
+        }
     </style>
 {% endblock %}
 
@@ -38,7 +65,12 @@
     <div class="container">
         <div class="game-container">
             <div class="score-board d-flex justify-content-between align-items-center">
-                <h3>🎴 Jeu de Mémoire</h3>
+                <div class="d-flex align-items-center">
+                    <h3 class="mb-0 me-3">🎴 Jeu de Mémoire</h3>
+                    <div class="voice-controls">
+                        <button id="voiceToggleBtn" class="voice-toggle" title="Activer/désactiver la voix">🔊 Voix ON</button>
+                    </div>
+                </div>
                 <div>
                     <span class="me-3">⭐ Score: <span id="score">0</span></span>
                     <span>⏱️ Temps: <span id="timer">00:00</span></span>
@@ -77,6 +109,85 @@
         
         let pointsParPaire = 10;
         
+        // ========== SYNTHÈSE VOCALE ==========
+        let speechEnabled = true;
+        let speechSynthesis = window.speechSynthesis;
+        let currentUtterance = null;
+        
+        function initVoice() {
+            if (!speechSynthesis) {
+                speechEnabled = false;
+                const btn = document.getElementById('voiceToggleBtn');
+                if (btn) btn.style.opacity = '0.5';
+                return;
+            }
+            const saved = localStorage.getItem('voice_enabled');
+            if (saved !== null) speechEnabled = saved === 'true';
+            updateVoiceButton();
+        }
+        
+        function updateVoiceButton() {
+            const btn = document.getElementById('voiceToggleBtn');
+            if (!btn) return;
+            if (speechEnabled) {
+                btn.innerHTML = '🔊 Voix ON';
+                btn.classList.add('voice-active');
+            } else {
+                btn.innerHTML = '🔇 Voix OFF';
+                btn.classList.remove('voice-active');
+            }
+        }
+        
+        function speakText(text) {
+            if (!speechEnabled) return;
+            if (currentUtterance) speechSynthesis.cancel();
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.lang = 'fr-FR';
+            currentUtterance.rate = 0.9;
+            currentUtterance.pitch = 1.1;
+            currentUtterance.volume = 1;
+            speechSynthesis.speak(currentUtterance);
+        }
+        
+        function speakCard(value) {
+            let text = value;
+            // Convertir les émojis en texte
+            const emojiMap = {
+                '🐶': 'chien', '🐱': 'chat', '🐭': 'souris', '🐹': 'hamster',
+                '🐰': 'lapin', '🦊': 'renard', '🐻': 'ours', '🐼': 'panda',
+                '🍎': 'pomme', '🍐': 'poire', '🍊': 'orange', '🍋': 'citron',
+                '🍌': 'banane', '🍉': 'pastèque', '🍇': 'raisin', '🍓': 'fraise',
+                '1️⃣': 'un', '2️⃣': 'deux', '3️⃣': 'trois', '4️⃣': 'quatre',
+                '5️⃣': 'cinq', '6️⃣': 'six', '7️⃣': 'sept', '8️⃣': 'huit',
+                '🔴': 'rouge', '🔵': 'bleu', '🟢': 'vert', '🟡': 'jaune'
+            };
+            
+            for (const [emoji, word] of Object.entries(emojiMap)) {
+                if (value.includes(emoji)) text = word;
+            }
+            return text;
+        }
+        
+        function speakSuccess() {
+            const messages = ['Bravo', 'Très bien', 'Excellent', 'Super', 'Bonne mémoire'];
+            speakText(messages[Math.floor(Math.random() * messages.length)]);
+        }
+        
+        function speakError() {
+            const messages = ['Ce n\'est pas une paire', 'Essaie encore', 'Concentre-toi'];
+            speakText(messages[Math.floor(Math.random() * messages.length)]);
+        }
+        
+        function speakStartGame() {
+            speakText('Jeu de mémoire. Retourne les cartes et trouve les paires identiques.');
+        }
+        
+        function speakMatch(value) {
+            const text = speakCard(value);
+            speakText(`Paire trouvée : ${text}`);
+        }
+        
+        // ========== FONCTIONS DU JEU ==========
         function initGame() {
             if (!questionsData || questionsData.length === 0) {
                 console.log('❌ Aucune donnée pour le jeu Mémoire');
@@ -99,6 +210,11 @@
             updateScore();
             renderGrid();
             startTimer();
+            
+            // Lire le message de début
+            setTimeout(() => {
+                speakStartGame();
+            }, 500);
         }
         
         function shuffle(array) {
@@ -136,6 +252,12 @@
             cards[index].flipped = true;
             renderGrid();
             flippedCards.push(index);
+            
+            // Lire la valeur de la carte retournée
+            const value = cards[index].value;
+            const text = speakCard(value);
+            speakText(text);
+            
             if (flippedCards.length === 2) checkMatch();
         }
         
@@ -159,6 +281,11 @@
                 renderGrid();
                 const msg = document.getElementById('message');
                 if (msg) msg.innerHTML = '✅ Bravo ! Paire trouvée !';
+                
+                // Message vocal de succès
+                speakSuccess();
+                speakMatch(card1.value);
+                
                 setTimeout(() => { if(msg) msg.innerHTML = ''; }, 1000);
                 
                 if (matchedPairs === cards.length / 2) {
@@ -175,6 +302,10 @@
                 
                 const msg = document.getElementById('message');
                 if (msg) msg.innerHTML = '❌ Ce n\'est pas une paire...';
+                
+                // Message vocal d'erreur
+                speakError();
+                
                 setTimeout(() => {
                     cards[flippedCards[0]].flipped = false;
                     cards[flippedCards[1]].flipped = false;
@@ -230,7 +361,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     exercice_id: exerciceId,
-                    enfant_id: 1,
+                    enfant_id: {{ app.user.id ?? 1 }},
                     score: score,
                     temps_passe: timer,
                     reponses: reponsesData,
@@ -257,6 +388,8 @@
             const msg = document.getElementById('message');
             if (msg) msg.innerHTML = '📝 Sauvegarde en cours...';
             
+            speakText('Jeu terminé. Votre score final est ' + score);
+            
             saveGameResult().then(success => {
                 if (success) {
                     alert('🎉 Jeu terminé et enregistré !');
@@ -267,9 +400,22 @@
             });
         }
         
-        // Démarrer le jeu
+        // ========== INITIALISATION ==========
         if (document.getElementById('memoryGrid')) {
             initGame();
+            initVoice();
+        }
+        
+        // Bouton voix
+        const voiceBtn = document.getElementById('voiceToggleBtn');
+        if (voiceBtn) {
+            voiceBtn.addEventListener('click', () => {
+                speechEnabled = !speechEnabled;
+                localStorage.setItem('voice_enabled', speechEnabled);
+                updateVoiceButton();
+                if (speechEnabled) speakText('Voix activée');
+                else if (currentUtterance) speechSynthesis.cancel();
+            });
         }
     </script>
 {% endblock %}
