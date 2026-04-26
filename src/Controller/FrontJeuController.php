@@ -21,7 +21,7 @@ final class FrontJeuController extends AbstractController
      * Liste de tous les jeux disponibles (lecture seule, front)
      */
     #[Route('', name: 'app_front_jeu_list', methods: ['GET'])]
-    public function list(Request $request, JeuRepository $jeuRepository): Response
+    public function list(Request $request, JeuRepository $jeuRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search');
         $sort = $request->query->get('sort', 'asc');
@@ -41,8 +41,14 @@ final class FrontJeuController extends AbstractController
             $queryBuilder->orderBy('j.niveau', 'ASC');
         }
 
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            6 // Nombre de jeux par page
+        );
+
         return $this->render('front/jeu/list.html.twig', [
-            'jeus' => $queryBuilder->getQuery()->getResult(),
+            'jeus' => $pagination,
             'current_search' => $search,
             'current_sort' => $sort,
         ]);

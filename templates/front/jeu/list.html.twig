@@ -133,6 +133,13 @@
                 </div>
                 {% endfor %}
             </div>
+
+            {# Affichage de la Pagination #}
+            <div class="mt-5 d-flex justify-content-center">
+                <div class="pagination-container shadow-sm p-3 bg-white rounded-pill">
+                    {{ knp_pagination_render(jeus) }}
+                </div>
+            </div>
         {% endif %}
 
     </div>
