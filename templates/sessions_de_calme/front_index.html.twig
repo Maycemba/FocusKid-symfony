@@ -80,7 +80,12 @@
      <h1>🎤 Commande Vocale  </h1>
     
     <button id="micBtn" class="btn btn-warning rounded-pill py-2 px-4 text-white">Démarrer</button>
-    
+    <!-- Ajoutez ceci après votre bouton microphone dans le HTML -->
+<div class="col-12 text-center mt-4">
+    <div id="status" class="alert alert-info" style="display: inline-block; padding: 10px 20px;">
+        ✅ Prêt
+    </div>
+</div>
    
     <div id="result" class="result"></div>
     
@@ -118,17 +123,19 @@
 </style>
 {% endblock %}
 {% block javascripts %}
-{{ parent() }}<script>
+{{ parent() }}
+<script>
         const micBtn = document.getElementById('micBtn');
+        // Correction : Définir statusDiv correctement
         const statusDiv = document.getElementById('status');
         const resultDiv = document.getElementById('result');
         
         // Les routes vers les activités
         const routes = {
-            coloriage: '/sessions/de/calme/activite/coloriage',
-            histoire: '/sessions/de/calme/activite/histoire',
-            respiration: '/sessions/de/calme/activite/respiration',
-            musique: '/sessions/de/calme/activite/musique'
+            coloriage: '{{ path('app_session_calme_activite', {type: 'coloriage'}) }}',
+            histoire: '{{ path('app_session_calme_activite', {type: 'histoire'}) }}',
+            respiration: '{{ path('app_session_calme_activite', {type: 'respiration'}) }}',
+            musique: '{{ path('app_session_calme_activite', {type: 'musique'}) }}'
         };
         
         // Les mots-clés pour chaque activité
@@ -142,14 +149,16 @@
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         
         if (!SpeechRecognition) {
-            statusDiv.innerHTML = '❌ Reconnaissance vocale non supportée. Utilisez Chrome.';
-            micBtn.disabled = true;
+            if (statusDiv) statusDiv.innerHTML = '❌ Reconnaissance vocale non supportée. Utilisez Chrome.';
+            if (micBtn) micBtn.disabled = true;
         }
         
         let recognition = null;
         let redirectTimeout = null;
         
         function showResult(message, type = 'info') {
+            if (!resultDiv) return;
+            
             resultDiv.style.display = 'block';
             resultDiv.innerHTML = message;
             resultDiv.className = 'result';
@@ -163,7 +172,7 @@
             
             // Masquer après 5 secondes
             setTimeout(() => {
-                if (resultDiv.style.display === 'block' && !resultDiv.innerHTML.includes('Redirection')) {
+                if (resultDiv && resultDiv.style.display === 'block' && !resultDiv.innerHTML.includes('Redirection')) {
                     resultDiv.style.display = 'none';
                 }
             }, 5000);
@@ -178,13 +187,13 @@
             };
             
             showResult(`${messages[activity]}<br>🔄 Redirection dans 2 secondes...`, 'success');
-            statusDiv.innerHTML = `Redirection vers ${activity}...`;
+            if (statusDiv) statusDiv.innerHTML = `Redirection vers ${activity}...`;
             
             let countdown = 2;
             const countdownDiv = document.createElement('div');
             countdownDiv.className = 'countdown';
             countdownDiv.innerHTML = countdown;
-            resultDiv.appendChild(countdownDiv);
+            if (resultDiv) resultDiv.appendChild(countdownDiv);
             
             if (redirectTimeout) clearTimeout(redirectTimeout);
             redirectTimeout = setTimeout(() => {
@@ -209,74 +218,76 @@
             
             // Aucune correspondance
             showResult(`❌ Je n'ai pas compris "${commande}". Essayez : coloriage, histoire, respiration ou musique`, 'error');
-            statusDiv.innerHTML = 'Prêt - Cliquez pour réessayer';
+            if (statusDiv) statusDiv.innerHTML = 'Prêt - Cliquez pour réessayer';
         }
         
-        micBtn.onclick = function() {
-            if (recognition) {
-                recognition.stop();
-                micBtn.classList.remove('listening');
-                statusDiv.innerHTML = 'Reconnaissance arrêtée';
-                recognition = null;
-                return;
-            }
-            
-            recognition = new SpeechRecognition();
-            recognition.lang = 'fr-FR';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            
-            recognition.onstart = function() {
-                micBtn.classList.add('listening');
-                statusDiv.innerHTML = '🎤 Écoute... Parlez maintenant !';
-                resultDiv.style.display = 'none';
-            };
-            
-            recognition.onresult = function(event) {
-                const commande = event.results[0][0].transcript;
-                const confiance = Math.round(event.results[0][0].confidence * 100);
-                
-                console.log('Commande reconnue:', commande, `(${confiance}%)`);
-                statusDiv.innerHTML = `Commande reconnue : "${commande}" (${confiance}%) - Traitement...`;
-                
-                processCommand(commande);
-            };
-            
-            recognition.onerror = function(event) {
-                console.error('Erreur:', event.error);
-                let msg = '';
-                switch(event.error) {
-                    case 'no-speech':
-                        msg = 'Aucune parole détectée. Réessayez.';
-                        break;
-                    case 'not-allowed':
-                        msg = 'Permission microphone refusée. Autorisez l\'accès.';
-                        break;
-                    case 'audio-capture':
-                        msg = 'Microphone non trouvé. Vérifiez votre microphone.';
-                        break;
-                    default:
-                        msg = `Erreur: ${event.error}`;
+        if (micBtn) {
+            micBtn.onclick = function() {
+                if (recognition) {
+                    recognition.stop();
+                    micBtn.classList.remove('listening');
+                    if (statusDiv) statusDiv.innerHTML = 'Reconnaissance arrêtée';
+                    recognition = null;
+                    return;
                 }
-                showResult(`❌ ${msg}`, 'error');
-                statusDiv.innerHTML = 'Cliquez pour réessayer';
-                micBtn.classList.remove('listening');
-                recognition = null;
+                
+                recognition = new SpeechRecognition();
+                recognition.lang = 'fr-FR';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                
+                recognition.onstart = function() {
+                    micBtn.classList.add('listening');
+                    if (statusDiv) statusDiv.innerHTML = '🎤 Écoute... Parlez maintenant !';
+                    if (resultDiv) resultDiv.style.display = 'none';
+                };
+                
+                recognition.onresult = function(event) {
+                    const commande = event.results[0][0].transcript;
+                    const confiance = Math.round(event.results[0][0].confidence * 100);
+                    
+                    console.log('Commande reconnue:', commande, `(${confiance}%)`);
+                    if (statusDiv) statusDiv.innerHTML = `Commande reconnue : "${commande}" (${confiance}%) - Traitement...`;
+                    
+                    processCommand(commande);
+                };
+                
+                recognition.onerror = function(event) {
+                    console.error('Erreur:', event.error);
+                    let msg = '';
+                    switch(event.error) {
+                        case 'no-speech':
+                            msg = 'Aucune parole détectée. Réessayez.';
+                            break;
+                        case 'not-allowed':
+                            msg = 'Permission microphone refusée. Autorisez l\'accès.';
+                            break;
+                        case 'audio-capture':
+                            msg = 'Microphone non trouvé. Vérifiez votre microphone.';
+                            break;
+                        default:
+                            msg = `Erreur: ${event.error}`;
+                    }
+                    showResult(`❌ ${msg}`, 'error');
+                    if (statusDiv) statusDiv.innerHTML = 'Cliquez pour réessayer';
+                    micBtn.classList.remove('listening');
+                    recognition = null;
+                };
+                
+                recognition.onend = function() {
+                    micBtn.classList.remove('listening');
+                    if (statusDiv && statusDiv.innerHTML !== 'Redirection...') {
+                        statusDiv.innerHTML = 'Prêt - Cliquez pour parler';
+                    }
+                    recognition = null;
+                };
+                
+                recognition.start();
             };
-            
-            recognition.onend = function() {
-                micBtn.classList.remove('listening');
-                if (statusDiv.innerHTML !== 'Redirection...') {
-                    statusDiv.innerHTML = 'Prêt - Cliquez pour parler';
-                }
-                recognition = null;
-            };
-            
-            recognition.start();
-        };
+        }
         
         // Message de bienvenue
         console.log('🎤 Application vocale prête - Traitement 100% local');
-        statusDiv.innerHTML = '✅ Prêt - Cliquez sur le microphone et parlez';
-    </script>
+        if (statusDiv) statusDiv.innerHTML = '✅ Prêt - Cliquez sur le microphone et parlez';
+</script>
 {% endblock %}
