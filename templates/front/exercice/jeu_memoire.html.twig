@@ -1,0 +1,421 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Jeu de mémoire - FocusKid{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .game-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 600px;
+            border-radius: 20px;
+            padding: 30px;
+        }
+        .memory-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 32px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .memory-card:hover { transform: scale(1.05); }
+        .memory-card.flipped { background: #C8E6C9; }
+        .memory-card.matched { background: #81C784; cursor: default; opacity: 0.6; }
+        .score-board { background: white; border-radius: 15px; padding: 15px; margin-bottom: 20px; }
+        .btn-game { background: #FF9800; color: white; border-radius: 25px; padding: 10px 25px; border: none; text-decoration: none; display: inline-block; }
+        .btn-game:hover { background: #F57C00; }
+        
+        /* ========== STYLES VOIX ========== */
+        .voice-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .voice-toggle {
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 5px 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .voice-toggle:hover {
+            background: #1976D2;
+            transform: scale(1.05);
+        }
+        .voice-active {
+            background: #4CAF50;
+        }
+        .voice-active:hover {
+            background: #45a049;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="game-container">
+            <div class="score-board d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <h3 class="mb-0 me-3">🎴 Jeu de Mémoire</h3>
+                    <div class="voice-controls">
+                        <button id="voiceToggleBtn" class="voice-toggle" title="Activer/désactiver la voix">🔊 Voix ON</button>
+                    </div>
+                </div>
+                <div>
+                    <span class="me-3">⭐ Score: <span id="score">0</span></span>
+                    <span>⏱️ Temps: <span id="timer">00:00</span></span>
+                </div>
+            </div>
+            
+            <div class="text-center mb-4"><p id="message" class="text-white"></p></div>
+            
+            <div class="row" id="memoryGrid"></div>
+            
+            <div class="text-center mt-4">
+                <a href="{{ path('app_front_exercice_index') }}" class="btn-game">⬅️ Retour aux exercices</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Récupérer les données depuis Twig
+        const exerciceId = {{ exercice.id }};
+        const questionsData = {{ questions|default([])|json_encode|raw }};
+        
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let score = 0;
+        let canFlip = true;
+        let timer = 0;
+        let timerInterval = null;
+        let gameActive = true;
+        let gameFinished = false;
+        let reponsesDonnees = [];
+        
+        let pointsParPaire = 10;
+        
+        // ========== SYNTHÈSE VOCALE ==========
+        let speechEnabled = true;
+        let speechSynthesis = window.speechSynthesis;
+        let currentUtterance = null;
+        
+        function initVoice() {
+            if (!speechSynthesis) {
+                speechEnabled = false;
+                const btn = document.getElementById('voiceToggleBtn');
+                if (btn) btn.style.opacity = '0.5';
+                return;
+            }
+            const saved = localStorage.getItem('voice_enabled');
+            if (saved !== null) speechEnabled = saved === 'true';
+            updateVoiceButton();
+        }
+        
+        function updateVoiceButton() {
+            const btn = document.getElementById('voiceToggleBtn');
+            if (!btn) return;
+            if (speechEnabled) {
+                btn.innerHTML = '🔊 Voix ON';
+                btn.classList.add('voice-active');
+            } else {
+                btn.innerHTML = '🔇 Voix OFF';
+                btn.classList.remove('voice-active');
+            }
+        }
+        
+        function speakText(text) {
+            if (!speechEnabled) return;
+            if (currentUtterance) speechSynthesis.cancel();
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.lang = 'fr-FR';
+            currentUtterance.rate = 0.9;
+            currentUtterance.pitch = 1.1;
+            currentUtterance.volume = 1;
+            speechSynthesis.speak(currentUtterance);
+        }
+        
+        function speakCard(value) {
+            let text = value;
+            // Convertir les émojis en texte
+            const emojiMap = {
+                '🐶': 'chien', '🐱': 'chat', '🐭': 'souris', '🐹': 'hamster',
+                '🐰': 'lapin', '🦊': 'renard', '🐻': 'ours', '🐼': 'panda',
+                '🍎': 'pomme', '🍐': 'poire', '🍊': 'orange', '🍋': 'citron',
+                '🍌': 'banane', '🍉': 'pastèque', '🍇': 'raisin', '🍓': 'fraise',
+                '1️⃣': 'un', '2️⃣': 'deux', '3️⃣': 'trois', '4️⃣': 'quatre',
+                '5️⃣': 'cinq', '6️⃣': 'six', '7️⃣': 'sept', '8️⃣': 'huit',
+                '🔴': 'rouge', '🔵': 'bleu', '🟢': 'vert', '🟡': 'jaune'
+            };
+            
+            for (const [emoji, word] of Object.entries(emojiMap)) {
+                if (value.includes(emoji)) text = word;
+            }
+            return text;
+        }
+        
+        function speakSuccess() {
+            const messages = ['Bravo', 'Très bien', 'Excellent', 'Super', 'Bonne mémoire'];
+            speakText(messages[Math.floor(Math.random() * messages.length)]);
+        }
+        
+        function speakError() {
+            const messages = ['Ce n\'est pas une paire', 'Essaie encore', 'Concentre-toi'];
+            speakText(messages[Math.floor(Math.random() * messages.length)]);
+        }
+        
+        function speakStartGame() {
+            speakText('Jeu de mémoire. Retourne les cartes et trouve les paires identiques.');
+        }
+        
+        function speakMatch(value) {
+            const text = speakCard(value);
+            speakText(`Paire trouvée : ${text}`);
+        }
+        
+        // ========== FONCTIONS DU JEU ==========
+        function initGame() {
+            if (!questionsData || questionsData.length === 0) {
+                console.log('❌ Aucune donnée pour le jeu Mémoire');
+                return;
+            }
+            
+            // Construire les cartes à partir des données
+            let cardsData = [];
+            for (let i = 0; i < questionsData.length; i++) {
+                const valeur = questionsData[i].valeur || questionsData[i].image || '?';
+                cardsData.push({ id: i*2, value: valeur, matched: false, flipped: false });
+                cardsData.push({ id: i*2+1, value: valeur, matched: false, flipped: false });
+            }
+            
+            cards = shuffle(cardsData);
+            matchedPairs = 0;
+            score = 0;
+            gameActive = true;
+            gameFinished = false;
+            updateScore();
+            renderGrid();
+            startTimer();
+            
+            // Lire le message de début
+            setTimeout(() => {
+                speakStartGame();
+            }, 500);
+        }
+        
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        function renderGrid() {
+            const grid = document.getElementById('memoryGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            const cols = 4;
+            grid.style.display = 'grid';
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            grid.style.gap = '15px';
+            
+            cards.forEach((card, index) => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'memory-card';
+                if (card.flipped) cardDiv.classList.add('flipped');
+                if (card.matched) cardDiv.classList.add('matched');
+                cardDiv.textContent = (card.flipped || card.matched) ? card.value : '?';
+                cardDiv.onclick = () => flipCard(index);
+                grid.appendChild(cardDiv);
+            });
+        }
+        
+        function flipCard(index) {
+            if (!gameActive || gameFinished) return;
+            if (!canFlip || cards[index].matched || cards[index].flipped || flippedCards.length >= 2) return;
+            
+            cards[index].flipped = true;
+            renderGrid();
+            flippedCards.push(index);
+            
+            // Lire la valeur de la carte retournée
+            const value = cards[index].value;
+            const text = speakCard(value);
+            speakText(text);
+            
+            if (flippedCards.length === 2) checkMatch();
+        }
+        
+        function checkMatch() {
+            const card1 = cards[flippedCards[0]];
+            const card2 = cards[flippedCards[1]];
+            
+            if (card1.value === card2.value) {
+                card1.matched = true;
+                card2.matched = true;
+                matchedPairs++;
+                score += pointsParPaire;
+                updateScore();
+                
+                reponsesDonnees.push({
+                    paire: card1.value,
+                    reussie: true
+                });
+                
+                flippedCards = [];
+                renderGrid();
+                const msg = document.getElementById('message');
+                if (msg) msg.innerHTML = '✅ Bravo ! Paire trouvée !';
+                
+                // Message vocal de succès
+                speakSuccess();
+                speakMatch(card1.value);
+                
+                setTimeout(() => { if(msg) msg.innerHTML = ''; }, 1000);
+                
+                if (matchedPairs === cards.length / 2) {
+                    finishGame(true);
+                }
+            } else {
+                canFlip = false;
+                
+                reponsesDonnees.push({
+                    paire1: card1.value,
+                    paire2: card2.value,
+                    reussie: false
+                });
+                
+                const msg = document.getElementById('message');
+                if (msg) msg.innerHTML = '❌ Ce n\'est pas une paire...';
+                
+                // Message vocal d'erreur
+                speakError();
+                
+                setTimeout(() => {
+                    cards[flippedCards[0]].flipped = false;
+                    cards[flippedCards[1]].flipped = false;
+                    flippedCards = [];
+                    renderGrid();
+                    canFlip = true;
+                    if(msg) msg.innerHTML = '';
+                }, 1000);
+            }
+        }
+        
+        function updateScore() {
+            const scoreSpan = document.getElementById('score');
+            if (scoreSpan) scoreSpan.textContent = score;
+        }
+        
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timer = 0;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                if (gameActive && !gameFinished) {
+                    timer++;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const m = Math.floor(timer / 60), s = timer % 60;
+            const timerSpan = document.getElementById('timer');
+            if (timerSpan) timerSpan.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }
+        
+        function saveGameResult() {
+            if (gameFinished) return Promise.resolve(false);
+            gameFinished = true;
+            
+            const totalPairs = cards.length / 2;
+            const reussite = (matchedPairs === totalPairs);
+            
+            const reponsesData = {
+                type: 'memoire',
+                total_paires: totalPairs,
+                paires_trouvees: matchedPairs,
+                temps_total: timer,
+                score_final: score,
+                details: reponsesDonnees
+            };
+            
+            return fetch('/exercice/api/exercice-complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    exercice_id: exerciceId,
+                    enfant_id: {{ app.user.id ?? 1 }},
+                    score: score,
+                    temps_passe: timer,
+                    reponses: reponsesData,
+                    reussite: reussite
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('✅ Enregistré:', data);
+                return data.success;
+            })
+            .catch(error => {
+                console.error('❌ Erreur:', error);
+                return false;
+            });
+        }
+        
+        function finishGame(won) {
+            if (!gameActive || gameFinished) return;
+            
+            gameActive = false;
+            if (timerInterval) clearInterval(timerInterval);
+            
+            const msg = document.getElementById('message');
+            if (msg) msg.innerHTML = '📝 Sauvegarde en cours...';
+            
+            speakText('Jeu terminé. Votre score final est ' + score);
+            
+            saveGameResult().then(success => {
+                if (success) {
+                    alert('🎉 Jeu terminé et enregistré !');
+                } else {
+                    alert('⚠️ Jeu terminé mais erreur lors de l\'enregistrement.');
+                }
+                window.location.href = "{{ path('app_front_exercice_index') }}";
+            });
+        }
+        
+        // ========== INITIALISATION ==========
+        if (document.getElementById('memoryGrid')) {
+            initGame();
+            initVoice();
+        }
+        
+        // Bouton voix
+        const voiceBtn = document.getElementById('voiceToggleBtn');
+        if (voiceBtn) {
+            voiceBtn.addEventListener('click', () => {
+                speechEnabled = !speechEnabled;
+                localStorage.setItem('voice_enabled', speechEnabled);
+                updateVoiceButton();
+                if (speechEnabled) speakText('Voix activée');
+                else if (currentUtterance) speechSynthesis.cancel();
+            });
+        }
+    </script>
+{% endblock %}

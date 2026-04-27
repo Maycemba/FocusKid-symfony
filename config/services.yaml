@@ -1,6 +1,5 @@
 parameters:
     # Email administrateur par défaut
-    admin_email: 'parent@focuskid.com'
     admin_email: 'ayamosbeh91@gmail.com'
 
 services:

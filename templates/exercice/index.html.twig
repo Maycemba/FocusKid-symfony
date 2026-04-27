@@ -12,6 +12,7 @@
             text-align: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             transition: transform 0.3s;
+            cursor: pointer;
         }
         .stat-card:hover {
             transform: translateY(-5px);
@@ -26,6 +27,42 @@
             font-size: 14px;
             margin-top: 5px;
         }
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 25px;
+            height: 45px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 14px;
+            color: #999;
+        }
+        .filter-select {
+            border-radius: 25px;
+            height: 45px;
+            background: white;
+        }
+        .btn-reset {
+            border-radius: 25px;
+            height: 45px;
+            background: #FF9800;
+            color: white;
+            border: none;
+            width: 100%;
+        }
+        .btn-reset:hover {
+            background: #F57C00;
+        }
         .exercice-card {
             background: white;
             border-radius: 20px;
@@ -35,6 +72,7 @@
             transition: all 0.3s;
             border-left: 5px solid #9C27B0;
             height: 100%;
+            cursor: pointer;
         }
         .exercice-card:hover {
             transform: translateY(-5px);
@@ -51,67 +89,30 @@
         .badge-attention { background: #2196F3; color: white; }
         .badge-logique { background: #FF9800; color: white; }
         .badge-chrono { background: #F44336; color: white; }
-        .filter-section {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .search-box {
-            position: relative;
-        }
-        .search-box input {
-            padding-left: 40px;
-        }
-        .search-box i {
-            position: absolute;
-            left: 15px;
-            top: 12px;
-            color: #999;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            background: #f8f9fa;
-            border-radius: 20px;
-        }
-        .empty-state i {
-            font-size: 64px;
-            color: #ccc;
-            margin-bottom: 20px;
-        }
-        .btn-action {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            margin: 0 3px;
-        }
-        .etoiles {
-            color: #FFC107;
-            font-size: 14px;
-        }
-        .exercice-item {
-            display: block;
-        }
+        .badge-actif { background: #4CAF50; color: white; }
+        .badge-inactif { background: #9E9E9E; color: white; }
+        .badge-archive { background: #E74C3C; color: white; }
+        .etoiles { color: #FFC107; font-size: 14px; }
+        .btn-action { padding: 5px 12px; border-radius: 20px; font-size: 12px; margin: 0 3px; }
+        .empty-state { text-align: center; padding: 60px 20px; background: #f8f9fa; border-radius: 20px; }
+        .empty-state i { font-size: 64px; color: #ccc; margin-bottom: 20px; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .exercice-card { animation: fadeInUp 0.3s ease forwards; }
     </style>
 {% endblock %}
 
 {% block body %}
 <div class="container-fluid">
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold">
-                <i class="ti ti-notes"></i> Gestion des exercices
-            </h2>
+            <h2 class="fw-bold"><i class="ti ti-notes"></i> Gestion des Exercices</h2>
             <p class="text-muted">Gérez tous les exercices pédagogiques</p>
         </div>
-        <a href="{{ path('app_exercice_new') }}" class="btn btn-primary">
+        <a href="{{ path('app_exercice_new') }}" class="btn btn-primary" style="border-radius: 25px; padding: 10px 25px;">
             <i class="ti ti-plus"></i> Nouvel exercice
         </a>
     </div>
 
-    <!-- Cartes statistiques -->
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="stat-card">
@@ -122,7 +123,13 @@
         <div class="col-md-3">
             <div class="stat-card">
                 <div class="stat-number">{{ exercices|filter(e => e.actif == true and e.archive == false)|length }}</div>
-                <div class="stat-label">✅ Exercices actifs</div>
+                <div class="stat-label">⭐ Actifs</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ exercices|map(e => e.type)|reduce((unique, type) => type not in unique ? unique|merge([type]) : unique, [])|length }}</div>
+                <div class="stat-label">🎯 Types</div>
             </div>
         </div>
         <div class="col-md-3">
@@ -131,25 +138,18 @@
                 <div class="stat-label">📖 Non archivés</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-number">{{ exercices|map(e => e.type)|reduce((unique, type) => type not in unique ? unique|merge([type]) : unique, [])|length }}</div>
-                <div class="stat-label">🎯 Types d'exercices</div>
-            </div>
-        </div>
     </div>
 
-    <!-- Filtres -->
     <div class="filter-section">
-        <div class="row">
+        <div class="row align-items-end">
             <div class="col-md-4 mb-3">
                 <div class="search-box">
                     <i class="ti ti-search"></i>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un exercice...">
+                    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Chercher un exercice...">
                 </div>
             </div>
             <div class="col-md-3 mb-3">
-                <select id="typeFilter" class="form-select">
+                <select id="typeFilter" class="form-select filter-select">
                     <option value="all">📋 Tous les types</option>
                     <option value="MÉMOIRE">🎴 MÉMOIRE</option>
                     <option value="ATTENTION">👁️ ATTENTION</option>
@@ -158,7 +158,7 @@
                 </select>
             </div>
             <div class="col-md-3 mb-3">
-                <select id="statutFilter" class="form-select">
+                <select id="statutFilter" class="form-select filter-select">
                     <option value="all">📊 Tous les statuts</option>
                     <option value="actif">✅ Actifs</option>
                     <option value="inactif">❌ Inactifs</option>
@@ -166,14 +166,13 @@
                 </select>
             </div>
             <div class="col-md-2 mb-3">
-                <button id="resetFilters" class="btn btn-secondary w-100">
+                <button id="resetFilters" class="btn-reset w-100">
                     <i class="ti ti-refresh"></i> Réinitialiser
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Liste des exercices en cartes -->
     <div id="exercicesContainer">
         {% if exercices|length > 0 %}
             <div class="row" id="exercicesGrid">
@@ -184,7 +183,6 @@
                          data-actif="{{ exercice.actif ? 'actif' : 'inactif' }}"
                          data-archive="{{ exercice.archive ? 'archive' : 'nonarchive' }}">
                         <div class="exercice-card">
-                            <!-- Header avec icône et statut -->
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div>
                                     <span class="badge-type 
@@ -201,46 +199,32 @@
                                 </div>
                                 <div>
                                     {% if exercice.archive %}
-                                        <span class="badge bg-secondary">📦 Archivé</span>
+                                        <span class="badge-archive badge">📦 Archivé</span>
                                     {% elseif exercice.actif %}
-                                        <span class="badge bg-success">✅ Actif</span>
+                                        <span class="badge-actif badge">✅ Actif</span>
                                     {% else %}
-                                        <span class="badge bg-danger">❌ Inactif</span>
+                                        <span class="badge-inactif badge">⛔ Inactif</span>
                                     {% endif %}
                                 </div>
                             </div>
                             
-                            <!-- Titre -->
                             <h5 class="fw-bold mb-2">{{ exercice.titre }}</h5>
                             
-                            <!-- Difficulté (étoiles) -->
                             <div class="mb-2">
                                 <span class="etoiles">
-                                    {% for i in 1..exercice.difficulte %}
-                                        ★
-                                    {% endfor %}
-                                    {% for i in exercice.difficulte+1..5 %}
-                                        ☆
-                                    {% endfor %}
+                                    {% for i in 1..exercice.difficulte %}★{% endfor %}
+                                    {% for i in exercice.difficulte+1..5 %}☆{% endfor %}
                                 </span>
                                 <small class="text-muted ms-2">Difficulté {{ exercice.difficulte }}/5</small>
                             </div>
                             
-                            <!-- Consigne (tronquée) -->
                             <p class="text-muted small mb-2">
                                 {{ exercice.consigne|length > 80 ? exercice.consigne|slice(0, 80) ~ '...' : exercice.consigne }}
                             </p>
                             
-                            <!-- Infos supplémentaires -->
                             <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
                                 <div>
-                                    <small class="text-muted">
-                                        <i class="ti ti-clock"></i> {{ exercice.duree }}s
-                                    </small>
-                                    <br>
-                                    <small class="text-muted">
-                                        <i class="ti ti-calendar"></i> {{ exercice.dateCreation ? exercice.dateCreation|date('d/m/Y') : '' }}
-                                    </small>
+                                    <small class="text-muted"><i class="ti ti-clock"></i> {{ exercice.duree }}s</small>
                                 </div>
                                 <div>
                                     {% if exercice.pourTousEnfants %}
@@ -251,70 +235,29 @@
                                 </div>
                             </div>
                             
-                            <!-- Actions -->
                             <div class="mt-3 d-flex justify-content-end">
-                                <a href="{{ path('app_exercice_show', {'id': exercice.id}) }}" class="btn btn-sm btn-info btn-action" title="Voir">
-                                    <i class="ti ti-eye"></i>
-                                </a>
-                                <a href="{{ path('app_exercice_edit', {'id': exercice.id}) }}" class="btn btn-sm btn-warning btn-action" title="Modifier">
-                                    <i class="ti ti-edit"></i>
-                                </a>
-                                {% if not exercice.archive %}
-                                    <button type="button" class="btn btn-sm btn-danger btn-action" data-bs-toggle="modal" data-bs-target="#archiveModal{{ exercice.id }}" title="Archiver">
-                                        <i class="ti ti-archive"></i>
-                                    </button>
-                                {% else %}
-                                    <button type="button" class="btn btn-sm btn-success btn-action" data-bs-toggle="modal" data-bs-target="#restoreModal{{ exercice.id }}" title="Restaurer">
-                                        <i class="ti ti-refresh"></i>
-                                    </button>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Modal Archiver -->
-                    <div class="modal fade" id="archiveModal{{ exercice.id }}" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header bg-danger text-white">
-                                    <h5 class="modal-title">Archiver l'exercice</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <p>Voulez-vous vraiment archiver l'exercice <strong>{{ exercice.titre }}</strong> ?</p>
-                                    <p class="text-muted small">L'exercice ne sera plus visible pour les enfants mais pourra être restauré.</p>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                    <form method="post" action="{{ path('app_exercice_archive', {'id': exercice.id}) }}" style="display:inline">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('archive' ~ exercice.id) }}">
-                                        <button type="submit" class="btn btn-danger">Archiver</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Modal Restaurer -->
-                    <div class="modal fade" id="restoreModal{{ exercice.id }}" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header bg-success text-white">
-                                    <h5 class="modal-title">Restaurer l'exercice</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <p>Voulez-vous vraiment restaurer l'exercice <strong>{{ exercice.titre }}</strong> ?</p>
-                                    <p class="text-muted small">L'exercice sera à nouveau visible pour les enfants.</p>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                    <form method="post" action="{{ path('app_exercice_restore', {'id': exercice.id}) }}" style="display:inline">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('restore' ~ exercice.id) }}">
-                                        <button type="submit" class="btn btn-success">Restaurer</button>
-                                    </form>
-                                </div>
-                            </div>
+    <a href="{{ path('app_exercice_show', {'id': exercice.id}) }}" class="btn btn-sm btn-info btn-action" title="Voir">
+        <i class="ti ti-eye"></i>
+    </a>
+    <a href="{{ path('app_exercice_edit', {'id': exercice.id}) }}" class="btn btn-sm btn-warning btn-action" title="Modifier">
+        <i class="ti ti-edit"></i>
+    </a>
+    {% if not exercice.archive %}
+        <form method="post" action="{{ path('app_exercice_archive', {'id': exercice.id}) }}" style="display:inline-block" onsubmit="return confirm('Archiver l\'exercice \"{{ exercice.titre }}\" ?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('archive' ~ exercice.id) }}">
+            <button type="submit" class="btn btn-sm btn-danger btn-action">
+                <i class="ti ti-archive"></i>
+            </button>
+        </form>
+    {% else %}
+        <form method="post" action="{{ path('app_exercice_restore', {'id': exercice.id}) }}" style="display:inline-block" onsubmit="return confirm('Restaurer l\'exercice \"{{ exercice.titre }}\" ?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('restore' ~ exercice.id) }}">
+            <button type="submit" class="btn btn-sm btn-success btn-action">
+                <i class="ti ti-refresh"></i>
+            </button>
+        </form>
+    {% endif %}
+</div>
                         </div>
                     </div>
                 {% endfor %}
@@ -331,116 +274,246 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Modal Archiver -->
+<div class="modal fade" id="archiveModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Archiver l'exercice</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Voulez-vous vraiment archiver l'exercice <strong id="archiveTitre"></strong> ?</p>
+                <p class="text-muted small">L'exercice ne sera plus visible pour les enfants mais pourra être restauré.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="archiveForm" method="post" action="">
+                    <input type="hidden" name="_token" id="archiveToken">
+                    <button type="submit" class="btn btn-danger">Archiver</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Restaurer -->
+<div class="modal fade" id="restoreModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Restaurer l'exercice</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Voulez-vous vraiment restaurer l'exercice <strong id="restoreTitre"></strong> ?</p>
+                <p class="text-muted small">L'exercice sera à nouveau visible pour les enfants.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="restoreForm" method="post" action="">
+                    <input type="hidden" name="_token" id="restoreToken">
+                    <button type="submit" class="btn btn-success">Restaurer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        // Filtres dynamiques
-        const searchInput = document.getElementById('searchInput');
-        const typeFilter = document.getElementById('typeFilter');
-        const statutFilter = document.getElementById('statutFilter');
-        const resetBtn = document.getElementById('resetFilters');
-        const exerciceItems = document.querySelectorAll('.exercice-item');
+        // Attendre que tout soit chargé (y compris les modals)
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM chargé');
+            
+            // ========== FILTRES ==========
+            var searchInput = document.getElementById('searchInput');
+            var typeFilter = document.getElementById('typeFilter');
+            var statutFilter = document.getElementById('statutFilter');
+            var resetBtn = document.getElementById('resetFilters');
+            var exerciceItems = document.querySelectorAll('.exercice-item');
+            
+            function normalizeString(str) {
+                if (!str) return '';
+                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            }
+            
+            function filterExercices() {
+    var searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    var typeValue = typeFilter ? typeFilter.value : 'all';
+    var statutValue = statutFilter ? statutFilter.value : 'all';
+    var visibleCount = 0;
+    
+    for (var i = 0; i < exerciceItems.length; i++) {
+        var item = exerciceItems[i];
+        var titre = item.dataset.titre || '';
+        var type = item.dataset.type || '';
+        var actif = item.dataset.actif || '';
+        var archive = item.dataset.archive || '';
+        var show = true;
         
-        function filterExercices() {
-            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-            const typeValue = typeFilter ? typeFilter.value : 'all';
-            const statutValue = statutFilter ? statutFilter.value : 'all';
-            
-            let visibleCount = 0;
-            
-            exerciceItems.forEach(item => {
-                const titre = item.dataset.titre || '';
-                const type = item.dataset.type || '';
-                const actif = item.dataset.actif || '';
-                const archive = item.dataset.archive || '';
-                
-                let show = true;
-                
-                // Filtre recherche
-                if (searchTerm && !titre.includes(searchTerm)) {
-                    show = false;
-                }
-                
-                // Filtre type - comparaison directe
-                if (show && typeValue !== 'all') {
-                    if (type !== typeValue) {
-                        show = false;
-                    }
-                }
-                
-                // Filtre statut
-                if (show && statutValue !== 'all') {
-                    if (statutValue === 'actif' && (actif !== 'actif' || archive === 'archive')) {
-                        show = false;
-                    } else if (statutValue === 'inactif' && (actif !== 'inactif' || archive === 'archive')) {
-                        show = false;
-                    } else if (statutValue === 'archive' && archive !== 'archive') {
-                        show = false;
-                    }
-                }
-                
-                item.style.display = show ? '' : 'none';
-                if (show) visibleCount++;
-            });
-            
-            // Afficher/masquer message "aucun résultat"
-            let emptyMessage = document.getElementById('emptyFilterMessage');
-            
-            if (visibleCount === 0 && exerciceItems.length > 0) {
-                if (!emptyMessage) {
-                    emptyMessage = document.createElement('div');
-                    emptyMessage.id = 'emptyFilterMessage';
-                    emptyMessage.className = 'empty-state';
-                    emptyMessage.innerHTML = `
-                        <i class="ti ti-filter-off"></i>
-                        <h4>Aucun résultat</h4>
-                        <p class="text-muted">Aucun exercice ne correspond à vos critères</p>
-                        <button id="clearFiltersBtn" class="btn btn-primary mt-3">Effacer les filtres</button>
-                    `;
-                    document.getElementById('exercicesContainer').appendChild(emptyMessage);
-                    
-                    document.getElementById('clearFiltersBtn')?.addEventListener('click', () => {
-                        if(searchInput) searchInput.value = '';
-                        if(typeFilter) typeFilter.value = 'all';
-                        if(statutFilter) statutFilter.value = 'all';
-                        filterExercices();
-                    });
-                }
-                emptyMessage.style.display = 'block';
-            } else if (emptyMessage) {
-                emptyMessage.style.display = 'none';
+        var typeNormalized = normalizeString(type);
+        var typeValueNormalized = normalizeString(typeValue);
+        
+        // Filtre recherche
+        if (searchTerm && titre.indexOf(searchTerm) === -1) {
+            show = false;
+        }
+        
+        // Filtre type
+        if (show && typeValue !== 'all') {
+            if (typeNormalized !== typeValueNormalized) {
+                show = false;
             }
         }
         
-        // Ajouter les écouteurs d'événements
-        if(searchInput) searchInput.addEventListener('keyup', filterExercices);
-        if(typeFilter) typeFilter.addEventListener('change', filterExercices);
-        if(statutFilter) statutFilter.addEventListener('change', filterExercices);
+        // Filtre statut
+        if (show) {
+            if (statutValue === 'actif') {
+                // Actifs non archivés
+                if (actif !== 'actif' || archive === 'archive') {
+                    show = false;
+                }
+            } else if (statutValue === 'inactif') {
+                // Inactifs non archivés
+                if (actif !== 'inactif' || archive === 'archive') {
+                    show = false;
+                }
+            } else if (statutValue === 'archive') {
+                // Archivés seulement
+                if (archive !== 'archive') {
+                    show = false;
+                }
+            } else {
+                // 'all' ou autre: cacher les archivés par défaut
+                if (archive === 'archive') {
+                    show = false;
+                }
+            }
+        }
         
-        // Bouton reset
-        if(resetBtn) {
-            resetBtn.addEventListener('click', () => {
+        item.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+    }
+    
+    // Message "aucun résultat"
+    var emptyMessage = document.getElementById('emptyFilterMessage');
+    if (visibleCount === 0 && exerciceItems.length > 0) {
+        if (!emptyMessage) {
+            emptyMessage = document.createElement('div');
+            emptyMessage.id = 'emptyFilterMessage';
+            emptyMessage.className = 'col-12';
+            emptyMessage.innerHTML = '<div class="empty-state"><i class="ti ti-filter-off"></i><h4>Aucun résultat</h4><p class="text-muted">Aucun exercice ne correspond à vos critères</p><button id="clearFiltersBtn" class="btn btn-primary mt-3">Effacer les filtres</button></div>';
+            document.getElementById('exercicesGrid').appendChild(emptyMessage);
+            
+            document.getElementById('clearFiltersBtn').addEventListener('click', function() {
                 if(searchInput) searchInput.value = '';
                 if(typeFilter) typeFilter.value = 'all';
                 if(statutFilter) statutFilter.value = 'all';
                 filterExercices();
             });
         }
-        
-        // Animation au chargement
-        document.querySelectorAll('.exercice-card').forEach((card, index) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            setTimeout(() => {
-                card.style.transition = 'all 0.3s ease';
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, index * 50);
+        emptyMessage.style.display = 'block';
+    } else if (emptyMessage) {
+        emptyMessage.style.display = 'none';
+    }
+}
+            
+            // ========== GESTION ARCHIVER (avec délai pour s'assurer que les éléments existent) ==========
+            setTimeout(function() {
+                var archiveBtns = document.querySelectorAll('.archive-btn');
+                var restoreBtns = document.querySelectorAll('.restore-btn');
+                
+                console.log('Boutons archive trouvés:', archiveBtns.length);
+                console.log('Boutons restore trouvés:', restoreBtns.length);
+                
+                // Pour chaque bouton archive
+                for (var i = 0; i < archiveBtns.length; i++) {
+                    archiveBtns[i].addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        
+                        var id = this.getAttribute('data-id');
+                        var token = this.getAttribute('data-token');
+                        var titre = this.getAttribute('data-titre');
+                        
+                        console.log('Archive cliqué - ID:', id, 'Titre:', titre);
+                        
+                        document.getElementById('archiveTitre').textContent = titre;
+                        document.getElementById('archiveForm').action = '/exercice/archive/' + id;
+                        document.getElementById('archiveToken').value = token;
+                        
+                        // Afficher le modal avec Bootstrap
+                        var modalEl = document.getElementById('archiveModal');
+                        var modal = new bootstrap.Modal(modalEl);
+                        modal.show();
+                    });
+                }
+                
+                // Pour chaque bouton restore
+                for (var i = 0; i < restoreBtns.length; i++) {
+                    restoreBtns[i].addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        
+                        var id = this.getAttribute('data-id');
+                        var token = this.getAttribute('data-token');
+                        var titre = this.getAttribute('data-titre');
+                        
+                        console.log('Restore cliqué - ID:', id, 'Titre:', titre);
+                        
+                        document.getElementById('restoreTitre').textContent = titre;
+                        document.getElementById('restoreForm').action = '/exercice/restore/' + id;
+                        document.getElementById('restoreToken').value = token;
+                        
+                        // Afficher le modal avec Bootstrap
+                        var modalEl = document.getElementById('restoreModal');
+                        var modal = new bootstrap.Modal(modalEl);
+                        modal.show();
+                    });
+                }
+            }, 100);
+            
+            if (searchInput) searchInput.addEventListener('keyup', filterExercices);
+            if (typeFilter) typeFilter.addEventListener('change', filterExercices);
+            if (statutFilter) statutFilter.addEventListener('change', filterExercices);
+            
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    if (searchInput) searchInput.value = '';
+                    if (typeFilter) typeFilter.value = 'all';
+                    if (statutFilter) statutFilter.value = 'all';
+                    filterExercices();
+                });
+            }
+            
+            filterExercices();
         });
+         function archiverExercice(id, token, titre) {
+        console.log('Archiver - ID:', id, 'Titre:', titre);
         
-        // Exécuter le filtre au chargement
-        filterExercices();
+        document.getElementById('archiveTitre').textContent = titre;
+        document.getElementById('archiveForm').action = '/exercice/archive/' + id;
+        document.getElementById('archiveToken').value = token;
+        
+        var modal = new bootstrap.Modal(document.getElementById('archiveModal'));
+        modal.show();
+    }
+    
+    // Fonction pour restaurer
+    function restaurerExercice(id, token, titre) {
+        console.log('Restaurer - ID:', id, 'Titre:', titre);
+        
+        document.getElementById('restoreTitre').textContent = titre;
+        document.getElementById('restoreForm').action = '/exercice/restore/' + id;
+        document.getElementById('restoreToken').value = token;
+        
+        var modal = new bootstrap.Modal(document.getElementById('restoreModal'));
+        modal.show();
+    }
     </script>
 {% endblock %}

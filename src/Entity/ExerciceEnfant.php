@@ -70,6 +70,66 @@ class ExerciceEnfant
         return $this;
     }
 
+    // 🔥 AJOUTER CES PROPRIÉTÉS 🔥
+    
+    #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => 0])]
+    private ?bool $complete = false;
+
+    #[ORM\Column(type: 'integer', nullable: true, options: ['default' => 0])]
+    private ?int $score_final = 0;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $date_completion = null;
+    #[ORM\Column(type: 'string', nullable: true)]
+private ?string $jours = null;
+    // Getters et setters pour les nouvelles propriétés
+    
+
+public function getJours(): ?string { return $this->jours; }
+public function setJours(?string $jours): self { $this->jours = $jours; return $this; }
+
+public function getJoursArray(): array
+{
+    if (!$this->jours) {
+        return [];
+    }
+    return explode(',', $this->jours);
+}
+
+    public function isComplete(): ?bool
+    {
+        return $this->complete;
+    }
+
+    public function setComplete(?bool $complete): self
+    {
+        $this->complete = $complete;
+        return $this;
+    }
+
+    public function getScoreFinal(): ?int
+    {
+        return $this->score_final;
+    }
+
+    public function setScoreFinal(?int $score_final): self
+    {
+        $this->score_final = $score_final;
+        return $this;
+    }
+
+    public function getDateCompletion(): ?\DateTimeInterface
+    {
+        return $this->date_completion;
+    }
+
+    public function setDateCompletion(?\DateTimeInterface $date_completion): self
+    {
+        $this->date_completion = $date_completion;
+        return $this;
+    }
+
+    // Méthodes existantes
     public function getExerciceId(): ?int
     {
         return $this->exercice_id;
@@ -78,7 +138,6 @@ class ExerciceEnfant
     public function setExerciceId(int $exercice_id): static
     {
         $this->exercice_id = $exercice_id;
-
         return $this;
     }
 
@@ -90,7 +149,6 @@ class ExerciceEnfant
     public function setEnfantId(int $enfant_id): static
     {
         $this->enfant_id = $enfant_id;
-
         return $this;
     }
 
@@ -102,8 +160,6 @@ class ExerciceEnfant
     public function setDateAttribution(\DateTime $date_attribution): static
     {
         $this->date_attribution = $date_attribution;
-
         return $this;
     }
-
 }

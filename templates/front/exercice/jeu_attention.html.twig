@@ -1,0 +1,847 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Jeu d'Attention - FocusKid{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .game-container {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            min-height: 600px;
+            border-radius: 20px;
+            padding: 30px;
+        }
+        .attention-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 48px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .attention-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .attention-card.selected {
+            background: #C8E6C9;
+            border: 3px solid #4CAF50;
+        }
+        .score-board {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .progress-bar-custom {
+            height: 10px;
+            background: #E0E0E0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            width: 100%;
+            transition: width 0.3s;
+        }
+        .btn-game {
+            background: #FF9800;
+            color: white;
+            border-radius: 25px;
+            padding: 10px 25px;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-game:hover {
+            background: #F57C00;
+        }
+        .message-success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .message-error {
+            color: #F44336;
+            font-weight: bold;
+        }
+        
+        /* ========== STYLES VOIX ========== */
+        .voice-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .voice-toggle {
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 5px 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .voice-toggle:hover {
+            background: #1976D2;
+            transform: scale(1.05);
+        }
+        .voice-active {
+            background: #4CAF50;
+        }
+        .voice-active:hover {
+            background: #45a049;
+        }
+        
+        /* ========== STYLES CAMERA ========== */
+        .camera-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 220px;
+            height: 165px;
+            background: #1a1a2e;
+            border-radius: 15px;
+            z-index: 1000;
+            overflow: hidden;
+            border: 3px solid #00b894;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        .camera-container.violation {
+            border-color: #d63031;
+            animation: pulse 0.5s infinite;
+        }
+        @keyframes pulse {
+            0% { border-color: #d63031; }
+            100% { border-color: #ff7675; }
+        }
+        .camera-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .violation-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #d63031;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: none;
+            animation: blink 0.5s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .face-status {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            text-align: center;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 11px;
+            padding: 5px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        .face-status.alert {
+            background: #d63031;
+            animation: blink 0.5s infinite;
+        }
+        .face-status.success {
+            background: #00b894;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            margin: 100px auto;
+            text-align: center;
+        }
+        .modal-content video {
+            width: 100%;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        .modal-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+        .modal-btn-skip {
+            background: #ccc;
+            color: #333;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        /* Alerte violation */
+        .violation-alert {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 30px;
+            z-index: 3000;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: shake 0.5s ease-in-out;
+            min-width: 350px;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, -50%) translateX(0); }
+            25% { transform: translate(-50%, -50%) translateX(-10px); }
+            75% { transform: translate(-50%, -50%) translateX(10px); }
+        }
+        .violation-alert .alert-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+        .violation-alert h3 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .violation-alert p {
+            margin: 10px 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .violation-alert .alert-progress {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .violation-alert .alert-progress-bar {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            animation: progressBar 3s linear forwards;
+        }
+        @keyframes progressBar {
+            0% { width: 100%; }
+            100% { width: 0%; }
+        }
+        .violation-alert button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .violation-alert button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="game-container">
+            <div class="score-board d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <h3 class="mb-0 me-3">🎯 Jeu d'Attention</h3>
+                    <div class="voice-controls">
+                        <button id="voiceToggleBtn" class="voice-toggle" title="Activer/désactiver la voix">🔊 Voix ON</button>
+                    </div>
+                </div>
+                <div>
+                    <span class="me-3">⭐ Score: <span id="score">0</span></span>
+                    <span>⏱️ Temps: <span id="timer">00:00</span></span>
+                </div>
+            </div>
+            
+            <div class="progress-bar-custom">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="text-center mt-3 mb-4">
+                <p id="message" class="message-success"></p>
+            </div>
+            
+            <div class="row" id="attentionGrid"></div>
+            
+            <div class="text-center mt-4">
+                <a href="{{ path('app_front_exercice_index') }}" class="btn-game">⬅️ Retour aux exercices</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Caméra de surveillance -->
+<div id="cameraContainer" class="camera-container" style="display: none;">
+    <video id="surveillanceVideo" autoplay muted playsinline></video>
+    <div id="violationBadge" class="violation-badge">⚠️ ALERTE</div>
+    <div class="face-status">
+        <span id="faceStatus">🔍 Vérification...</span>
+    </div>
+</div>
+
+<!-- Modal d'enregistrement du visage -->
+<div id="registerModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>📸 Enregistrement du visage</h2>
+        <p>Placez-vous face à la caméra</p>
+        <video id="registerVideo" autoplay muted></video>
+        <button id="confirmRegisterBtn" class="modal-btn">✅ Enregistrer mon visage</button>
+        <button id="skipRegisterBtn" class="modal-btn-skip">⏭️ Passer</button>
+    </div>
+</div>
+
+<!-- Alerte violation -->
+<div id="violationAlert" class="violation-alert">
+    <div class="alert-icon">⚠️</div>
+    <h3>Attention !</h3>
+    <p id="violationReason"></p>
+    <div class="alert-progress">
+        <div class="alert-progress-bar"></div>
+    </div>
+    <button onclick="location.reload()">🔁 Recommencer l'exercice</button>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Récupérer les données depuis Twig
+        const exerciceId = {{ exercice.id }};
+        const questionsData = {{ questions|default([])|json_encode|raw }};
+        
+        // Variables du jeu
+        let images = [];
+        let currentTarget = null;
+        let score = 0;
+        let timer = 0;
+        let timerInterval = null;
+        let gameActive = true;
+        let progressTimer = null;
+        let timeLeft = 100;
+        let gameFinished = false;
+        let reponsesDonnees = [];
+        let gameStarted = false;
+        
+        // Paramètres
+        let pointsParClick = 10;
+        let penalite = 5;
+        let tempsMax = 120;
+        
+        // Variables de surveillance
+        let surveillanceActive = false;
+        
+        // ========== SYNTHÈSE VOCALE ==========
+        let speechEnabled = true;
+        let speechSynthesis = window.speechSynthesis;
+        let currentUtterance = null;
+        
+        // Initialiser la voix
+        function initVoice() {
+            if (!speechSynthesis) {
+                console.log('❌ Synthèse vocale non supportée');
+                speechEnabled = false;
+                const btn = document.getElementById('voiceToggleBtn');
+                if (btn) btn.style.opacity = '0.5';
+                return;
+            }
+            
+            // Charger la préférence
+            const saved = localStorage.getItem('voice_enabled');
+            if (saved !== null) {
+                speechEnabled = saved === 'true';
+            }
+            updateVoiceButton();
+            console.log('✅ Synthèse vocale prête');
+        }
+        
+        // Mettre à jour l'apparence du bouton
+        function updateVoiceButton() {
+            const btn = document.getElementById('voiceToggleBtn');
+            if (!btn) return;
+            if (speechEnabled) {
+                btn.innerHTML = '🔊 Voix ON';
+                btn.classList.add('voice-active');
+            } else {
+                btn.innerHTML = '🔇 Voix OFF';
+                btn.classList.remove('voice-active');
+            }
+        }
+        
+        // Lire un texte
+        function speakText(text) {
+            if (!speechEnabled) return;
+            
+            // Arrêter la lecture en cours
+            if (currentUtterance) {
+                speechSynthesis.cancel();
+            }
+            
+            // Créer une nouvelle utterance
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.lang = 'fr-FR';
+            currentUtterance.rate = 0.9;
+            currentUtterance.pitch = 1.2;
+            currentUtterance.volume = 1;
+            
+            // Choisir une voix française
+            speechSynthesis.onvoiceschanged = () => {
+                const voices = speechSynthesis.getVoices();
+                const frenchVoice = voices.find(voice => voice.lang === 'fr-FR');
+                if (frenchVoice) {
+                    currentUtterance.voice = frenchVoice;
+                }
+                speechSynthesis.speak(currentUtterance);
+            };
+            
+            speechSynthesis.speak(currentUtterance);
+        }
+        
+        // Lire l'image cible
+        function speakTarget(target) {
+            let text = '';
+            // Convertir les émojis en texte lisible
+            if (target.includes('🐶')) text = 'Chien';
+            else if (target.includes('🐱')) text = 'Chat';
+            else if (target.includes('🐭')) text = 'Souris';
+            else if (target.includes('🐹')) text = 'Hamster';
+            else if (target.includes('🐰')) text = 'Lapin';
+            else if (target.includes('🦊')) text = 'Renard';
+            else if (target.includes('🐻')) text = 'Ours';
+            else if (target.includes('🐼')) text = 'Panda';
+            else if (target.includes('🍎')) text = 'Pomme';
+            else if (target.includes('🍐')) text = 'Poire';
+            else if (target.includes('🍊')) text = 'Orange';
+            else if (target.includes('🍋')) text = 'Citron';
+            else if (target.includes('🍌')) text = 'Banane';
+            else if (target.includes('🍉')) text = 'Pastèque';
+            else if (target.includes('🍇')) text = 'Raisin';
+            else if (target.includes('🍓')) text = 'Fraise';
+            else if (target.includes('1️⃣')) text = 'Un';
+            else if (target.includes('2️⃣')) text = 'Deux';
+            else if (target.includes('3️⃣')) text = 'Trois';
+            else if (target.includes('4️⃣')) text = 'Quatre';
+            else if (target.includes('5️⃣')) text = 'Cinq';
+            else if (target.includes('6️⃣')) text = 'Six';
+            else if (target.includes('7️⃣')) text = 'Sept';
+            else if (target.includes('8️⃣')) text = 'Huit';
+            else if (target.includes('🔴')) text = 'Rouge';
+            else if (target.includes('🔵')) text = 'Bleu';
+            else if (target.includes('🟢')) text = 'Vert';
+            else if (target.includes('🟡')) text = 'Jaune';
+            else if (target.includes('⬛')) text = 'Noir';
+            else if (target.includes('⬜')) text = 'Blanc';
+            else if (target.includes('🟠')) text = 'Orange';
+            else if (target.includes('🟣')) text = 'Violet';
+            else if (target.includes('🟤')) text = 'Marron';
+            else if (target.includes('🔷')) text = 'Bleu';
+            else if (target.includes('🔶')) text = 'Orange';
+            else {
+                text = target;
+            }
+            
+            speakText(`Trouve l'image : ${text}`);
+        }
+        
+        // Lire un message de succès
+        function speakSuccess() {
+            const messages = ['Bravo', 'Très bien', 'Excellent', 'Super', 'Félicitations', 'Bonne réponse'];
+            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+            speakText(randomMsg);
+        }
+        
+        // Lire un message d'erreur
+        function speakError() {
+            const messages = ['Essaie encore', 'Presque', 'Réessaie', 'Concentre-toi', 'Pas tout à fait'];
+            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+            speakText(randomMsg);
+        }
+        
+        // Lire la consigne de début
+        function speakStartGame() {
+            speakText('Le jeu commence. Trouve les images demandées.');
+        }
+        
+        // ========== FONCTIONS DU JEU ==========
+        function initGame() {
+            if (!questionsData || questionsData.length === 0) {
+                console.log('❌ Aucune donnée pour le jeu Attention');
+                return;
+            }
+            
+            images = [];
+            for (let i = 0; i < questionsData.length; i++) {
+                images.push({
+                    id: i,
+                    value: questionsData[i].image || questionsData[i].valeur || '?',
+                    selected: false
+                });
+            }
+            
+            score = 0;
+            timeLeft = tempsMax;
+            gameActive = true;
+            gameFinished = false;
+            updateScore();
+            updateProgressBar();
+            setNewTarget();
+            renderGrid();
+            
+            // Lire la consigne
+            setTimeout(() => {
+                speakStartGame();
+            }, 500);
+        }
+        
+        function startGameTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            if (progressTimer) clearInterval(progressTimer);
+            
+            timer = 0;
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                if (gameActive && !gameFinished && gameStarted) {
+                    timer++;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+            
+            progressTimer = setInterval(() => {
+                if (gameActive && !gameFinished && gameStarted && timeLeft > 0) {
+                    timeLeft--;
+                    updateProgressBar();
+                    if (timeLeft <= 0) {
+                        finishGame();
+                    }
+                }
+            }, 1000);
+        }
+        
+        function setNewTarget() {
+            const randomIndex = Math.floor(Math.random() * images.length);
+            currentTarget = images[randomIndex].value;
+            const msgDiv = document.getElementById('message');
+            if (msgDiv) msgDiv.innerHTML = `🎯 Trouve l'image : <strong>${currentTarget}</strong>`;
+            
+            // Lecture vocale
+            speakTarget(currentTarget);
+        }
+        
+        function renderGrid() {
+            const grid = document.getElementById('attentionGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            grid.style.display = 'grid';
+            grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            grid.style.gap = '15px';
+            
+            images.forEach((img, index) => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'attention-card';
+                if (img.selected) cardDiv.classList.add('selected');
+                cardDiv.textContent = img.value;
+                cardDiv.onclick = () => selectImage(index);
+                grid.appendChild(cardDiv);
+            });
+        }
+        
+        function selectImage(index) {
+            if (!gameActive || gameFinished || !gameStarted) return;
+            
+            const selectedImage = images[index];
+            
+            reponsesDonnees.push({
+                image: selectedImage.value,
+                est_cible: (selectedImage.value === currentTarget)
+            });
+            
+            if (selectedImage.value === currentTarget) {
+                score += pointsParClick;
+                updateScore();
+                selectedImage.selected = true;
+                renderGrid();
+                const msgDiv = document.getElementById('message');
+                if (msgDiv) {
+                    msgDiv.innerHTML = '✅ Bravo ! +' + pointsParClick + ' points';
+                    msgDiv.className = 'message-success';
+                }
+                
+                // Lecture vocale succès
+                speakSuccess();
+                
+                setTimeout(() => {
+                    setNewTarget();
+                    setTimeout(() => renderGrid(), 100);
+                }, 500);
+            } else {
+                score = Math.max(0, score - penalite);
+                updateScore();
+                const msgDiv = document.getElementById('message');
+                if (msgDiv) {
+                    msgDiv.innerHTML = '❌ Mauvaise image ! -' + penalite + ' points';
+                    msgDiv.className = 'message-error';
+                }
+                
+                // Lecture vocale erreur
+                speakError();
+                
+                setTimeout(() => {
+                    if (msgDiv) {
+                        msgDiv.innerHTML = `🎯 Trouve l'image : <strong>${currentTarget}</strong>`;
+                        msgDiv.className = 'message-success';
+                    }
+                }, 800);
+            }
+        }
+        
+        function updateScore() {
+            const scoreSpan = document.getElementById('score');
+            if (scoreSpan) scoreSpan.textContent = score;
+        }
+        
+        function updateProgressBar() {
+            const fill = document.getElementById('progressFill');
+            if (!fill) return;
+            const percent = (timeLeft / tempsMax) * 100;
+            fill.style.width = Math.max(0, percent) + '%';
+            if (timeLeft < 30) {
+                fill.style.background = '#F44336';
+            } else if (timeLeft < 60) {
+                fill.style.background = '#FF9800';
+            } else {
+                fill.style.background = '#4CAF50';
+            }
+        }
+        
+        function updateTimerDisplay() {
+            const m = Math.floor(timer / 60);
+            const s = timer % 60;
+            const timerSpan = document.getElementById('timer');
+            if (timerSpan) timerSpan.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+        
+        function saveGameResult() {
+            if (gameFinished) return Promise.resolve(false);
+            gameFinished = true;
+            
+            const reponsesData = {
+                type: 'attention',
+                total_images: images.length,
+                bonnes_reponses: images.filter(i => i.selected).length,
+                temps_total: timer,
+                score_final: score,
+                reponses: reponsesDonnees
+            };
+            
+            return fetch('/exercice/api/exercice-complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    exercice_id: exerciceId,
+                    enfant_id: {{ app.user.id ?? 1 }},
+                    score: score,
+                    temps_passe: timer,
+                    reponses: reponsesData,
+                    reussite: (score > 50)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('✅ Enregistré:', data);
+                return data.success;
+            })
+            .catch(error => {
+                console.error('❌ Erreur:', error);
+                return false;
+            });
+        }
+        
+        function finishGame() {
+            if (!gameActive || gameFinished) return;
+            
+            gameActive = false;
+            gameStarted = false;
+            if (timerInterval) clearInterval(timerInterval);
+            if (progressTimer) clearInterval(progressTimer);
+            
+            if (window.ExerciceGuardian) {
+                window.ExerciceGuardian.stop();
+            }
+            
+            const msgDiv = document.getElementById('message');
+            if (msgDiv) msgDiv.innerHTML = '📝 Sauvegarde en cours...';
+            
+            saveGameResult().then(success => {
+                if (success) {
+                    alert('🎉 Jeu terminé et enregistré !');
+                } else {
+                    alert('⚠️ Jeu terminé mais erreur lors de l\'enregistrement.');
+                }
+                window.location.href = "{{ path('app_front_exercice_index') }}";
+            });
+        }
+        
+        // ========== SURVEILLANCE FACIALE ==========
+async function initSurveillance() {
+    console.log('Initialisation surveillance...');
+    await ExerciceGuardian.init();
+    
+    const isCalibrated = FaceDetectionService.isCalibrated;
+    console.log('Calibration existante:', isCalibrated);
+    
+    if (!isCalibrated) {
+        showRegisterModal();
+    } else {
+        startSurveillance();
+    }
+}
+
+function showRegisterModal() {
+    const modal = document.getElementById('registerModal');
+    const video = document.getElementById('registerVideo');
+    
+    modal.style.display = 'flex';
+    FaceDetectionService.startCamera(video);
+    
+    document.getElementById('confirmRegisterBtn').onclick = async () => {
+        const success = await ExerciceGuardian.calibrateAuto(video);
+        if (success) {
+            modal.style.display = 'none';
+            FaceDetectionService.stopCamera();
+            startSurveillance();
+        } else {
+            alert('❌ Placez-vous bien face à la caméra');
+        }
+    };
+    
+    document.getElementById('skipRegisterBtn').onclick = () => {
+        modal.style.display = 'none';
+        FaceDetectionService.stopCamera();
+        startGameWithoutSurveillance();
+    };
+}
+
+function startSurveillance() {
+    const cameraDiv = document.getElementById('cameraContainer');
+    const video = document.getElementById('surveillanceVideo');
+    
+    cameraDiv.style.display = 'block';
+    
+    ExerciceGuardian.start(
+        video,
+        (reason) => {
+            // Arrêt du jeu en cas de violation
+            gameActive = false;
+            gameStarted = false;
+            if (timerInterval) clearInterval(timerInterval);
+            if (progressTimer) clearInterval(progressTimer);
+            document.getElementById('violationReason').innerHTML = reason;
+            document.getElementById('violationAlert').style.display = 'flex';
+            speakText('Attention ! Personne non autorisée détectée. Exercice arrêté.');
+        },
+        (count) => {
+            const badge = document.getElementById('violationBadge');
+            const statusSpan = document.getElementById('faceStatus');
+            const cameraContainer = document.getElementById('cameraContainer');
+            
+            if (count > 0) {
+                badge.style.display = 'block';
+                statusSpan.innerHTML = `⚠️ ALERTE ${count}/3`;
+                statusSpan.className = 'face-status alert';
+                cameraContainer.classList.add('violation');
+            } else {
+                badge.style.display = 'none';
+                statusSpan.innerHTML = '✅ ENFANT VÉRIFIÉ';
+                statusSpan.className = 'face-status success';
+                cameraContainer.classList.remove('violation');
+                
+                // 🔥 DÉMARRER LE JEU SEULEMENT QUAND C'EST CONFIRMÉ
+                if (!gameStarted) {
+                    console.log('✅ Enfant vérifié, démarrage du jeu...');
+                    gameStarted = true;
+                    startGameTimer();
+                    speakText('Jeu démarré ! Bonne chance !');
+                }
+            }
+        }
+    );
+}
+
+function startGameWithoutSurveillance() {
+    console.log('Jeu démarré sans surveillance');
+    gameStarted = true;
+    startGameTimer();
+}
+        
+        // Initialiser le bouton voix
+        if (document.getElementById('voiceToggleBtn')) {
+            document.getElementById('voiceToggleBtn').addEventListener('click', () => {
+                speechEnabled = !speechEnabled;
+                localStorage.setItem('voice_enabled', speechEnabled);
+                updateVoiceButton();
+                
+                if (speechEnabled) {
+                    speakText('Voix activée');
+                } else {
+                    if (currentUtterance) {
+                        speechSynthesis.cancel();
+                    }
+                }
+            });
+        }
+        
+        // ========== INITIALISATION ==========
+        if (document.getElementById('attentionGrid')) {
+            initGame();
+            initSurveillance();
+            initVoice();
+        }
+    </script>
+{% endblock %}

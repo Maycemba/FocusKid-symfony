@@ -1,0 +1,433 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Jeu Logique - FocusKid{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .game-container {
+            background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+            min-height: 600px;
+            border-radius: 20px;
+            padding: 30px;
+        }
+        .score-board {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .sequence-card {
+            background: #E3F2FD;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #1565C0;
+            margin-bottom: 30px;
+            letter-spacing: 15px;
+        }
+        .reponse-input {
+            border-radius: 25px;
+            padding: 15px 20px;
+            font-size: 18px;
+            border: 2px solid #E0E0E0;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            display: block;
+        }
+        .reponse-input:focus {
+            border-color: #FF9800;
+            outline: none;
+        }
+        .btn-verifier {
+            background: #4CAF50;
+            color: white;
+            border-radius: 25px;
+            padding: 12px 30px;
+            border: none;
+            font-size: 16px;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn-verifier:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+        .btn-game {
+            background: #FF9800;
+            color: white;
+            border-radius: 25px;
+            padding: 10px 25px;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-game:hover {
+            background: #F57C00;
+        }
+        .indice-card {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 20px;
+            color: white;
+        }
+        
+        /* ========== STYLES VOIX ========== */
+        .voice-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .voice-toggle {
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 5px 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .voice-toggle:hover {
+            background: #1976D2;
+            transform: scale(1.05);
+        }
+        .voice-active {
+            background: #4CAF50;
+        }
+        .voice-active:hover {
+            background: #45a049;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="game-container">
+            <div class="score-board d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <h3 class="mb-0 me-3">🧠 Jeu Logique</h3>
+                    <div class="voice-controls">
+                        <button id="voiceToggleBtn" class="voice-toggle" title="Activer/désactiver la voix">🔊 Voix ON</button>
+                    </div>
+                </div>
+                <div>
+                    <span>⭐ Score: <span id="score">0</span></span>
+                </div>
+            </div>
+            
+            <div class="sequence-card" id="sequenceText">
+                Chargement...
+            </div>
+            
+            <div class="text-center">
+                <input type="text" id="reponseInput" class="reponse-input" placeholder="Tape le nombre manquant...">
+                <br>
+                <button id="verifierBtn" class="btn-verifier">✅ Vérifier</button>
+            </div>
+            
+            <div class="indice-card text-center" id="indiceText">
+                💡 Trouve la logique de la suite !
+            </div>
+            
+            <div class="text-center mt-4">
+                <p id="message" style="color: white;"></p>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{{ path('app_front_exercice_index') }}" class="btn-game">⬅️ Retour aux exercices</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Récupérer les données depuis Twig
+        const exerciceId = {{ exercice.id }};
+        const questionsData = {{ questions|default([])|json_encode|raw }};
+        
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let gameActive = true;
+        let gameFinished = false;
+        let reponsesDonnees = [];
+        
+        // Paramètres
+        let pointsParQuestion = 15;
+        let penalite = 5;
+        
+        // ========== SYNTHÈSE VOCALE ==========
+        let speechEnabled = true;
+        let speechSynthesis = window.speechSynthesis;
+        let currentUtterance = null;
+        
+        function initVoice() {
+            if (!speechSynthesis) {
+                speechEnabled = false;
+                const btn = document.getElementById('voiceToggleBtn');
+                if (btn) btn.style.opacity = '0.5';
+                return;
+            }
+            const saved = localStorage.getItem('voice_enabled');
+            if (saved !== null) speechEnabled = saved === 'true';
+            updateVoiceButton();
+        }
+        
+        function updateVoiceButton() {
+            const btn = document.getElementById('voiceToggleBtn');
+            if (!btn) return;
+            if (speechEnabled) {
+                btn.innerHTML = '🔊 Voix ON';
+                btn.classList.add('voice-active');
+            } else {
+                btn.innerHTML = '🔇 Voix OFF';
+                btn.classList.remove('voice-active');
+            }
+        }
+        
+        function speakText(text) {
+            if (!speechEnabled) return;
+            if (currentUtterance) speechSynthesis.cancel();
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.lang = 'fr-FR';
+            currentUtterance.rate = 0.9;
+            currentUtterance.pitch = 1.1;
+            currentUtterance.volume = 1;
+            speechSynthesis.speak(currentUtterance);
+        }
+        
+        function speakSequence(sequence) {
+            // Convertir la séquence en texte lisible
+            let cleanSequence = sequence
+                .replace(/[?]/g, 'point d\'interrogation')
+                .replace(/[,]/g, 'virgule')
+                .replace(/[+]/g, 'plus')
+                .replace(/[-]/g, 'moins')
+                .replace(/[*]/g, 'fois')
+                .replace(/[/]/g, 'divisé par');
+            speakText('Trouve le nombre manquant : ' + cleanSequence);
+        }
+        
+        function speakSuccess() {
+            const messages = ['Bravo', 'Très bien', 'Excellent', 'Super', 'Bonne réponse', 'Félicitations'];
+            speakText(messages[Math.floor(Math.random() * messages.length)]);
+        }
+        
+        function speakError(correctAnswer) {
+            const messages = ['Essaie encore', 'Réessaie', 'Concentre-toi', 'Pas tout à fait'];
+            speakText(messages[Math.floor(Math.random() * messages.length)] + '. La bonne réponse était ' + correctAnswer);
+        }
+        
+        function speakStartGame() {
+            speakText('Jeu logique. Trouvez le nombre manquant dans chaque suite.');
+        }
+        
+        // ========== FONCTIONS DU JEU ==========
+        function loadQuestions() {
+            if (questionsData && questionsData.length > 0) {
+                questions = questionsData;
+                console.log('✅ ' + questions.length + ' questions chargées');
+                return true;
+            }
+            console.log('❌ Aucune question trouvée');
+            return false;
+        }
+        
+        function loadQuestion() {
+            if (!gameActive || gameFinished) return;
+            
+            if (currentQuestionIndex < questions.length) {
+                const currentQ = questions[currentQuestionIndex];
+                const sequenceTexte = currentQ.serie || currentQ.sequence || currentQ.question || '?';
+                const indiceTexte = currentQ.regle || currentQ.indice || 'Trouve la logique de la suite !';
+                
+                const sequenceDiv = document.getElementById('sequenceText');
+                if (sequenceDiv) sequenceDiv.innerHTML = sequenceTexte;
+                
+                const indiceDiv = document.getElementById('indiceText');
+                if (indiceDiv) indiceDiv.innerHTML = '💡 ' + indiceTexte;
+                
+                const inputField = document.getElementById('reponseInput');
+                if (inputField) {
+                    inputField.value = '';
+                    inputField.disabled = false;
+                    inputField.focus();
+                }
+                
+                const verifierBtn = document.getElementById('verifierBtn');
+                if (verifierBtn) verifierBtn.disabled = false;
+                
+                const msgDiv = document.getElementById('message');
+                if (msgDiv) msgDiv.innerHTML = `Question ${currentQuestionIndex + 1}/${questions.length}`;
+                
+                // Lire la séquence à voix haute
+                setTimeout(() => {
+                    speakSequence(sequenceTexte);
+                }, 300);
+            } else {
+                finishGame();
+            }
+        }
+        
+        function verifierReponse() {
+            if (!gameActive || gameFinished) return;
+            
+            const reponseInput = document.getElementById('reponseInput');
+            if (!reponseInput) return;
+            
+            const userReponse = reponseInput.value.trim();
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            if (!currentQuestion) return;
+            
+            const bonneReponse = currentQuestion.reponse || currentQuestion.bonne_reponse || '';
+            
+            reponsesDonnees.push({
+                question: currentQuestion.serie || currentQuestion.sequence,
+                reponse_donnee: userReponse,
+                reponse_attendue: bonneReponse,
+                est_correcte: (userReponse === bonneReponse)
+            });
+            
+            if (userReponse === bonneReponse) {
+                score += pointsParQuestion;
+                updateScore();
+                const msgDiv = document.getElementById('message');
+                if (msgDiv) msgDiv.innerHTML = '✅ Correct ! +' + pointsParQuestion + ' points';
+                speakSuccess();
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                score = Math.max(0, score - penalite);
+                updateScore();
+                const msgDiv = document.getElementById('message');
+                if (msgDiv) msgDiv.innerHTML = `❌ Incorrect ! -${penalite} points`;
+                speakError(bonneReponse);
+                currentQuestionIndex++;
+                loadQuestion();
+            }
+        }
+        
+        function updateScore() {
+            const scoreSpan = document.getElementById('score');
+            if (scoreSpan) scoreSpan.textContent = score;
+        }
+        
+        function saveGameResult() {
+            if (gameFinished) return Promise.resolve(false);
+            gameFinished = true;
+            
+            const reponsesData = {
+                type: 'logique',
+                total_questions: questions.length,
+                questions_repondues: currentQuestionIndex,
+                reponses: reponsesDonnees,
+                score_final: score
+            };
+            
+            return fetch('/exercice/api/exercice-complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    exercice_id: exerciceId,
+                    enfant_id: {{ app.user.id ?? 1 }},
+                    score: score,
+                    temps_passe: 0,
+                    reponses: reponsesData,
+                    reussite: (currentQuestionIndex >= questions.length)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('✅ Enregistré:', data);
+                return data.success;
+            })
+            .catch(error => {
+                console.error('❌ Erreur:', error);
+                return false;
+            });
+        }
+        
+        function finishGame() {
+            if (!gameActive || gameFinished) return;
+            
+            gameActive = false;
+            
+            const sequenceDiv = document.getElementById('sequenceText');
+            if (sequenceDiv) sequenceDiv.innerHTML = `🎉 Jeu terminé ! Score final : ${score} 🎉`;
+            
+            const inputField = document.getElementById('reponseInput');
+            if (inputField) inputField.disabled = true;
+            
+            const verifierBtn = document.getElementById('verifierBtn');
+            if (verifierBtn) verifierBtn.disabled = true;
+            
+            const msgDiv = document.getElementById('message');
+            if (msgDiv) msgDiv.innerHTML = '📝 Sauvegarde en cours...';
+            
+            speakText('Jeu terminé. Votre score final est ' + score);
+            
+            saveGameResult().then(success => {
+                if (success) {
+                    alert('🎉 Jeu terminé et enregistré !');
+                } else {
+                    alert('⚠️ Jeu terminé mais erreur lors de l\'enregistrement.');
+                }
+                window.location.href = "{{ path('app_front_exercice_index') }}";
+            });
+        }
+        
+        // ========== INITIALISATION ==========
+        const hasQuestions = loadQuestions();
+        
+        if (hasQuestions && questions.length > 0) {
+            loadQuestion();
+            speakStartGame();
+        } else {
+            const sequenceDiv = document.getElementById('sequenceText');
+            if (sequenceDiv) sequenceDiv.innerHTML = '❌ Aucune question trouvée pour cet exercice.';
+            const inputField = document.getElementById('reponseInput');
+            if (inputField) inputField.disabled = true;
+            const verifierBtn = document.getElementById('verifierBtn');
+            if (verifierBtn) verifierBtn.disabled = true;
+        }
+        
+        const verifierBtn = document.getElementById('verifierBtn');
+        if (verifierBtn) verifierBtn.addEventListener('click', verifierReponse);
+        
+        const inputField = document.getElementById('reponseInput');
+        if (inputField) {
+            inputField.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    verifierReponse();
+                }
+            });
+        }
+        
+        // Initialisation de la voix
+        initVoice();
+        
+        // Bouton voix
+        const voiceBtn = document.getElementById('voiceToggleBtn');
+        if (voiceBtn) {
+            voiceBtn.addEventListener('click', () => {
+                speechEnabled = !speechEnabled;
+                localStorage.setItem('voice_enabled', speechEnabled);
+                updateVoiceButton();
+                if (speechEnabled) speakText('Voix activée');
+                else if (currentUtterance) speechSynthesis.cancel();
+            });
+        }
+    </script>
+{% endblock %}

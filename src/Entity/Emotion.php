@@ -18,6 +18,10 @@ class Emotion
     #[ORM\Column(type: 'string', length: 255)]
     private ?string $nom = null;
 
+    // ⬇️ AJOUTE CETTE PROPRIÉTÉ ⬇️
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $photo = null;
+
     #[ORM\OneToMany(mappedBy: 'emotion', targetEntity: Scenario::class)]
     private Collection $scenarios;
 
@@ -36,6 +40,18 @@ class Emotion
     public function setNom(string $nom): self
     {
         $this->nom = $nom;
+        return $this;
+    }
+
+    // ⬇️ AJOUTE CES GETTER/SETTER ⬇️
+    public function getPhoto(): ?string
+    {
+        return $this->photo;
+    }
+
+    public function setPhoto(?string $photo): self
+    {
+        $this->photo = $photo;
         return $this;
     }
 }
