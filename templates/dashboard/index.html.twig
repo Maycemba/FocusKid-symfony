@@ -1,0 +1,452 @@
+{% extends 'base-back.html.twig' %}
+
+{% block title %}Dashboard Backoffice{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .dashboard-shell {
+            padding-top: 26px;
+            position: relative;
+        }
+
+        .dashboard-shell::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 15% 15%, rgba(103, 199, 243, .12), transparent 22%),
+                radial-gradient(circle at 85% 10%, rgba(36, 71, 249, .10), transparent 20%),
+                linear-gradient(180deg, rgba(248, 250, 255, .96), rgba(242, 246, 255, .98));
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .hero-card {
+            border: 0;
+            border-radius: 28px;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at top right, rgba(255,255,255,.22), transparent 34%),
+                radial-gradient(circle at bottom left, rgba(255,255,255,.14), transparent 28%),
+                linear-gradient(135deg, #1730b8 0%, #2447f9 42%, #3f7df6 72%, #67c7f3 100%);
+            color: #fff;
+            box-shadow: 0 28px 60px rgba(28, 60, 185, .22);
+            position: relative;
+        }
+
+        .hero-card::after {
+            content: "";
+            position: absolute;
+            inset: auto -8% -30% auto;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.08);
+            filter: blur(6px);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.14);
+            font-size: 13px;
+            letter-spacing: .03em;
+            border: 1px solid rgba(255,255,255,.14);
+        }
+
+        .stat-card {
+            border: 0;
+            border-radius: 24px;
+            box-shadow: 0 18px 36px rgba(20, 35, 90, .08);
+            height: 100%;
+            background: rgba(255,255,255,.92);
+            backdrop-filter: blur(10px);
+            transition: transform .18s ease, box-shadow .18s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2447f9, #67c7f3);
+            opacity: .9;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 24px 42px rgba(20, 35, 90, .13);
+        }
+
+        .stat-icon {
+            width: 52px;
+            height: 52px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            font-size: 24px;
+        }
+
+        .stat-value {
+            font-size: 34px;
+            font-weight: 800;
+            line-height: 1;
+            color: #25324b;
+            letter-spacing: -.04em;
+        }
+
+        .section-card {
+            border: 0;
+            border-radius: 24px;
+            box-shadow: 0 18px 36px rgba(20, 35, 90, .08);
+            background: rgba(255,255,255,.94);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .section-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .mini-list li + li {
+            border-top: 1px solid #eef2ff;
+        }
+
+        .mini-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #eef4ff;
+            color: #335eea;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .chart-wrap {
+            position: relative;
+            border-radius: 20px;
+            padding: 18px;
+            background:
+                linear-gradient(180deg, rgba(247, 250, 255, .96), rgba(240, 245, 255, .92));
+            border: 1px solid #e7eeff;
+        }
+
+        .list-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #4760c9;
+            background: #edf2ff;
+            border-radius: 999px;
+            padding: 5px 10px;
+        }
+
+        .list-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #24324b;
+        }
+
+        .subtle-text {
+            color: #7d89a6;
+            font-size: 13px;
+        }
+
+        .timeline-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2447f9, #67c7f3);
+            flex-shrink: 0;
+            margin-top: 8px;
+            box-shadow: 0 0 0 6px rgba(36, 71, 249, .09);
+        }
+
+        .mini-list li {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .hero-metric {
+            border-radius: 22px;
+            background: rgba(255,255,255,.12);
+            border: 1px solid rgba(255,255,255,.14);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+        }
+
+        @media (max-width: 768px) {
+            .section-card .card-body,
+            .hero-card .card-body {
+                padding: 1.25rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="dashboard-shell">
+        <div class="card hero-card mb-4">
+            <div class="card-body p-4 p-lg-5">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-8">
+                        <span class="hero-badge mb-3">
+                            <iconify-icon icon="solar:chart-square-bold-duotone"></iconify-icon>
+                            Backoffice FocusKids
+                        </span>
+                        <h1 class="mb-3 text-white" style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 800;">
+                            Tableau de bord central
+                        </h1>
+                        <p class="mb-0" style="max-width: 760px; color: rgba(255,255,255,.86); font-size: 16px; line-height: 1.7;">
+                            Suivez rapidement l'activite pedagogique de la plateforme, accedez aux modules les plus utilises
+                            et gardez un oeil sur les derniers contenus ajoutes dans le backoffice.
+                        </p>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="hero-metric p-4">
+                            <div class="text-uppercase mb-2" style="font-size: 12px; letter-spacing: .14em; color: rgba(255,255,255,.7);">
+                                Vue rapide
+                            </div>
+                            <div class="d-flex align-items-end gap-3">
+                                <div style="font-size: 48px; font-weight: 800; line-height: 1;">{{ stats.cours + stats.lecons + stats.exercices + stats.jeux }}</div>
+                                <div style="color: rgba(255,255,255,.8);">
+                                    contenus
+                                    <br>
+                                    pedagogiques
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-sm-6 col-xl-4">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <div class="text-muted mb-2">Cours</div>
+                                <div class="stat-value">{{ stats.cours }}</div>
+                            </div>
+                            <div class="stat-icon" style="background:#eef4ff;color:#3157f6;">
+                                <iconify-icon icon="solar:notebook-bold-duotone"></iconify-icon>
+                            </div>
+                        </div>
+                        <a href="{{ path('app_cour_index') }}" class="mini-pill text-decoration-none">Voir les cours</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-4">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <div class="text-muted mb-2">Lecons</div>
+                                <div class="stat-value">{{ stats.lecons }}</div>
+                            </div>
+                            <div class="stat-icon" style="background:#eefbf4;color:#1f9d63;">
+                                <iconify-icon icon="solar:book-2-bold-duotone"></iconify-icon>
+                            </div>
+                        </div>
+                        <a href="{{ path('app_lecon_index') }}" class="mini-pill text-decoration-none">Voir les lecons</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-4">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <div class="text-muted mb-2">Exercices</div>
+                                <div class="stat-value">{{ stats.exercices }}</div>
+                            </div>
+                            <div class="stat-icon" style="background:#fff5ea;color:#e88a21;">
+                                <iconify-icon icon="solar:document-text-bold-duotone"></iconify-icon>
+                            </div>
+                        </div>
+                        <a href="{{ path('app_exercice_index') }}" class="mini-pill text-decoration-none">Voir les exercices</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-4">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <div class="text-muted mb-2">Jeux</div>
+                                <div class="stat-value">{{ stats.jeux }}</div>
+                            </div>
+                            <div class="stat-icon" style="background:#f5efff;color:#7a4cf3;">
+                                <iconify-icon icon="solar:gamepad-bold-duotone"></iconify-icon>
+                            </div>
+                        </div>
+                        <a href="{{ path('app_jeu_index') }}" class="mini-pill text-decoration-none">Voir les jeux</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-4">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <div class="text-muted mb-2">Carnets educatifs</div>
+                                <div class="stat-value">{{ stats.carnets }}</div>
+                            </div>
+                            <div class="stat-icon" style="background:#eaf7ff;color:#1f8fd6;">
+                                <iconify-icon icon="solar:diploma-bold-duotone"></iconify-icon>
+                            </div>
+                        </div>
+                        <a href="{{ path('app_carnet_educatif_index') }}" class="mini-pill text-decoration-none">Voir les carnets</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-4">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <div class="text-muted mb-2">Utilisateurs</div>
+                                <div class="stat-value">{{ stats.utilisateurs }}</div>
+                            </div>
+                            <div class="stat-icon" style="background:#fff0f3;color:#df4f73;">
+                                <iconify-icon icon="solar:users-group-rounded-bold-duotone"></iconify-icon>
+                            </div>
+                        </div>
+                        <a href="{{ path('app_utilisateur_index') }}" class="mini-pill text-decoration-none">Voir les utilisateurs</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card section-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h5 class="mb-1 list-title">Repartition des cours par niveau</h5>
+                                <div class="subtle-text">Visualisation rapide des niveaux les plus alimentes</div>
+                            </div>
+                            <span class="list-chip">
+                                <iconify-icon icon="solar:chart-2-bold-duotone"></iconify-icon>
+                                Cours by level
+                            </span>
+                        </div>
+                        <div class="chart-wrap">
+                            {{ render_chart(coursesByLevelChart) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-xl-4">
+                <div class="card section-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h5 class="mb-1 list-title">Derniers cours</h5>
+                                <div class="subtle-text">Les contenus ajoutes recemment</div>
+                            </div>
+                            <a href="{{ path('app_cour_index') }}" class="text-primary text-decoration-none">Tout voir</a>
+                        </div>
+                        <ul class="list-unstyled mini-list mb-0">
+                            {% for cour in recentCours %}
+                                <li class="py-3">
+                                    <span class="timeline-dot"></span>
+                                    <div>
+                                        <div class="fw-semibold text-dark">{{ cour.titre ?: 'Cours sans titre' }}</div>
+                                        <div class="small text-muted">
+                                            Niveau {{ cour.niveau ?: 'non defini' }}
+                                            {% if cour.formateur %}
+                                                • {{ cour.formateur }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li class="py-3 text-muted">Aucun cours disponible pour le moment.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card section-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h5 class="mb-1 list-title">Dernieres lecons</h5>
+                                <div class="subtle-text">Les lecons les plus recentes</div>
+                            </div>
+                            <a href="{{ path('app_lecon_index') }}" class="text-primary text-decoration-none">Tout voir</a>
+                        </div>
+                        <ul class="list-unstyled mini-list mb-0">
+                            {% for lecon in recentLecons %}
+                                <li class="py-3">
+                                    <span class="timeline-dot"></span>
+                                    <div>
+                                        <div class="fw-semibold text-dark">{{ lecon.titreLecon ?: 'Lecon sans titre' }}</div>
+                                        <div class="small text-muted">
+                                            {{ lecon.cour ? lecon.cour.titre : 'Sans cours associe' }}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li class="py-3 text-muted">Aucune lecon disponible pour le moment.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card section-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h5 class="mb-1 list-title">Derniers utilisateurs</h5>
+                                <div class="subtle-text">Nouveaux comptes visibles dans l'espace admin</div>
+                            </div>
+                            <a href="{{ path('app_utilisateur_index') }}" class="text-primary text-decoration-none">Tout voir</a>
+                        </div>
+                        <ul class="list-unstyled mini-list mb-0">
+                            {% for utilisateur in recentUtilisateurs %}
+                                <li class="py-3">
+                                    <span class="timeline-dot"></span>
+                                    <div>
+                                        <div class="fw-semibold text-dark">{{ utilisateur.username ?: 'Utilisateur sans nom' }}</div>
+                                        <div class="small text-muted">
+                                            {{ utilisateur.email ?: 'Email non renseigne' }}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li class="py-3 text-muted">Aucun utilisateur disponible pour le moment.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

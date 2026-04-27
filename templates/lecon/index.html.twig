@@ -1,37 +1,138 @@
 {% extends 'base-back.html.twig' %}
 
-{% block title %}Lecon index{% endblock %}
+{% block title %}Gestion des lecons - FocusKids{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: 100%;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .table thead {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-action {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin: 0 3px;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 24px;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Lecon index</h1>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold"><i class="ti ti-book-2"></i> Gestion des lecons</h2>
+            <p class="text-muted">Consultez et gerez toutes les lecons pedagogiques</p>
+        </div>
+        <a href="{{ path('app_lecon_new') }}" class="btn btn-primary">
+            <i class="ti ti-plus"></i> Nouvelle lecon
+        </a>
+    </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id_lecon</th>
-                <th>Titre_lecon</th>
-                <th>Contenu</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for lecon in lecons %}
-            <tr>
-                <td>{{ lecon.idLecon }}</td>
-                <td>{{ lecon.titreLecon }}</td>
-                <td>{{ lecon.contenu }}</td>
-                <td>
-                    <a href="{{ path('app_lecon_show', {'id_lecon': lecon.id_lecon}) }}">show</a>
-                    <a href="{{ path('app_lecon_edit', {'id_lecon': lecon.id_lecon}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3 mb-md-0">
+            <div class="stat-card">
+                <div class="stat-number">{{ lecons|length }}</div>
+                <div class="stat-label">Total lecons</div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3 mb-md-0">
+            <div class="stat-card">
+                <div class="stat-number">{{ lecons|filter(v => v.cour is not null)|length }}</div>
+                <div class="stat-label">Lecons rattachees a un cours</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ lecons|filter(v => v.contenu is not empty)|length }}</div>
+                <div class="stat-label">Lecons avec contenu</div>
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ path('app_lecon_new') }}">Create new</a>
+    <div class="info-card">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h5 class="mb-1">Bibliotheque des lecons</h5>
+                <p class="text-muted mb-0">Retrouvez rapidement le titre, le cours associe et un apercu du contenu.</p>
+            </div>
+            <span class="badge bg-primary-subtle text-primary px-3 py-2">
+                {{ lecons|length }} element(s)
+            </span>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Titre</th>
+                    <th>Cours</th>
+                    <th>Contenu</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for lecon in lecons %}
+                <tr>
+                    <td>{{ lecon.idLecon }}</td>
+                    <td class="fw-semibold">{{ lecon.titreLecon ?: '-' }}</td>
+                    <td>{{ lecon.cour ? lecon.cour.titre : 'Aucun cours' }}</td>
+                    <td>{{ lecon.contenu and lecon.contenu|length > 90 ? lecon.contenu|slice(0, 90) ~ '...' : (lecon.contenu ?: '-') }}</td>
+                    <td>
+                        <a href="{{ path('app_lecon_show', {'id_lecon': lecon.id_lecon}) }}" class="btn btn-sm btn-info btn-action" title="Voir">
+                            <i class="ti ti-eye"></i>
+                        </a>
+                        <a href="{{ path('app_lecon_edit', {'id_lecon': lecon.id_lecon}) }}" class="btn btn-sm btn-warning btn-action" title="Modifier">
+                            <i class="ti ti-edit"></i>
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">Aucune lecon trouvee</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

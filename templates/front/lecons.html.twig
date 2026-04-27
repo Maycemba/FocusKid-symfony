@@ -1,90 +1,615 @@
 {% extends 'base-front.html.twig' %}
 
-{% block title %}{{ cour.titre }} - Leçons{% endblock %}
+{% block title %}{{ cour.titre }} - {{ 'lecons.title_plain'|trans }}{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+    body { font-family: 'Nunito', sans-serif; background: #f4f9fc; }
+
+    .tdah-hero {
+        background: linear-gradient(135deg, #06A3DA 0%, #0056b3 100%);
+        padding: 44px 24px 60px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .tdah-hero::before {
+        content: '';
+        position: absolute; top: -50px; right: -50px;
+        width: 220px; height: 220px;
+        background: rgba(255,255,255,0.08); border-radius: 50%;
+    }
+    .tdah-hero::after {
+        content: '';
+        position: absolute; bottom: -70px; left: -40px;
+        width: 260px; height: 260px;
+        background: rgba(255,255,255,0.06); border-radius: 50%;
+    }
+    .tdah-hero-emoji { font-size: 64px; display: block; margin-bottom: 14px; animation: tdah-bounce 2s infinite; }
+    .tdah-hero-title {
+        font-family: 'Fredoka One', cursive;
+        font-size: clamp(26px, 5vw, 38px);
+        color: white; margin-bottom: 18px;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    }
+    .tdah-badges { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .tdah-badge { padding: 8px 18px; border-radius: 999px; font-size: 15px; font-weight: 700; }
+    .tdah-badge-white  { background: white; color: #06A3DA; }
+    .tdah-badge-yellow { background: #ffc107; color: #5a3e00; }
+    .tdah-badge-green  { background: #28a745; color: white; }
+    .tdah-badge-active { outline: 3px solid white; outline-offset: 2px; }
+    .tdah-lang-selector { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+    /* ── Bouton PDF ── */
+    .tdah-progress-wrap { background: rgba(255,255,255,0.25); border-radius: 999px; height: 18px; margin: 24px 32px 0; overflow: hidden; }
+    .tdah-progress-fill { background: #ffc107; height: 100%; border-radius: 999px; width: 0%; transition: width 1s ease; }
+    .tdah-progress-label { color: rgba(255,255,255,0.9); font-size: 14px; text-align: center; margin-top: 8px; font-weight: 600; }
+
+    .tdah-container { max-width: 860px; margin: 0 auto; padding: 32px 20px 70px; }
+    .tdah-back-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: white; color: #06A3DA;
+        border: 2px solid #06A3DA; border-radius: 999px;
+        padding: 12px 26px; font-size: 15px; font-weight: 700;
+        cursor: pointer; text-decoration: none;
+        box-shadow: 0 3px 12px rgba(6,163,218,0.15);
+        margin-bottom: 26px; font-family: 'Nunito', sans-serif;
+        transition: transform 0.15s, background 0.15s;
+    }
+    .tdah-back-btn:hover { background: #e8f7fd; transform: translateY(-2px); }
+    .tdah-section-title {
+        font-family: 'Fredoka One', cursive;
+        font-size: 26px; color: #06A3DA;
+        margin-bottom: 22px;
+        display: flex; align-items: center; gap: 10px;
+    }
+
+    .tdah-card {
+        background: white; border-radius: 24px; padding: 28px 30px;
+        margin-bottom: 28px; box-shadow: 0 6px 24px rgba(0,0,0,0.09);
+        border-left: 8px solid #06A3DA; position: relative; overflow: hidden;
+    }
+    .tdah-card:nth-child(5n+1) { border-left-color: #FF6B6B; }
+    .tdah-card:nth-child(5n+2) { border-left-color: #06A3DA; }
+    .tdah-card:nth-child(5n+3) { border-left-color: #FF9F43; }
+    .tdah-card:nth-child(5n+4) { border-left-color: #26de81; }
+    .tdah-card:nth-child(5n+0) { border-left-color: #a55eea; }
+    .tdah-card::before {
+        content: ''; position: absolute; top: -40px; right: -40px;
+        width: 140px; height: 140px; border-radius: 50%; opacity: 0.06;
+    }
+    .tdah-card:nth-child(5n+1)::before { background: #FF6B6B; }
+    .tdah-card:nth-child(5n+2)::before { background: #06A3DA; }
+    .tdah-card:nth-child(5n+3)::before { background: #FF9F43; }
+    .tdah-card:nth-child(5n+4)::before { background: #26de81; }
+    .tdah-card:nth-child(5n+0)::before { background: #a55eea; }
+
+    .tdah-card-header { display: flex; align-items: center; gap: 18px; margin-bottom: 20px; }
+    .tdah-step-circle {
+        width: 60px; height: 60px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Fredoka One', cursive; font-size: 26px; color: white; flex-shrink: 0;
+    }
+    .tdah-card:nth-child(5n+1) .tdah-step-circle { background: #FF6B6B; }
+    .tdah-card:nth-child(5n+2) .tdah-step-circle { background: #06A3DA; }
+    .tdah-card:nth-child(5n+3) .tdah-step-circle { background: #FF9F43; }
+    .tdah-card:nth-child(5n+4) .tdah-step-circle { background: #26de81; color: #0a4a25; }
+    .tdah-card:nth-child(5n+0) .tdah-step-circle { background: #a55eea; }
+
+    .tdah-card-title { font-family: 'Fredoka One', cursive; font-size: 22px; flex: 1; line-height: 1.3; }
+    .tdah-card:nth-child(5n+1) .tdah-card-title { color: #cc3333; }
+    .tdah-card:nth-child(5n+2) .tdah-card-title { color: #0580b0; }
+    .tdah-card:nth-child(5n+3) .tdah-card-title { color: #b86b00; }
+    .tdah-card:nth-child(5n+4) .tdah-card-title { color: #0e7a40; }
+    .tdah-card:nth-child(5n+0) .tdah-card-title { color: #7b3ec4; }
+
+    .tdah-check {
+        width: 40px; height: 40px; border-radius: 50%;
+        background: #28a745; color: white;
+        display: none; align-items: center; justify-content: center;
+        font-size: 20px; font-weight: 900; flex-shrink: 0;
+        box-shadow: 0 3px 10px rgba(40,167,69,0.4);
+    }
+    .tdah-check.visible { display: flex; }
+    .tdah-card-body { display: block; padding-top: 20px; border-top: 2px dashed #e0e0e0; }
+    .tdah-contenu { font-size: 18px; color: #2d2d2d; line-height: 2.1; border-radius: 16px; padding: 22px 24px; }
+    .tdah-card:nth-child(5n+1) .tdah-contenu { background: #fff5f5; }
+    .tdah-card:nth-child(5n+2) .tdah-contenu { background: #f0f9fd; }
+    .tdah-card:nth-child(5n+3) .tdah-contenu { background: #fff8ef; }
+    .tdah-card:nth-child(5n+4) .tdah-contenu { background: #f0fff6; }
+    .tdah-card:nth-child(5n+0) .tdah-contenu { background: #f8f2ff; }
+
+    .tdah-stars { display: flex; gap: 10px; margin-top: 18px; }
+    .tdah-stars span { font-size: 34px; opacity: 0.22; cursor: pointer; transition: opacity 0.25s, transform 0.2s; user-select: none; }
+    .tdah-stars span.lit { opacity: 1; transform: scale(1.2); }
+
+    .tdah-actions { display: flex; gap: 14px; margin-top: 20px; flex-wrap: wrap; }
+    .tdah-btn {
+        border: none; border-radius: 999px; padding: 14px 30px;
+        font-size: 17px; font-weight: 700; cursor: pointer;
+        font-family: 'Nunito', sans-serif; display: flex; align-items: center; gap: 8px;
+        transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .tdah-btn:hover { transform: scale(1.05); box-shadow: 0 5px 16px rgba(0,0,0,0.15); }
+    .tdah-btn-audio { background: #fff3cd; color: #5a3e00; }
+    .tdah-card:nth-child(5n+1) .tdah-btn-compris { background: #FF6B6B; color: white; }
+    .tdah-card:nth-child(5n+2) .tdah-btn-compris { background: #06A3DA; color: white; }
+    .tdah-card:nth-child(5n+3) .tdah-btn-compris { background: #FF9F43; color: white; }
+    .tdah-card:nth-child(5n+4) .tdah-btn-compris { background: #26de81; color: #0a4a25; }
+    .tdah-card:nth-child(5n+0) .tdah-btn-compris { background: #a55eea; color: white; }
+
+    /* ══ QUIZ MODAL ══ */
+    .quiz-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.6); z-index: 9999;
+        align-items: center; justify-content: center; padding: 20px;
+    }
+    .quiz-overlay.active { display: flex; }
+    .quiz-box {
+        background: white; border-radius: 28px; padding: 36px;
+        max-width: 600px; width: 100%;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        max-height: 90vh; overflow-y: auto;
+    }
+    .quiz-title { font-family: 'Fredoka One', cursive; font-size: 26px; color: #06A3DA; text-align: center; margin-bottom: 8px; }
+    .quiz-subtitle { text-align: center; color: #888; font-size: 15px; margin-bottom: 28px; }
+    .quiz-loading { text-align: center; padding: 40px 0; }
+    .quiz-loading-spinner {
+        width: 50px; height: 50px; border: 5px solid #e0e0e0;
+        border-top-color: #06A3DA; border-radius: 50%;
+        animation: spin 1s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question-text { font-size: 18px; font-weight: 700; color: #2d2d2d; margin-bottom: 14px; line-height: 1.5; }
+    .quiz-option {
+        display: flex; align-items: center; gap: 12px;
+        padding: 14px 18px; border-radius: 14px;
+        border: 2px solid #e0e0e0; margin-bottom: 10px;
+        cursor: pointer; transition: all 0.2s; font-size: 16px; font-weight: 600;
+    }
+    .quiz-option:hover { border-color: #06A3DA; background: #f0f9fd; }
+    .quiz-option.selected { border-color: #06A3DA; background: #e8f4fd; }
+    .quiz-option.correct { border-color: #28a745; background: #f0fff4; color: #28a745; }
+    .quiz-option.wrong { border-color: #dc3545; background: #fff5f5; color: #dc3545; }
+    .quiz-option-letter {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: #06A3DA; color: white;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; font-weight: 800; flex-shrink: 0;
+    }
+    .quiz-btn-submit {
+        width: 100%; padding: 16px; border: none; border-radius: 999px;
+        background: #06A3DA; color: white;
+        font-size: 18px; font-weight: 800; cursor: pointer;
+        font-family: 'Nunito', sans-serif; transition: transform 0.15s; margin-top: 10px;
+    }
+    .quiz-btn-submit:hover { transform: scale(1.02); }
+    .quiz-btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+    .quiz-result { text-align: center; padding: 20px 0; }
+    .quiz-result-emoji { font-size: 72px; display: block; margin-bottom: 16px; }
+    .quiz-result-title { font-family: 'Fredoka One', cursive; font-size: 28px; margin-bottom: 10px; }
+    .quiz-result-score { font-size: 20px; color: #555; margin-bottom: 24px; }
+    .quiz-result-concentrated { color: #28a745; }
+    .quiz-result-distracted   { color: #dc3545; }
+    .quiz-btn-close {
+        padding: 14px 36px; border: none; border-radius: 999px;
+        background: #ffc107; color: #5a3e00;
+        font-size: 17px; font-weight: 800; cursor: pointer;
+        font-family: 'Nunito', sans-serif; transition: transform 0.15s;
+    }
+    .quiz-btn-close:hover { transform: scale(1.05); }
+
+    .quiz-trigger-banner {
+        background: linear-gradient(135deg, #FF9F43, #ff6b35);
+        border-radius: 24px; padding: 28px 32px;
+        text-align: center; margin: 10px 0 28px;
+        box-shadow: 0 6px 24px rgba(255,107,53,0.3);
+        display: none;
+    }
+    .quiz-trigger-banner.visible { display: block; }
+    .quiz-trigger-banner h3 { font-family: 'Fredoka One', cursive; font-size: 24px; color: white; margin-bottom: 8px; }
+    .quiz-trigger-banner p { color: rgba(255,255,255,0.9); margin-bottom: 18px; font-size: 16px; }
+    .quiz-trigger-btn {
+        background: white; color: #FF9F43; border: none; border-radius: 999px;
+        padding: 14px 36px; font-size: 18px; font-weight: 800;
+        cursor: pointer; font-family: 'Nunito', sans-serif; transition: transform 0.15s;
+    }
+    .quiz-trigger-btn:hover { transform: scale(1.05); }
+
+    .tdah-empty { text-align: center; padding: 70px 20px; background: white; border-radius: 24px; box-shadow: 0 4px 18px rgba(0,0,0,0.07); }
+    .tdah-empty-icon { font-size: 72px; display: block; margin-bottom: 18px; }
+    .tdah-empty p { font-size: 18px; color: #888; margin-bottom: 22px; }
+
+    .tdah-footer {
+        background: linear-gradient(135deg, #06A3DA, #0056b3);
+        border-radius: 24px; padding: 40px 24px;
+        text-align: center; margin-top: 40px; color: white;
+    }
+    .tdah-footer-trophy { font-size: 60px; animation: tdah-bounce 2s infinite; display: block; }
+    .tdah-footer h3 { font-family: 'Fredoka One', cursive; font-size: 28px; margin: 16px 0 10px; }
+    .tdah-footer p { font-size: 16px; opacity: 0.9; margin-bottom: 22px; }
+    .tdah-footer-btn {
+        background: #ffc107; color: #5a3e00; border: none; border-radius: 999px;
+        padding: 14px 36px; font-size: 17px; font-weight: 800;
+        cursor: pointer; font-family: 'Nunito', sans-serif;
+        text-decoration: none; display: inline-block; transition: transform 0.15s;
+        margin: 6px;
+    }
+    .tdah-footer-btn:hover { transform: scale(1.05); }
+
+    @keyframes tdah-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+</style>
+{% endblock %}
 
 {% block body %}
 
-<!-- Header -->
-<div class="container-fluid bg-primary py-5 mb-5" style="background: linear-gradient(135deg, #06A3DA, #0056b3) !important;">
-    <div class="container py-3">
-        <div class="row justify-content-center text-center">
-            <div class="col-lg-8">
-                <h1 class="display-4 text-white fw-bold mb-3">📘 {{ cour.titre }}</h1>
-                <div class="d-flex justify-content-center gap-2 flex-wrap">
-                    {% if cour.niveau %}
-                    <span class="badge bg-white text-primary fs-6 px-3 py-2">🎯 {{ cour.niveau }}</span>
-                    {% endif %}
-                    {% if cour.formateur %}
-                    <span class="badge bg-warning text-dark fs-6 px-3 py-2">👨‍🏫 {{ cour.formateur }}</span>
-                    {% endif %}
-                    <span class="badge bg-success text-white fs-6 px-3 py-2">📝 {{ lecons|length }} leçon(s)</span>
-                </div>
-            </div>
-        </div>
+{# ── Hero ── #}
+<div class="tdah-hero">
+    <span class="tdah-hero-emoji">📘</span>
+    <div class="tdah-hero-title">{{ cour.titre }}</div>
+    <div class="tdah-badges">
+        {% if cour.niveau %}
+        <span class="tdah-badge tdah-badge-white">🎯 {{ cour.niveau }}</span>
+        {% endif %}
+        {% if cour.formateur %}
+        <span class="tdah-badge tdah-badge-yellow">👨‍🏫 {{ cour.formateur }}</span>
+        {% endif %}
+        <span class="tdah-badge tdah-badge-green">📝 {{ lecons|length }} {{ 'lecons.count_suffix'|trans }}</span>
+    </div>
+
+    {# ── Sélecteur de langue ── #}
+    <div class="tdah-lang-selector">
+        <a href="{{ path('app_enfant_lecons', {'id_cours': cour.id_cours, '_locale': 'fr'}) }}"
+           class="tdah-badge tdah-badge-white {{ locale == 'fr' ? 'tdah-badge-active' : '' }}"
+           style="text-decoration:none;">🇫🇷 {{ 'lang.fr'|trans }}</a>
+
+        <a href="{{ path('app_enfant_lecons', {'id_cours': cour.id_cours, '_locale': 'en'}) }}"
+           class="tdah-badge tdah-badge-white {{ locale == 'en' ? 'tdah-badge-active' : '' }}"
+           style="text-decoration:none;">🇬🇧 {{ 'lang.en'|trans }}</a>
+
+        <a href="{{ path('app_enfant_lecons', {'id_cours': cour.id_cours, '_locale': 'ar'}) }}"
+           class="tdah-badge tdah-badge-white {{ locale == 'ar' ? 'tdah-badge-active' : '' }}"
+           style="text-decoration:none;">🇹🇳 {{ 'lang.ar'|trans }}</a>
+    </div>
+
+    <div class="tdah-progress-wrap">
+        <div class="tdah-progress-fill" id="progressBar"></div>
+    </div>
+    <div class="tdah-progress-label" id="progressLabel">
+        0 {{ 'lecons.progress.completed_singular'|trans }} {{ 'common.on'|trans }} {{ lecons|length }}
     </div>
 </div>
 
-<div class="container py-3 mb-5">
+{# ── Quiz Modal ── #}
+<div class="quiz-overlay" id="quizOverlay">
+    <div class="quiz-box">
+        <div class="quiz-title">{{ 'quiz.title'|trans }}</div>
+        <div class="quiz-subtitle">{{ 'quiz.subtitle'|trans }}</div>
+        <div id="quizContent"></div>
+    </div>
+</div>
 
-    <!-- Bouton retour -->
-    <a href="{{ path('app_enfant_cours') }}" class="btn btn-outline-primary rounded-pill px-4 mb-4">
-        <i class="fa fa-arrow-left me-2"></i> Retour aux cours
+{# ── Contenu principal ── #}
+<div class="tdah-container">
+
+    <a href="{{ path('app_enfant_cours') }}" class="tdah-back-btn">
+        {{ 'btn.back'|trans }}
     </a>
 
-    <!-- Description courte -->
-    {% if cour.description %}
-    <div class="alert border-start border-primary border-4 bg-light mb-5">
-        <p class="mb-0 text-muted">{{ cour.description }}</p>
-    </div>
-    {% endif %}
-
-    <!-- Leçons -->
-    <h4 class="mb-4 text-primary">📚 Leçons du cours</h4>
+    <div class="tdah-section-title">{{ 'lecons.title'|trans }}</div>
 
     {% if lecons is empty %}
-    <div class="text-center py-5">
-        <i class="fa fa-book fa-4x text-muted mb-3"></i>
-        <h5 class="text-muted">Aucune leçon disponible pour ce cours.</h5>
-        <a href="{{ path('app_enfant_cours') }}" class="btn btn-primary rounded-pill px-4 mt-3">
-            Retour aux cours
-        </a>
+    <div class="tdah-empty">
+        <span class="tdah-empty-icon">📖</span>
+        <p>{{ 'lecons.empty'|trans }}</p>
+        <a href="{{ path('app_enfant_cours') }}" class="tdah-footer-btn">{{ 'btn.back'|trans }}</a>
     </div>
+
     {% else %}
 
-    <div class="row g-3">
-        {% for lecon in lecons %}
-        <div class="col-12">
-            <div class="card border-0 shadow-sm rounded-4 p-4" style="border-left: 6px solid #06A3DA !important;">
-                <div class="d-flex align-items-start gap-3">
-                    <!-- Numéro -->
-                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"
-                         style="width: 48px; height: 48px; font-size: 18px; flex-shrink: 0;">
-                        {{ loop.index }}
-                    </div>
-                    <!-- Contenu -->
-                    <div class="flex-grow-1">
-                        <h5 class="text-primary fw-bold mb-2">{{ lecon.titreLecon }}</h5>
-                        {% if lecon.contenu %}
-                        <p class="text-dark mb-0">{{ lecon.contenu }}</p>
-                        {% else %}
-                        <p class="text-muted fst-italic mb-0">Aucun contenu disponible.</p>
-                        {% endif %}
-                    </div>
+    <div id="leconsList">
+        {% for item in leconsTraduites %}
+        {% set lecon = item.original %}
+        <div class="tdah-card" {% if locale == 'ar' %}dir="rtl"{% endif %}>
+            <div class="tdah-card-header">
+                <div class="tdah-step-circle">{{ loop.index }}</div>
+                <div class="tdah-card-title">{{ item.titre_lecon }}</div>
+                <div class="tdah-check" id="check-{{ loop.index0 }}">✓</div>
+            </div>
+            <div class="tdah-card-body">
+                {% if item.contenu %}
+                <div class="tdah-contenu">{{ item.contenu }}</div>
+                {% else %}
+                <div class="tdah-contenu" style="color:#999; font-style:italic;">
+                    {{ 'lecons.no_content'|trans }}
+                </div>
+                {% endif %}
+
+                <div class="tdah-stars" id="stars-{{ loop.index0 }}">
+                    <span onclick="tdahRate(event, {{ loop.index0 }}, 1)">⭐</span>
+                    <span onclick="tdahRate(event, {{ loop.index0 }}, 2)">⭐</span>
+                    <span onclick="tdahRate(event, {{ loop.index0 }}, 3)">⭐</span>
+                </div>
+
+                <div class="tdah-actions">
+                    <button class="tdah-btn tdah-btn-audio"
+                            onclick="tdahLire(event, {{ loop.index0 }}, `{{ item.contenu|replace({"`": "'"}) }}`, '{{ locale }}')">
+                        {{ 'btn.listen'|trans }}
+                    </button>
+                    <button class="tdah-btn tdah-btn-compris"
+                            onclick="tdahCompris(event, {{ loop.index0 }})">
+                        {{ 'btn.understood'|trans }}
+                    </button>
                 </div>
             </div>
         </div>
+
+        {# ── Bannière quiz à mi-parcours ── #}
+        {% if lecons|length > 1 and loop.index == (lecons|length / 2)|round(0, 'floor') %}
+        <div class="quiz-trigger-banner" id="quizBanner">
+            <h3>{{ 'quiz.banner_title'|trans }}</h3>
+            <p>{{ 'quiz.banner_text'|trans }}</p>
+            <button class="quiz-trigger-btn" onclick="lancerQuizLecon()">
+                {{ 'quiz.start'|trans }}
+            </button>
+        </div>
+        {% endif %}
+
         {% endfor %}
     </div>
 
-    <!-- Footer -->
-    <div class="text-center mt-5 py-4 bg-light rounded-4">
-        <h5 class="text-primary mb-3">🎉 {{ lecons|length }} leçon(s) dans ce cours !</h5>
-        <a href="{{ path('app_enfant_cours') }}" class="btn btn-primary rounded-pill px-5 py-2">
-            <i class="fa fa-arrow-left me-2"></i> Retour aux cours
+    <div class="tdah-footer">
+        <span class="tdah-footer-trophy">🏆</span>
+        <h3>{{ 'lecons.footer_title'|trans }}</h3>
+        <p>{{ 'lecons.footer_text'|trans }}</p>
+        <a href="{{ path('app_enfant_cours') }}" class="tdah-footer-btn">
+            {{ 'btn.back'|trans }}
+        </a>
+        {# ── Bouton PDF dans le footer ── #}
+        <a href="{{ path('app_enfant_cours_pdf', {'id_cours': cour.id_cours, '_locale': locale}) }}"
+           class="tdah-footer-btn" style="background:#28a745; color:white;">
+            📄 {{ 'download_pdf'|trans }}
         </a>
     </div>
 
     {% endif %}
 </div>
+
+<script>
+var tdahTotal     = {{ lecons|length }};
+var tdahCompleted = new Array(tdahTotal).fill(false);
+var quizLeconDone = false;
+var tdahI18n = {
+    progressCompletedSingular: '{{ 'lecons.progress.completed_singular'|trans|e('js') }}',
+    progressCompletedPlural:   '{{ 'lecons.progress.completed_plural'|trans|e('js') }}',
+    commonOn:                  '{{ 'common.on'|trans|e('js') }}',
+    quizLoading:               '{{ 'quiz.loading'|trans|e('js') }}',
+    quizError:                 '{{ 'common.error'|trans|e('js') }}',
+    quizClose:                 '{{ 'quiz.close'|trans|e('js') }}',
+    quizSubmit:                '{{ 'quiz.submit'|trans|e('js') }}',
+    quizResultGood:            '{{ 'quiz.result.good'|trans|e('js') }}',
+    quizResultBad:             '{{ 'quiz.result.bad'|trans|e('js') }}',
+    quizAdviceGood:            '{{ 'quiz.advice.good'|trans|e('js') }}',
+    quizAdviceBad:             '{{ 'quiz.advice.bad'|trans|e('js') }}',
+    quizScore:                 '{{ 'quiz.score'|trans|e('js') }}',
+    quizContinue:              '{{ 'quiz.continue'|trans|e('js') }}'
+};
+
+var leconsContenu = [
+    {% for item in leconsTraduites %}
+    {
+        titre:   `{{ item.titre_lecon|replace({"`": "'"}) }}`,
+        contenu: `{{ item.contenu|replace({"`": "'"}) }}`
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+// ══ TIMER AUTOMATIQUE — Quiz après 1 minute sans interaction ══
+var QUIZ_DELAI_SECONDES = 1 * 60;
+var quizTimer = null;
+
+function demarrerTimerQuiz() {
+    if (quizLeconDone) return;
+    quizTimer = setTimeout(function() {
+        if (!quizLeconDone) {
+            lancerQuizLecon();
+        }
+    }, QUIZ_DELAI_SECONDES * 1000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    demarrerTimerQuiz();
+});
+
+function tdahRate(e, idx, n) {
+    e.stopPropagation();
+    var stars = document.querySelectorAll('#stars-' + idx + ' span');
+    stars.forEach(function(s, i){ s.classList.toggle('lit', i < n); });
+}
+
+function tdahCompris(e, idx) {
+    e.stopPropagation();
+    tdahCompleted[idx] = true;
+    var check = document.getElementById('check-' + idx);
+    if (check) check.classList.add('visible');
+    tdahUpdateProgress();
+
+    var miParcours = Math.floor(tdahTotal / 2);
+    var count = tdahCompleted.filter(Boolean).length;
+    if (count === miParcours && !quizLeconDone) {
+        var banner = document.getElementById('quizBanner');
+        if (banner) {
+            banner.classList.add('visible');
+            banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+}
+
+function tdahUpdateProgress() {
+    var count = tdahCompleted.filter(Boolean).length;
+    var pct   = Math.round((count / tdahTotal) * 100);
+    var bar   = document.getElementById('progressBar');
+    var label = document.getElementById('progressLabel');
+    if (bar)   bar.style.width = pct + '%';
+    if (label) label.textContent = count + ' ' +
+        (count > 1 ? tdahI18n.progressCompletedPlural : tdahI18n.progressCompletedSingular) +
+        ' ' + tdahI18n.commonOn + ' ' + tdahTotal;
+}
+
+function tdahLire(e, idx, texte, locale) {
+    e.stopPropagation();
+    if (!texte || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    var utterance = new SpeechSynthesisUtterance(texte);
+    if (locale === 'ar')      utterance.lang = 'ar-SA';
+    else if (locale === 'en') utterance.lang = 'en-US';
+    else                      utterance.lang = 'fr-FR';
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
+}
+
+// ══ QUIZ LECON ══
+var quizLeconQuestions = [];
+var quizLeconAnswers   = {};
+var quizLeconUrl       = '{{ path('api_generer_quiz_lecon') }}';
+
+async function lancerQuizLecon() {
+    quizLeconDone = true;
+    if (quizTimer) { clearTimeout(quizTimer); quizTimer = null; }
+
+    document.getElementById('quizOverlay').classList.add('active');
+    document.getElementById('quizContent').innerHTML = `
+        <div class="quiz-loading">
+            <div class="quiz-loading-spinner"></div>
+            <p style="font-size:16px; color:#888;">${tdahI18n.quizLoading}</p>
+        </div>
+    `;
+
+    var miParcours = Math.floor(tdahTotal / 2);
+    var contenuLecons = leconsContenu.slice(0, miParcours).map(function(l, i) {
+        return 'Leçon ' + (i + 1) + ': ' + l.titre + '\n' + l.contenu;
+    }).join('\n\n');
+
+    if (contenuLecons.trim() === '') {
+        contenuLecons = leconsContenu.map(function(l, i) {
+            return 'Leçon ' + (i + 1) + ': ' + l.titre + '\n' + l.contenu;
+        }).join('\n\n');
+    }
+
+    try {
+        const response = await fetch(quizLeconUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contenu: contenuLecons })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            throw new Error(data.error + ' — ' + JSON.stringify(data.detail));
+        }
+
+        quizLeconQuestions = data.questions;
+        afficherQuizLecon();
+
+    } catch (err) {
+        document.getElementById('quizContent').innerHTML = `
+            <div style="text-align:center; padding:30px;">
+                <p style="font-size:18px; color:#dc3545;">${tdahI18n.quizError} : ${err.message}</p>
+                <button class="quiz-btn-close" onclick="fermerQuizLecon()">${tdahI18n.quizClose}</button>
+            </div>
+        `;
+    }
+}
+
+function afficherQuizLecon() {
+    var html = '';
+    quizLeconQuestions.forEach(function(q, qi) {
+        html += `<div class="quiz-question">
+            <div class="quiz-question-text">${qi + 1}. ${q.question}</div>`;
+        q.options.forEach(function(opt, oi) {
+            var lettre = ['A', 'B', 'C', 'D'][oi];
+            html += `<div class="quiz-option" id="opt-${qi}-${oi}" onclick="selectOptionLecon(${qi}, ${oi})">
+                <div class="quiz-option-letter">${lettre}</div>
+                <span>${opt}</span>
+            </div>`;
+        });
+        html += `</div>`;
+    });
+
+    html += `<button class="quiz-btn-submit" id="quizLeconSubmit" onclick="soumettreQuizLecon()" disabled>
+        ${tdahI18n.quizSubmit}
+    </button>`;
+
+    document.getElementById('quizContent').innerHTML = html;
+}
+
+function selectOptionLecon(qi, oi) {
+    quizLeconQuestions[qi].options.forEach(function(_, i) {
+        var el = document.getElementById('opt-' + qi + '-' + i);
+        if (el) el.classList.remove('selected');
+    });
+    var el = document.getElementById('opt-' + qi + '-' + oi);
+    if (el) el.classList.add('selected');
+    quizLeconAnswers[qi] = oi;
+
+    if (Object.keys(quizLeconAnswers).length === quizLeconQuestions.length) {
+        var btn = document.getElementById('quizLeconSubmit');
+        if (btn) btn.disabled = false;
+    }
+}
+
+function soumettreQuizLecon() {
+    var score = 0;
+    quizLeconQuestions.forEach(function(q, qi) {
+        var correct = q.correct;
+        var chosen  = quizLeconAnswers[qi];
+        q.options.forEach(function(_, oi) {
+            var el = document.getElementById('opt-' + qi + '-' + oi);
+            if (!el) return;
+            el.style.pointerEvents = 'none';
+            if (oi === correct) {
+                el.classList.add('correct');
+            } else if (oi === chosen && chosen !== correct) {
+                el.classList.add('wrong');
+            }
+        });
+        if (chosen === correct) score++;
+    });
+
+    setTimeout(function() {
+        afficherResultatLecon(score);
+    }, 1500);
+}
+
+function afficherResultatLecon(score) {
+    var total     = quizLeconQuestions.length;
+    var concentre = score >= 2;
+    var emoji     = concentre ? '🌟' : '😴';
+    var titre     = concentre ? tdahI18n.quizResultGood : tdahI18n.quizResultBad;
+    var classe    = concentre ? 'quiz-result-concentrated' : 'quiz-result-distracted';
+    var conseil   = concentre ? tdahI18n.quizAdviceGood : tdahI18n.quizAdviceBad;
+
+    document.getElementById('quizContent').innerHTML = `
+        <div class="quiz-result">
+            <span class="quiz-result-emoji">${emoji}</span>
+            <div class="quiz-result-title ${classe}">${titre}</div>
+            <div class="quiz-result-score">${tdahI18n.quizScore} : <strong>${score} / ${total}</strong></div>
+            <p style="color:#666; font-size:16px; margin-bottom:24px;">${conseil}</p>
+            <button class="quiz-btn-close" onclick="fermerQuizLecon()">${tdahI18n.quizContinue}</button>
+        </div>
+    `;
+}
+
+function fermerQuizLecon() {
+    document.getElementById('quizOverlay').classList.remove('active');
+    quizLeconAnswers = {};
+}
+</script>
 
 {% endblock %}
