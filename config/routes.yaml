@@ -3,3 +3,12 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+# config/routes.yaml
+voice_commander:
+    path: /voice-commander
+    controller: App\Controller\VoiceCommandController::index
+
+process_voice_command:
+    path: /api/process-voice-command
+    controller: App\Controller\VoiceCommandController::processVoiceCommand
+    methods: POST

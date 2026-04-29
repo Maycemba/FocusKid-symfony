@@ -1,0 +1,365 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Commandes Vocales - Symfony{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .voice-container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+    .voice-card {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .voice-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        font-size: 18px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 10px;
+    }
+    .voice-btn:hover {
+        background: #0056b3;
+    }
+    .voice-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+    .voice-btn-danger {
+        background: #dc3545;
+    }
+    .voice-btn-danger:hover {
+        background: #c82333;
+    }
+    .voice-status {
+        margin: 20px 0;
+        padding: 15px;
+        border-radius: 5px;
+        background: #e9ecef;
+    }
+    .voice-status.listening {
+        background: #ffc107;
+        color: #000;
+        font-weight: bold;
+    }
+    .voice-result {
+        margin: 20px 0;
+        padding: 15px;
+        border-radius: 5px;
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        display: none;
+    }
+    .voice-result.error {
+        background: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
+    .voice-command-list {
+        margin-top: 30px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+    .voice-command-list ul {
+        list-style: none;
+        padding: 0;
+    }
+    .voice-command-list li {
+        padding: 5px 0;
+    }
+    .text-center {
+        text-align: center;
+    }
+    .mt-3 {
+        margin-top: 15px;
+    }
+    .mb-3 {
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="voice-container">
+    <div class="voice-card">
+        <h1 class="text-center">🎤 Commandes Vocales Symfony</h1>
+        
+        <div class="text-center">
+            <button id="startBtn" class="voice-btn">🎙️ Démarrer la reconnaissance</button>
+            <button id="stopBtn" class="voice-btn voice-btn-danger" style="display:none;">⏹️ Arrêter</button>
+        </div>
+        
+        <div id="status" class="voice-status">
+            ✅ Prêt - Cliquez sur Démarrer
+        </div>
+        
+        <div id="result" class="voice-result">
+        </div>
+        
+        <div class="voice-command-list">
+            <h3>📋 Commandes disponibles :</h3>
+            <ul>
+                <li>• <strong>"Bonjour"</strong> ou <strong>"Salut"</strong> - Pour saluer</li>
+                <li>• <strong>"Quelle heure est-il ?"</strong> - Pour connaître l'heure</li>
+                <li>• <strong>"Quelle est la date ?"</strong> - Pour connaître la date</li>
+                <li>• <strong>"Créer un utilisateur"</strong> - Action admin</li>
+                <li>• <strong>"Afficher les produits"</strong> ou <strong>"Liste des articles"</strong> - Liste des produits</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    // Éviter tout conflit avec d'autres scripts
+    (function() {
+        console.log('=== Application vocale démarrée ===');
+        
+        // Attendre que le DOM soit chargé
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+        
+        function init() {
+            console.log('DOM chargé, initialisation...');
+            
+            // Récupérer les éléments
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const statusDiv = document.getElementById('status');
+            const resultDiv = document.getElementById('result');
+            
+            // Vérifier le support du navigateur
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                statusDiv.innerHTML = '❌ Votre navigateur ne supporte pas la reconnaissance vocale. Utilisez Chrome, Edge ou Safari.';
+                statusDiv.className = 'voice-status';
+                startBtn.disabled = true;
+                console.error('SpeechRecognition non supporté');
+                return;
+            }
+            
+            console.log('SpeechRecognition supporté');
+            
+            let recognition = null;
+            let isListening = false;
+            
+            // Fonction pour afficher le statut
+            function setStatus(message, isListening_ = false) {
+                statusDiv.innerHTML = message;
+                if (isListening_) {
+                    statusDiv.classList.add('listening');
+                } else {
+                    statusDiv.classList.remove('listening');
+                }
+                console.log('Status:', message);
+            }
+            
+            // Fonction pour afficher le résultat
+            function showResult(message, isError = false) {
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = message;
+                if (isError) {
+                    resultDiv.className = 'voice-result error';
+                } else {
+                    resultDiv.className = 'voice-result';
+                }
+                // Masquer après 5 secondes
+                setTimeout(() => {
+                    if (resultDiv.style.display === 'block') {
+                        resultDiv.style.display = 'none';
+                    }
+                }, 5000);
+            }
+            
+            // Démarrer la reconnaissance
+            function startRecognition() {
+                console.log('Démarrage de la reconnaissance...');
+                
+                // Demander la permission microphone
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(function(stream) {
+                        console.log('Microphone autorisé');
+                        stream.getTracks().forEach(track => track.stop());
+                        
+                        // Créer une nouvelle instance
+                        recognition = new SpeechRecognition();
+                        recognition.lang = 'fr-FR';
+                        recognition.continuous = false;
+                        recognition.interimResults = false;
+                        recognition.maxAlternatives = 1;
+                        
+                        // Événements
+                        recognition.onstart = function() {
+                            console.log('Reconnaissance démarrée');
+                            isListening = true;
+                            setStatus('🎤 Écoute en cours... Parlez maintenant !', true);
+                            startBtn.style.display = 'none';
+                            stopBtn.style.display = 'inline-block';
+                        };
+                        
+                        recognition.onresult = function(event) {
+                            const commande = event.results[0][0].transcript;
+                            const confidence = event.results[0][0].confidence;
+                            console.log('Commande reconnue:', commande, 'Confiance:', confidence);
+                            
+                            setStatus(`✅ Commande reconnue : "${commande}" (${Math.round(confidence * 100)}%)`);
+                            
+                            // Envoyer au backend
+                            sendToBackend(commande);
+                        };
+                        
+                        recognition.onerror = function(event) {
+                            console.error('Erreur reconnaissance:', event.error);
+                            let errorMsg = '';
+                            
+                            switch(event.error) {
+                                case 'no-speech':
+                                    errorMsg = 'Aucune parole détectée. Réessayez.';
+                                    break;
+                                case 'audio-capture':
+                                    errorMsg = 'Microphone non trouvé. Vérifiez votre microphone.';
+                                    break;
+                                case 'not-allowed':
+                                    errorMsg = 'Permission microphone refusée. Autorisez l\'accès au microphone.';
+                                    break;
+                                case 'network':
+                                    errorMsg = 'Erreur réseau. Vérifiez votre connexion.';
+                                    break;
+                                default:
+                                    errorMsg = `Erreur: ${event.error}`;
+                            }
+                            
+                            setStatus(`❌ ${errorMsg}`);
+                            showResult(errorMsg, true);
+                            stopRecognition();
+                        };
+                        
+                        recognition.onend = function() {
+                            console.log('Reconnaissance terminée');
+                            if (isListening) {
+                                stopRecognition();
+                            }
+                        };
+                        
+                        // Démarrer
+                        recognition.start();
+                    })
+                    .catch(function(err) {
+                        console.error('Erreur microphone:', err);
+                        let errorMsg = 'Impossible d\'accéder au microphone. ';
+                        
+                        if (err.name === 'NotAllowedError') {
+                            errorMsg += 'Veuillez autoriser l\'accès au microphone.';
+                        } else if (err.name === 'NotFoundError') {
+                            errorMsg += 'Aucun microphone détecté.';
+                        } else {
+                            errorMsg += err.message;
+                        }
+                        
+                        setStatus(`❌ ${errorMsg}`);
+                        showResult(errorMsg, true);
+                    });
+            }
+            
+            // Arrêter la reconnaissance
+            function stopRecognition() {
+                console.log('Arrêt de la reconnaissance');
+                if (recognition) {
+                    try {
+                        recognition.stop();
+                    } catch(e) {
+                        console.error('Erreur en arrêtant:', e);
+                    }
+                    recognition = null;
+                }
+                isListening = false;
+                setStatus('✅ Reconnaissance arrêtée');
+                startBtn.style.display = 'inline-block';
+                stopBtn.style.display = 'none';
+            }
+            
+            // Envoyer la commande au backend Symfony
+            function sendToBackend(commande) {
+                console.log('Envoi au backend:', commande);
+                showResult(`📝 Traitement de la commande : "${commande}"`);
+                
+                fetch('/api/process-voice-command', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ commande: commande })
+                })
+                .then(response => {
+                    console.log('Réponse reçue, status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Données reçues:', data);
+                    if (data.success) {
+                        showResult(`🤖 ${data.message}`);
+                        // Option: synthèse vocale
+                        if ('speechSynthesis' in window) {
+                            try {
+                                const utterance = new SpeechSynthesisUtterance(data.message);
+                                utterance.lang = 'fr-FR';
+                                utterance.rate = 0.9;
+                                window.speechSynthesis.cancel();
+                                window.speechSynthesis.speak(utterance);
+                            } catch(e) {
+                                console.error('Erreur synthèse vocale:', e);
+                            }
+                        }
+                    } else {
+                        showResult(`❌ ${data.message}`, true);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur backend:', error);
+                    showResult(`❌ Erreur de communication avec le serveur: ${error.message}`, true);
+                });
+            }
+            
+            // Événements des boutons
+            startBtn.onclick = startRecognition;
+            stopBtn.onclick = stopRecognition;
+            
+            // Vérifier la connexion au backend au démarrage
+            fetch('/api/process-voice-command', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ commande: 'ping' })
+            })
+            .then(() => {
+                console.log('✅ Backend accessible');
+                setStatus('✅ Prêt - Cliquez sur Démarrer');
+            })
+            .catch(error => {
+                console.error('⚠️ Backend non accessible:', error);
+                setStatus('⚠️ Backend non accessible. Vérifiez que le serveur Symfony est démarré.');
+            });
+            
+            console.log('Application prête');
+        }
+    })();
+</script>
+{% endblock %}

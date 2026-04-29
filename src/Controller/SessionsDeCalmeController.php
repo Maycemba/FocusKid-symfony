@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
 
 #[Route('/sessions/de/calme')]
 final class SessionsDeCalmeController extends AbstractController
@@ -298,4 +300,99 @@ final class SessionsDeCalmeController extends AbstractController
         
         return $this->redirectToRoute('app_sessions_de_calme_index', [], Response::HTTP_SEE_OTHER);
     }
+#[Route('/api/process-voice-command', name: 'process_voice_command', methods: ['POST'])]
+public function processVoiceCommand(Request $request): JsonResponse
+{
+    try {
+        $content = $request->getContent();
+        error_log('=== DEBUG Voice Command ===');
+        error_log('Content reçu: ' . $content);
+        
+        $data = json_decode($content, true);
+        
+        if (!$data) {
+            error_log('Erreur: JSON invalide');
+            return $this->json([
+                'success' => false,
+                'message' => 'JSON invalide'
+            ]);
+        }
+        
+        // Accepter les deux formats (commande ou command)
+        $commande = $data['commande'] ?? $data['command'] ?? null;
+        
+        error_log('Commande extraite: ' . ($commande ?? 'null'));
+        
+        if (!$commande) {
+            error_log('Erreur: Aucune commande trouvée');
+            return $this->json([
+                'success' => false,
+                'message' => 'Commande manquante'
+            ]);
+        }
+        
+        $commande = strtolower(trim($commande));
+        
+        // Ping pour tester
+        if ($commande === 'ping') {
+            return $this->json([
+                'success' => true,
+                'message' => 'pong'
+            ]);
+        }
+        
+        // Vérification manuelle des commandes
+        if (str_contains($commande, 'coloriage') || str_contains($commande, 'colorier') || str_contains($commande, 'dessin')) {
+            return $this->json([
+                'success' => true,
+                'action' => 'coloriage',
+                'redirect' => '/sessions/de/calme/activite/coloriage',
+                'message' => 'Ouverture de la session coloriage. Bon amusement !'
+            ]);
+        }
+        
+        if (str_contains($commande, 'histoire') || str_contains($commande, 'raconter') || str_contains($commande, 'conte')) {
+            return $this->json([
+                'success' => true,
+                'action' => 'histoire',
+                'redirect' => '/sessions/de/calme/activite/histoire',
+                'message' => 'Ouverture de la session histoire. Préparez-vous à écouter !'
+            ]);
+        }
+        
+        if (str_contains($commande, 'respiration') || str_contains($commande, 'respirer') || str_contains($commande, 'calme')) {
+            return $this->json([
+                'success' => true,
+                'action' => 'respiration',
+                'redirect' => '/sessions/de/calme/activite/respiration',
+                'message' => 'Ouverture de la session respiration. Inspirez, expirez...'
+            ]);
+        }
+        
+        if (str_contains($commande, 'musique') || str_contains($commande, 'chanson') || str_contains($commande, 'son')) {
+            return $this->json([
+                'success' => true,
+                'action' => 'musique',
+                'redirect' => '/sessions/de/calme/activite/musique',
+                'message' => 'Ouverture de la session musique. Laissez-vous emporter par les sons !'
+            ]);
+        }
+        
+        // Commande non reconnue
+        return $this->json([
+            'success' => true,
+            'action' => 'unknown',
+            'message' => "Je n'ai pas compris '{$commande}'. Dites : coloriage, histoire, respiration ou musique"
+        ]);
+        
+    } catch (\Exception $e) {
+        error_log('Exception: ' . $e->getMessage());
+        error_log('Stack trace: ' . $e->getTraceAsString());
+        
+        return $this->json([
+            'success' => false,
+            'message' => 'Erreur serveur: ' . $e->getMessage()
+        ]);
+    }
+}
 }
