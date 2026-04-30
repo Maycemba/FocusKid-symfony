@@ -1,0 +1,120 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Jouer - {{ jeu.titre }}{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5 mt-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Barre de progression -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h4 class="text-primary m-0">{{ jeu.titre }}</h4>
+                        <span class="badge bg-primary rounded-pill px-3 py-2">
+                            Question {{ pagination.currentPageNumber }} / {{ pagination.totalItemCount }}
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 15px; border-radius: 10px;">
+                        {% set progress = (pagination.currentPageNumber / pagination.totalItemCount) * 100 %}
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                             role="progressbar" 
+                             style="width: {{ progress }}%" 
+                             aria-valuenow="{{ progress }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carte de la Question -->
+                <div class="card border-0 shadow-lg p-4 p-md-5 bg-white wow zoomIn" style="border-radius: 25px;">
+                    {% if current_question %}
+                        <h2 class="text-center mb-5 lobster-font text-dark">{{ current_question.questionText }}</h2>
+
+                        <form method="POST" id="game-form">
+                            <input type="hidden" name="question_id" value="{{ current_question.id }}">
+                            
+                            <div class="d-grid gap-3">
+                                {% if current_question.optionA %}
+                                    <button type="submit" name="answer" value="{{ current_question.optionA }}" class="btn btn-outline-primary btn-choice py-3 text-start px-4">
+                                        <span class="choice-label">A</span> {{ current_question.optionA }}
+                                    </button>
+                                {% endif %}
+
+                                {% if current_question.optionB %}
+                                    <button type="submit" name="answer" value="{{ current_question.optionB }}" class="btn btn-outline-primary btn-choice py-3 text-start px-4">
+                                        <span class="choice-label">B</span> {{ current_question.optionB }}
+                                    </button>
+                                {% endif %}
+
+                                {% if current_question.optionC %}
+                                    <button type="submit" name="answer" value="{{ current_question.optionC }}" class="btn btn-outline-primary btn-choice py-3 text-start px-4">
+                                        <span class="choice-label">C</span> {{ current_question.optionC }}
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="text-center">
+                            <h3>Aucune question disponible pour ce jeu.</h3>
+                            <a href="{{ path('app_games_index') }}" class="btn btn-primary rounded-pill mt-3">Retour aux jeux</a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Navigation (Paginator) -->
+                <div class="mt-4">
+                    {{ knp_pagination_render(pagination, 'pagination/tdah_pagination.html.twig') }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    .lobster-font {
+        font-family: 'Lobster Two', cursive;
+        font-size: 2.5rem;
+    }
+
+    .btn-choice {
+        border-radius: 15px;
+        border: 2px solid #e9ecef;
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #444;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .btn-choice:hover {
+        background-color: #f8f9fa;
+        border-color: #00B1FF;
+        color: #00B1FF;
+        transform: scale(1.02);
+    }
+
+    .btn-choice:focus {
+        box-shadow: 0 0 0 0.25rem rgba(0, 177, 255, 0.25);
+    }
+
+    .choice-label {
+        background: #00B1FF;
+        color: white;
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-right: 15px;
+        font-weight: bold;
+    }
+
+    .btn-choice:hover .choice-label {
+        background: #0093d5;
+    }
+</style>
+{% endblock %}

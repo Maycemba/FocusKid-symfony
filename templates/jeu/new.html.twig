@@ -1,11 +1,24 @@
 {% extends 'base-back.html.twig' %}
 
-{% block title %}New Jeu{% endblock %}
+{% block title %}Nouveau Jeu{% endblock %}
 
 {% block body %}
-    <h1>Create new Jeu</h1>
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h1 class="h3 mb-0">Créer un nouveau Jeu</h1>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">Étape 1: Définissez les informations générales du jeu.</p>
+            
+            {{ include('jeu/_form.html.twig') }}
 
-    {{ include('jeu/_form.html.twig') }}
-
-    <a href="{{ path('app_jeu_index') }}">back to list</a>
+            <div class="mt-4">
+                <a href="{{ path('app_jeu_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-list"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

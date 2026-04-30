@@ -15,6 +15,12 @@ class JeuType extends AbstractType
     {
         $builder
             ->add('titre')
+            ->add('type', ChoiceType::class, [
+                'choices' => [
+                    'Quiz' => 'quiz',
+                    'Autre' => 'autre',
+                ],
+            ])
             ->add('niveau', ChoiceType::class, [
                 'choices'  => [
                     'Facile' => 'Facile',

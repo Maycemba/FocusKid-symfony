@@ -1,0 +1,189 @@
+<!-- Mascot PNJ HTML -->
+<div id="pnj-mascot-container" class="mascot-container">
+    <div id="pnj-chat-bubble" class="mascot-bubble d-none">
+        <p id="pnj-message" class="mb-2 text-dark font-weight-bold">Salut ! Prêt à jouer ?</p>
+        <div class="mascot-input-group d-flex">
+            <input type="text" id="pnj-input" class="form-control form-control-sm mascot-input" placeholder="Besoin d'aide ?" autocomplete="off" />
+            <button id="pnj-send-btn" class="btn btn-sm btn-primary ms-1" style="border-radius: 15px;">OK</button>
+        </div>
+    </div>
+    <div class="mascot-img-container position-relative" id="pnj-mascot-trigger">
+        <div class="mascot-notification d-none" id="pnj-notification"></div>
+        <div style="font-size: 4rem; cursor: pointer; text-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: transform 0.3s;">🤖</div> 
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatBubble = document.getElementById('pnj-chat-bubble');
+    const messageDisplay = document.getElementById('pnj-message');
+    const inputField = document.getElementById('pnj-input');
+    const sendBtn = document.getElementById('pnj-send-btn');
+    const mascotTrigger = document.getElementById('pnj-mascot-trigger');
+    const notification = document.getElementById('pnj-notification');
+
+    let idleTimer;
+    const IDLE_TIMEOUT = 15000; // 15 secondes d'inactivité
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    // Effet hover sur la mascotte
+    if (mascotTrigger && mascotTrigger.children.length > 1) {
+        mascotTrigger.addEventListener('mouseover', () => { mascotTrigger.children[1].style.transform = 'scale(1.1)'; });
+        mascotTrigger.addEventListener('mouseout', () => { mascotTrigger.children[1].style.transform = 'scale(1)'; });
+    }
+
+    // Ouvrir/Fermer le chat
+    if (mascotTrigger) {
+        mascotTrigger.addEventListener('click', () => {
+            if (chatBubble) {
+                chatBubble.classList.toggle('d-none');
+                if (notification) notification.classList.add('d-none');
+                if (!chatBubble.classList.contains('d-none') && inputField) {
+                    inputField.focus();
+                }
+            }
+        });
+    }
+
+    function sendMessage(message, context = null) {
+        fetch('{{ path('app_jeu_pnj_parler') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ message: message, context: context, timezone: userTimezone })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (messageDisplay) messageDisplay.innerText = data.reponse;
+            if (chatBubble && chatBubble.classList.contains('d-none')) {
+                chatBubble.classList.remove('d-none');
+                setTimeout(() => {
+                    if (document.activeElement !== inputField && inputField && inputField.value.trim() === '') {
+                        chatBubble.classList.add('d-none');
+                    }
+                }, 5000); // Disparaît après 5s si on ne tape rien
+            }
+        })
+        .catch(error => console.error('Erreur PNJ:', error));
+    }
+
+    if (sendBtn) {
+        sendBtn.addEventListener('click', () => {
+            if (inputField) {
+                const text = inputField.value.trim();
+                if (text) {
+                    sendMessage(text);
+                    inputField.value = '';
+                }
+            }
+        });
+    }
+
+    if (inputField) {
+        inputField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (sendBtn) sendBtn.click();
+            }
+        });
+    }
+
+    function resetIdleTimer() {
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+            sendMessage(null, 'idle');
+        }, IDLE_TIMEOUT);
+    }
+
+    // Réinitialiser le timer d'inactivité
+    window.addEventListener('mousemove', resetIdleTimer);
+    window.addEventListener('keypress', resetIdleTimer);
+    window.addEventListener('click', resetIdleTimer);
+
+    resetIdleTimer();
+
+    // Demander la salutation culturelle au démarrage
+    sendMessage(null, 'greeting');
+});
+</script>
+
+<style>
+    /* Mascot Styles */
+    .mascot-container {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 1050;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .mascot-bubble {
+        background: white;
+        border-radius: 20px;
+        padding: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        margin-bottom: 15px;
+        width: 250px;
+        position: relative;
+        animation: fadeIn 0.3s ease-in-out;
+        border: 2px solid #00B1FF;
+    }
+
+    .mascot-bubble::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        right: 25px;
+        border-width: 10px 10px 0;
+        border-style: solid;
+        border-color: white transparent transparent transparent;
+        display: block;
+        width: 0;
+    }
+    
+    .mascot-bubble::before {
+        content: '';
+        position: absolute;
+        bottom: -13px;
+        right: 23px;
+        border-width: 12px 12px 0;
+        border-style: solid;
+        border-color: #00B1FF transparent transparent transparent;
+        display: block;
+        width: 0;
+        z-index: -1;
+    }
+
+    .mascot-input {
+        border-radius: 15px;
+        border: 1px solid #ced4da;
+    }
+
+    .mascot-notification {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 15px;
+        height: 15px;
+        background-color: #ff3b30;
+        border-radius: 50%;
+        border: 2px solid white;
+        animation: pulse 1.5s infinite;
+        z-index: 10;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+</style>

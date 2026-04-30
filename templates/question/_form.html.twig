@@ -1,4 +1,155 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <label class="form-label fw-bold"><iconify-icon icon="solar:global-line-duotone"></iconify-icon> Langue de traduction</label>
+            <select id="target-lang-selector" class="form-select border-primary text-primary fw-bold">
+                <option value="en">Anglais 🇬🇧</option>
+                <option value="ar">Arabe 🇸🇦</option>
+                <option value="fr">Français 🇫🇷</option>
+            </select>
+            <small class="text-muted">Choisissez la langue cible pour les traductions.</small>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            {{ form_label(form.question_text) }}
+            <div class="input-group">
+                {{ form_widget(form.question_text, {'attr': {'class': 'form-control', 'data-translatable': 'true'}}) }}
+                <button type="button" class="btn btn-outline-info btn-translate" data-target="question_text">
+                    <iconify-icon icon="solar:translation-line-duotone"></iconify-icon> Traduire
+                </button>
+            </div>
+            {{ form_errors(form.question_text) }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            {{ form_label(form.option_a) }}
+            <div class="input-group">
+                {{ form_widget(form.option_a, {'attr': {'class': 'form-control', 'data-translatable': 'true'}}) }}
+                <button type="button" class="btn btn-outline-info btn-translate" data-target="option_a">
+                    <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            {{ form_label(form.option_b) }}
+            <div class="input-group">
+                {{ form_widget(form.option_b, {'attr': {'class': 'form-control', 'data-translatable': 'true'}}) }}
+                <button type="button" class="btn btn-outline-info btn-translate" data-target="option_b">
+                    <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            {{ form_label(form.option_c) }}
+            <div class="input-group">
+                {{ form_widget(form.option_c, {'attr': {'class': 'form-control', 'data-translatable': 'true'}}) }}
+                <button type="button" class="btn btn-outline-info btn-translate" data-target="option_c">
+                    <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_row(form.bonne_reponse, {'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-6 mb-3">
+            <div {% if jeu_id %}style="display:none;"{% endif %}>
+                {{ form_row(form.jeu, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="d-grid gap-2">
+        <button class="btn btn-primary btn-lg">
+            <i class="ti ti-plus"></i> {{ button_label|default('Ajouter la Question') }}
+        </button>
+    </div>
 {{ form_end(form) }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const langSelector = document.getElementById('target-lang-selector');
+    const translateBtns = document.querySelectorAll('.btn-translate');
+    
+    // On suit la langue actuelle du contenu (par défaut français au départ)
+    let currentContentLang = 'fr';
+
+    // Fonction de traduction réutilisable
+    async function translateField(input, sourceLang, targetLang, btn = null) {
+        if (!input || !input.value || sourceLang === targetLang) return;
+
+        let originalBtnContent = '';
+        if (btn) {
+            originalBtnContent = btn.innerHTML;
+            btn.innerHTML = '<iconify-icon icon="solar:spinner-line-duotone" class="fa-spin"></iconify-icon>';
+            btn.disabled = true;
+        }
+
+        try {
+            const response = await fetch('{{ path("api_translate_index") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: input.value,
+                    sourceLang: sourceLang,
+                    targetLang: targetLang
+                })
+            });
+
+            const data = await response.json();
+            if (data.translated) {
+                input.value = data.translated;
+            }
+        } catch (error) {
+            console.error('Erreur traduction:', error);
+        } finally {
+            if (btn) {
+                btn.innerHTML = originalBtnContent;
+                btn.disabled = false;
+            }
+        }
+    }
+
+
+
+    // Traduction manuelle via bouton
+    translateBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const input = document.querySelector(`[id$="_${targetId}"]`);
+            const targetLang = langSelector.value;
+            // On traduit de la langue actuelle vers la cible
+            translateField(input, currentContentLang, targetLang, this);
+        });
+    });
+
+    // Traduction automatique au changement de langue
+    langSelector.addEventListener('change', async function() {
+        const targetLang = this.value;
+        const sourceLang = currentContentLang;
+        
+        if (sourceLang === targetLang) return;
+
+        const translatableInputs = document.querySelectorAll('[data-translatable="true"]');
+        
+        // On attend que toutes les traductions soient lancées
+        const translationPromises = Array.from(translatableInputs).map(input => {
+            if (input.value.trim() !== '') {
+                const targetId = input.id.split('_').pop();
+                const btn = document.querySelector(`.btn-translate[data-target="${targetId}"]`);
+                return translateField(input, sourceLang, targetLang, btn);
+            }
+            return Promise.resolve();
+        });
+
+        await Promise.all(translationPromises);
+        
+        // Une fois terminé, la nouvelle langue du contenu est la cible
+        currentContentLang = targetLang;
+    });
+});
+</script>

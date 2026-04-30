@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Résultats FocusKid</title>
+    <style>
+        @font-face {
+            font-family: 'DejaVu Sans';
+            font-style: normal;
+            font-weight: normal;
+        }
+        body { 
+            font-family: 'DejaVu Sans', sans-serif; 
+            color: #333; 
+            line-height: 1.6; 
+            font-size: 12px;
+            direction: ltr;
+        }
+        .header { text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 20px; margin-bottom: 30px; }
+        .title { color: #007bff; font-size: 24px; margin-bottom: 5px; }
+        .info { font-size: 14px; color: #666; }
+        .score-box { background: #f8f9fa; border: 1px solid #dee2e6; padding: 20px; text-align: center; margin-bottom: 30px; border-radius: 10px; }
+        .score-value { font-size: 32px; font-weight: bold; color: #28a745; }
+        .question-block { margin-bottom: 20px; padding: 15px; border-left: 5px solid #007bff; background: #fff; }
+        .question-text { font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        .result { margin-top: 10px; font-size: 14px; }
+        .correct { color: #28a745; font-weight: bold; }
+        .wrong { color: #dc3545; font-weight: bold; }
+        .footer { text-align: center; margin-top: 50px; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
+        
+        /* Correction pour l'Arabe */
+        .arabic-text { 
+            direction: rtl; 
+            unicode-bidi: embed; 
+            text-align: right;
+            font-family: 'DejaVu Sans', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">FocusKid - Rapport de Jeu</div>
+        <div class="info">Apprendre en s'amusant</div>
+    </div>
+
+    <div class="score-box">
+        <h3>Résultats pour le jeu : <strong>{{ jeu.titre }}</strong></h3>
+        <div class="score-value">{{ score }} / {{ total }}</div>
+        <p>Score final obtenu le {{ date|date('d/m/Y à H:i') }}</p>
+    </div>
+
+    <h2>Détails des questions :</h2>
+
+    {% for detail in details %}
+    <div class="question-block" style="border-left-color: {{ detail.is_correct ? '#28a745' : '#dc3545' }};">
+        <div class="question-text arabic-text">{{ loop.index }} : {{ detail.question }}</div>
+        <div class="result arabic-text">
+            <strong>Votre réponse :</strong> {{ detail.chosen ?? '(Aucune)' }}<br>
+            <strong>Bonne réponse :</strong> {{ detail.bonne_reponse }}
+        </div>
+        <div class="result {{ detail.is_correct ? 'correct' : 'wrong' }}">
+            {{ detail.is_correct ? '✓ Bravo, c\'est correct !' : '✗ Dommage, réessaie encore !' }}
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="footer">
+        Document généré automatiquement par FocusKid - Application éducative.
+    </div>
+</body>
+</html>
