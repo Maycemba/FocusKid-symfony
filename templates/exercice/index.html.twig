@@ -236,28 +236,30 @@
                             </div>
                             
                             <div class="mt-3 d-flex justify-content-end">
-    <a href="{{ path('app_exercice_show', {'id': exercice.id}) }}" class="btn btn-sm btn-info btn-action" title="Voir">
-        <i class="ti ti-eye"></i>
-    </a>
-    <a href="{{ path('app_exercice_edit', {'id': exercice.id}) }}" class="btn btn-sm btn-warning btn-action" title="Modifier">
-        <i class="ti ti-edit"></i>
-    </a>
-    {% if not exercice.archive %}
-        <form method="post" action="{{ path('app_exercice_archive', {'id': exercice.id}) }}" style="display:inline-block" onsubmit="return confirm('Archiver l\'exercice \"{{ exercice.titre }}\" ?');">
-            <input type="hidden" name="_token" value="{{ csrf_token('archive' ~ exercice.id) }}">
-            <button type="submit" class="btn btn-sm btn-danger btn-action">
-                <i class="ti ti-archive"></i>
-            </button>
-        </form>
-    {% else %}
-        <form method="post" action="{{ path('app_exercice_restore', {'id': exercice.id}) }}" style="display:inline-block" onsubmit="return confirm('Restaurer l\'exercice \"{{ exercice.titre }}\" ?');">
-            <input type="hidden" name="_token" value="{{ csrf_token('restore' ~ exercice.id) }}">
-            <button type="submit" class="btn btn-sm btn-success btn-action">
-                <i class="ti ti-refresh"></i>
-            </button>
-        </form>
-    {% endif %}
-</div>
+                                <a href="{{ path('app_exercice_show', {'id': exercice.id}) }}" class="btn btn-sm btn-info btn-action" title="Voir">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                                <a href="{{ path('app_exercice_edit', {'id': exercice.id}) }}" class="btn btn-sm btn-warning btn-action" title="Modifier">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                                {% if not exercice.archive %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-danger btn-action archive-btn" 
+                                            data-id="{{ exercice.id }}" 
+                                            data-token="{{ csrf_token('archive' ~ exercice.id) }}"
+                                            data-titre="{{ exercice.titre }}">
+                                        <i class="ti ti-archive"></i>
+                                    </button>
+                                {% else %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-success btn-action restore-btn" 
+                                            data-id="{{ exercice.id }}" 
+                                            data-token="{{ csrf_token('restore' ~ exercice.id) }}"
+                                            data-titre="{{ exercice.titre }}">
+                                        <i class="ti ti-refresh"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
@@ -326,162 +328,157 @@
     {{ parent() }}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        // Attendre que tout soit chargé (y compris les modals)
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM chargé');
+            // ========== RÉFÉRENCES DES ÉLÉMENTS ==========
+            const searchInput = document.getElementById('searchInput');
+            const typeFilter = document.getElementById('typeFilter');
+            const statutFilter = document.getElementById('statutFilter');
+            const resetBtn = document.getElementById('resetFilters');
+            let exerciceItems = document.querySelectorAll('.exercice-item');
             
-            // ========== FILTRES ==========
-            var searchInput = document.getElementById('searchInput');
-            var typeFilter = document.getElementById('typeFilter');
-            var statutFilter = document.getElementById('statutFilter');
-            var resetBtn = document.getElementById('resetFilters');
-            var exerciceItems = document.querySelectorAll('.exercice-item');
-            
-            function normalizeString(str) {
-                if (!str) return '';
-                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-            }
-            
+            // ========== FONCTION DE FILTRAGE ==========
             function filterExercices() {
-    var searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-    var typeValue = typeFilter ? typeFilter.value : 'all';
-    var statutValue = statutFilter ? statutFilter.value : 'all';
-    var visibleCount = 0;
-    
-    for (var i = 0; i < exerciceItems.length; i++) {
-        var item = exerciceItems[i];
-        var titre = item.dataset.titre || '';
-        var type = item.dataset.type || '';
-        var actif = item.dataset.actif || '';
-        var archive = item.dataset.archive || '';
-        var show = true;
-        
-        var typeNormalized = normalizeString(type);
-        var typeValueNormalized = normalizeString(typeValue);
-        
-        // Filtre recherche
-        if (searchTerm && titre.indexOf(searchTerm) === -1) {
-            show = false;
-        }
-        
-        // Filtre type
-        if (show && typeValue !== 'all') {
-            if (typeNormalized !== typeValueNormalized) {
-                show = false;
+                const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                const typeValue = typeFilter ? typeFilter.value : 'all';
+                const statutValue = statutFilter ? statutFilter.value : 'all';
+                
+                exerciceItems = document.querySelectorAll('.exercice-item');
+                let visibleCount = 0;
+                
+                exerciceItems.forEach(function(item) {
+                    const titre = item.dataset.titre || '';
+                    const type = item.dataset.type || '';
+                    const actif = item.dataset.actif || '';
+                    const archive = item.dataset.archive || '';
+                    let show = true;
+                    
+                    // Filtre recherche
+                    if (searchTerm && titre.indexOf(searchTerm) === -1) {
+                        show = false;
+                    }
+                    
+                    // Filtre type
+                    if (show && typeValue !== 'all') {
+                        if (type !== typeValue) {
+                            show = false;
+                        }
+                    }
+                    
+                    // Filtre statut
+                    if (show && statutValue !== 'all') {
+                        if (statutValue === 'actif') {
+                            if (actif !== 'actif' || archive === 'archive') {
+                                show = false;
+                            }
+                        } else if (statutValue === 'inactif') {
+                            if (actif !== 'inactif' || archive === 'archive') {
+                                show = false;
+                            }
+                        } else if (statutValue === 'archive') {
+                            if (archive !== 'archive') {
+                                show = false;
+                            }
+                        }
+                    } else if (statutValue === 'all' && archive === 'archive') {
+                        // Par défaut, cacher les archivés
+                        show = false;
+                    }
+                    
+                    item.style.display = show ? 'block' : 'none';
+                    if (show) visibleCount++;
+                });
+                
+                // Afficher/masquer le message "aucun résultat"
+                let emptyMessage = document.getElementById('emptyFilterMessage');
+                if (visibleCount === 0 && exerciceItems.length > 0) {
+                    if (!emptyMessage) {
+                        const grid = document.getElementById('exercicesGrid');
+                        if (grid) {
+                            emptyMessage = document.createElement('div');
+                            emptyMessage.id = 'emptyFilterMessage';
+                            emptyMessage.className = 'col-12';
+                            emptyMessage.innerHTML = '<div class="empty-state"><i class="ti ti-filter-off"></i><h4>Aucun résultat</h4><p class="text-muted">Aucun exercice ne correspond à vos critères</p><button id="clearFiltersBtn" class="btn btn-primary mt-3">Effacer les filtres</button></div>';
+                            grid.appendChild(emptyMessage);
+                            
+                            const clearBtn = document.getElementById('clearFiltersBtn');
+                            if (clearBtn) {
+                                clearBtn.addEventListener('click', function() {
+                                    if (searchInput) searchInput.value = '';
+                                    if (typeFilter) typeFilter.value = 'all';
+                                    if (statutFilter) statutFilter.value = 'all';
+                                    filterExercices();
+                                });
+                            }
+                        }
+                    } else {
+                        emptyMessage.style.display = 'block';
+                    }
+                } else if (emptyMessage) {
+                    emptyMessage.style.display = 'none';
+                }
             }
-        }
-        
-        // Filtre statut
-        if (show) {
-            if (statutValue === 'actif') {
-                // Actifs non archivés
-                if (actif !== 'actif' || archive === 'archive') {
-                    show = false;
-                }
-            } else if (statutValue === 'inactif') {
-                // Inactifs non archivés
-                if (actif !== 'inactif' || archive === 'archive') {
-                    show = false;
-                }
-            } else if (statutValue === 'archive') {
-                // Archivés seulement
-                if (archive !== 'archive') {
-                    show = false;
-                }
-            } else {
-                // 'all' ou autre: cacher les archivés par défaut
-                if (archive === 'archive') {
-                    show = false;
-                }
+            
+            // ========== GESTION DES MODALS ==========
+            function initModals() {
+                // Boutons archiver
+                const archiveBtns = document.querySelectorAll('.archive-btn');
+                archiveBtns.forEach(function(btn) {
+                    btn.removeEventListener('click', handleArchiveClick);
+                    btn.addEventListener('click', handleArchiveClick);
+                });
+                
+                // Boutons restaurer
+                const restoreBtns = document.querySelectorAll('.restore-btn');
+                restoreBtns.forEach(function(btn) {
+                    btn.removeEventListener('click', handleRestoreClick);
+                    btn.addEventListener('click', handleRestoreClick);
+                });
             }
-        }
-        
-        item.style.display = show ? '' : 'none';
-        if (show) visibleCount++;
-    }
-    
-    // Message "aucun résultat"
-    var emptyMessage = document.getElementById('emptyFilterMessage');
-    if (visibleCount === 0 && exerciceItems.length > 0) {
-        if (!emptyMessage) {
-            emptyMessage = document.createElement('div');
-            emptyMessage.id = 'emptyFilterMessage';
-            emptyMessage.className = 'col-12';
-            emptyMessage.innerHTML = '<div class="empty-state"><i class="ti ti-filter-off"></i><h4>Aucun résultat</h4><p class="text-muted">Aucun exercice ne correspond à vos critères</p><button id="clearFiltersBtn" class="btn btn-primary mt-3">Effacer les filtres</button></div>';
-            document.getElementById('exercicesGrid').appendChild(emptyMessage);
             
-            document.getElementById('clearFiltersBtn').addEventListener('click', function() {
-                if(searchInput) searchInput.value = '';
-                if(typeFilter) typeFilter.value = 'all';
-                if(statutFilter) statutFilter.value = 'all';
-                filterExercices();
-            });
-        }
-        emptyMessage.style.display = 'block';
-    } else if (emptyMessage) {
-        emptyMessage.style.display = 'none';
-    }
-}
-            
-            // ========== GESTION ARCHIVER (avec délai pour s'assurer que les éléments existent) ==========
-            setTimeout(function() {
-                var archiveBtns = document.querySelectorAll('.archive-btn');
-                var restoreBtns = document.querySelectorAll('.restore-btn');
+            function handleArchiveClick(e) {
+                e.stopPropagation();
+                e.preventDefault();
                 
-                console.log('Boutons archive trouvés:', archiveBtns.length);
-                console.log('Boutons restore trouvés:', restoreBtns.length);
+                const id = this.getAttribute('data-id');
+                const token = this.getAttribute('data-token');
+                const titre = this.getAttribute('data-titre');
                 
-                // Pour chaque bouton archive
-                for (var i = 0; i < archiveBtns.length; i++) {
-                    archiveBtns[i].addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        
-                        var id = this.getAttribute('data-id');
-                        var token = this.getAttribute('data-token');
-                        var titre = this.getAttribute('data-titre');
-                        
-                        console.log('Archive cliqué - ID:', id, 'Titre:', titre);
-                        
-                        document.getElementById('archiveTitre').textContent = titre;
-                        document.getElementById('archiveForm').action = '/exercice/archive/' + id;
-                        document.getElementById('archiveToken').value = token;
-                        
-                        // Afficher le modal avec Bootstrap
-                        var modalEl = document.getElementById('archiveModal');
-                        var modal = new bootstrap.Modal(modalEl);
-                        modal.show();
-                    });
-                }
+                document.getElementById('archiveTitre').textContent = titre;
+                document.getElementById('archiveForm').action = '/exercice/archive/' + id;
+                document.getElementById('archiveToken').value = token;
                 
-                // Pour chaque bouton restore
-                for (var i = 0; i < restoreBtns.length; i++) {
-                    restoreBtns[i].addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        
-                        var id = this.getAttribute('data-id');
-                        var token = this.getAttribute('data-token');
-                        var titre = this.getAttribute('data-titre');
-                        
-                        console.log('Restore cliqué - ID:', id, 'Titre:', titre);
-                        
-                        document.getElementById('restoreTitre').textContent = titre;
-                        document.getElementById('restoreForm').action = '/exercice/restore/' + id;
-                        document.getElementById('restoreToken').value = token;
-                        
-                        // Afficher le modal avec Bootstrap
-                        var modalEl = document.getElementById('restoreModal');
-                        var modal = new bootstrap.Modal(modalEl);
-                        modal.show();
-                    });
-                }
-            }, 100);
+                const modalEl = document.getElementById('archiveModal');
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            }
             
-            if (searchInput) searchInput.addEventListener('keyup', filterExercices);
-            if (typeFilter) typeFilter.addEventListener('change', filterExercices);
-            if (statutFilter) statutFilter.addEventListener('change', filterExercices);
+            function handleRestoreClick(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                const id = this.getAttribute('data-id');
+                const token = this.getAttribute('data-token');
+                const titre = this.getAttribute('data-titre');
+                
+                document.getElementById('restoreTitre').textContent = titre;
+                document.getElementById('restoreForm').action = '/exercice/restore/' + id;
+                document.getElementById('restoreToken').value = token;
+                
+                const modalEl = document.getElementById('restoreModal');
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            }
             
+            // ========== ÉVÉNEMENTS DES FILTRES ==========
+            if (searchInput) {
+                searchInput.addEventListener('keyup', filterExercices);
+            }
+            if (typeFilter) {
+                typeFilter.addEventListener('change', filterExercices);
+            }
+            if (statutFilter) {
+                statutFilter.addEventListener('change', filterExercices);
+            }
             if (resetBtn) {
                 resetBtn.addEventListener('click', function() {
                     if (searchInput) searchInput.value = '';
@@ -491,29 +488,29 @@
                 });
             }
             
+            // ========== INITIALISATION ==========
+            initModals();
             filterExercices();
+            
+            // Réinitialiser les modals après chaque soumission de formulaire
+            const archiveForm = document.getElementById('archiveForm');
+            const restoreForm = document.getElementById('restoreForm');
+            
+            if (archiveForm) {
+                archiveForm.addEventListener('submit', function() {
+                    setTimeout(function() {
+                        location.reload();
+                    }, 500);
+                });
+            }
+            
+            if (restoreForm) {
+                restoreForm.addEventListener('submit', function() {
+                    setTimeout(function() {
+                        location.reload();
+                    }, 500);
+                });
+            }
         });
-         function archiverExercice(id, token, titre) {
-        console.log('Archiver - ID:', id, 'Titre:', titre);
-        
-        document.getElementById('archiveTitre').textContent = titre;
-        document.getElementById('archiveForm').action = '/exercice/archive/' + id;
-        document.getElementById('archiveToken').value = token;
-        
-        var modal = new bootstrap.Modal(document.getElementById('archiveModal'));
-        modal.show();
-    }
-    
-    // Fonction pour restaurer
-    function restaurerExercice(id, token, titre) {
-        console.log('Restaurer - ID:', id, 'Titre:', titre);
-        
-        document.getElementById('restoreTitre').textContent = titre;
-        document.getElementById('restoreForm').action = '/exercice/restore/' + id;
-        document.getElementById('restoreToken').value = token;
-        
-        var modal = new bootstrap.Modal(document.getElementById('restoreModal'));
-        modal.show();
-    }
     </script>
 {% endblock %}

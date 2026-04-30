@@ -73,7 +73,6 @@
             border-radius: 10px;
             padding: 10px 15px;
         }
-        /* Switch plus petit */
         .switch-small {
             position: relative;
             display: inline-block;
@@ -118,7 +117,6 @@
             display: inline-flex;
             align-items: center;
         }
-        /* Style bouton IA */
         .btn-ia {
             background: linear-gradient(135deg, #9C27B0, #E1BEE7);
             color: white;
@@ -177,72 +175,34 @@
 
                 {{ form_start(form, {'attr': {'id': 'exerciceForm', 'novalidate': 'novalidate'}}) }}
                     
-                    <!-- Ligne 1: Titre, Type, Difficulté -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form_label(form.titre, '📝 Titre', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.titre, {'attr': {'class': 'form-control form-field ' ~ (form.titre.vars.errors|length > 0 ? 'is-invalid' : ''), 'placeholder': 'Ex: Exercice de mémoire - Les animaux'}}) }}
-                            {% if form.titre.vars.errors|length > 0 %}
-                                <div class="error-message">
-                                    {% for error in form.titre.vars.errors %}
-                                        <i class="ti ti-alert-circle"></i> {{ error.message }}<br>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
+                            {{ form_widget(form.titre, {'attr': {'class': 'form-control form-field', 'id': 'exercice_titre'}}) }}
                         </div>
                         
                         <div class="col-md-3 mb-3">
                             {{ form_label(form.type, '🎯 Type', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.type, {'attr': {'class': 'form-select form-field ' ~ (form.type.vars.errors|length > 0 ? 'is-invalid' : ''), 'id': 'exercice_type'}}) }}
-                            {% if form.type.vars.errors|length > 0 %}
-                                <div class="error-message">
-                                    {% for error in form.type.vars.errors %}
-                                        <i class="ti ti-alert-circle"></i> {{ error.message }}<br>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
+                            {{ form_widget(form.type, {'attr': {'class': 'form-select form-field', 'id': 'exercice_type'}}) }}
                         </div>
                         
                         <div class="col-md-3 mb-3">
                             {{ form_label(form.difficulte, '⭐ Difficulté', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.difficulte, {'attr': {'class': 'form-select form-field ' ~ (form.difficulte.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
-                            {% if form.difficulte.vars.errors|length > 0 %}
-                                <div class="error-message">
-                                    {% for error in form.difficulte.vars.errors %}
-                                        <i class="ti ti-alert-circle"></i> {{ error.message }}<br>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
+                            {{ form_widget(form.difficulte, {'attr': {'class': 'form-select form-field'}}) }}
                         </div>
                     </div>
                     
-                    <!-- Ligne 2: Consigne -->
                     <div class="row">
                         <div class="col-md-12 mb-3">
                             {{ form_label(form.consigne, '📖 Consigne', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.consigne, {'attr': {'class': 'form-control form-field ' ~ (form.consigne.vars.errors|length > 0 ? 'is-invalid' : ''), 'rows': 3}}) }}
-                            {% if form.consigne.vars.errors|length > 0 %}
-                                <div class="error-message">
-                                    {% for error in form.consigne.vars.errors %}
-                                        <i class="ti ti-alert-circle"></i> {{ error.message }}<br>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
+                            {{ form_widget(form.consigne, {'attr': {'class': 'form-control form-field', 'rows': 3}}) }}
                         </div>
                     </div>
                     
-                    <!-- Ligne 3: Durée, Actif et Archivé -->
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             {{ form_label(form.duree, '⏱️ Durée (secondes)', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.duree, {'attr': {'class': 'form-control form-field ' ~ (form.duree.vars.errors|length > 0 ? 'is-invalid' : ''), 'placeholder': '60'}}) }}
-                            {% if form.duree.vars.errors|length > 0 %}
-                                <div class="error-message">
-                                    {% for error in form.duree.vars.errors %}
-                                        <i class="ti ti-alert-circle"></i> {{ error.message }}<br>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
+                            {{ form_widget(form.duree, {'attr': {'class': 'form-control form-field'}}) }}
                         </div>
                         
                         <div class="col-md-3 mb-3">
@@ -263,7 +223,6 @@
                         </div>
                     </div>
                     
-                    <!-- BOUTON GÉNÉRATION IA -->
                     <div class="row mt-3 mb-2">
                         <div class="col-12">
                             <button type="button" id="generateIABtn" class="btn-ia">
@@ -275,14 +234,12 @@
                         </div>
                     </div>
                     
-                    <!-- Section Configuration par type -->
                     <div class="config-section">
                         <h5 class="mb-3">
                             <i class="ti ti-settings"></i> ⚙️ Configuration de l'exercice
                             <span id="typeBadge" class="badge-type badge-memoire ms-2">{{ exercice.type }}</span>
                         </h5>
                         
-                        <!-- CONFIGURATION MÉMOIRE -->
                         <div id="configMemoire" class="type-config">
                             <div class="row">
                                 <div class="col-md-4 mb-3">
@@ -312,7 +269,6 @@
                             </div>
                         </div>
                         
-                        <!-- CONFIGURATION ATTENTION -->
                         <div id="configAttention" class="type-config">
                             <div class="row">
                                 <div class="col-md-4 mb-3">
@@ -336,7 +292,6 @@
                             </div>
                         </div>
                         
-                        <!-- CONFIGURATION LOGIQUE -->
                         <div id="configLogique" class="type-config">
                             <div class="row">
                                 <div class="col-md-4 mb-3">
@@ -356,7 +311,6 @@
                             </div>
                         </div>
                         
-                        <!-- CONFIGURATION CHRONO -->
                         <div id="configChrono" class="type-config">
                             <div class="row">
                                 <div class="col-md-3 mb-3">
@@ -374,7 +328,6 @@
                         </div>
                     </div>
                     
-                    <!-- Section Enfants concernés -->
                     <div class="config-section mt-3">
                         <h5 class="mb-3"><i class="ti ti-users"></i> 👶 Enfants concernés</h5>
                         <div class="row">
@@ -396,41 +349,25 @@
                         </div>
                     </div>
                     
-                    <!-- Section Jours d'assignation -->
                     <div class="config-section mt-3">
                         <h5 class="mb-3"><i class="ti ti-calendar"></i> 📅 Jours d'assignation</h5>
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="btn-group flex-wrap" role="group">
-                                    <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Lundi" class="btn-check planning-day"> L
-                                    </label>
-                                    <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Mardi" class="btn-check planning-day"> M
-                                    </label>
-                                    <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Mercredi" class="btn-check planning-day"> M
-                                    </label>
-                                    <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Jeudi" class="btn-check planning-day"> J
-                                    </label>
-                                    <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Vendredi" class="btn-check planning-day"> V
-                                    </label>
-                                    <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Samedi" class="btn-check planning-day"> S
-                                    </label>
-                                    <label class="btn btn-outline-secondary day-btn">
-                                        <input type="checkbox" value="Dimanche" class="btn-check planning-day"> D
-                                    </label>
+                                    <label class="btn btn-outline-secondary day-btn"><input type="checkbox" value="Lundi" class="btn-check planning-day"> L</label>
+                                    <label class="btn btn-outline-secondary day-btn"><input type="checkbox" value="Mardi" class="btn-check planning-day"> M</label>
+                                    <label class="btn btn-outline-secondary day-btn"><input type="checkbox" value="Mercredi" class="btn-check planning-day"> M</label>
+                                    <label class="btn btn-outline-secondary day-btn"><input type="checkbox" value="Jeudi" class="btn-check planning-day"> J</label>
+                                    <label class="btn btn-outline-secondary day-btn"><input type="checkbox" value="Vendredi" class="btn-check planning-day"> V</label>
+                                    <label class="btn btn-outline-secondary day-btn"><input type="checkbox" value="Samedi" class="btn-check planning-day"> S</label>
+                                    <label class="btn btn-outline-secondary day-btn"><input type="checkbox" value="Dimanche" class="btn-check planning-day"> D</label>
                                 </div>
-                                <div class="text-muted small mt-2">Lundi - Mardi - Mercredi - Jeudi - Vendredi - Samedi - Dimanche</div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Champ JSON caché pour l'édition -->
-<input type="hidden" id="contenuJson" name="exercice[contenu]" value="{{ exercice.contenu|default('{}') }}">
+                    <input type="hidden" id="contenuJson" name="exercice[contenu]" value="{{ exercice.contenu|default('{}') }}">
+                    
                     <div class="row mt-4">
                         <div class="col-12 text-center">
                             <button type="submit" class="btn btn-primary px-5">
@@ -451,7 +388,6 @@
     </div>
 </div>
 
-<!-- Modal Suppression -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -472,26 +408,16 @@
 </div>
 
 <script>
-    // Fonctions pour ajouter des lignes dynamiques
     function addAttentionQuestionRow(images = '', intrus = '', reponse = '') {
         const container = document.getElementById('attentionQuestionsContainer');
         if(!container) return;
-        
         const div = document.createElement('div');
         div.className = 'question-row row mb-2';
         div.innerHTML = `
-            <div class="col-md-5">
-                <input type="text" class="form-control" placeholder="Images (ex: 🐶,🐱,🐭)" value="${escapeHtml(images)}">
-            </div>
-            <div class="col-md-4">
-                <input type="text" class="form-control" placeholder="Intrus" value="${escapeHtml(intrus)}">
-            </div>
-            <div class="col-md-2">
-                <input type="text" class="form-control" placeholder="Réponse" value="${escapeHtml(reponse)}">
-            </div>
-            <div class="col-md-1">
-                <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.question-row').remove()">🗑️</button>
-            </div>
+            <div class="col-md-5"><input type="text" class="form-control" placeholder="Images (ex: 🐶,🐱,🐭)" value="${escapeHtml(images)}"></div>
+            <div class="col-md-4"><input type="text" class="form-control" placeholder="Intrus" value="${escapeHtml(intrus)}"></div>
+            <div class="col-md-2"><input type="text" class="form-control" placeholder="Réponse" value="${escapeHtml(reponse)}"></div>
+            <div class="col-md-1"><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.question-row').remove()">🗑️</button></div>
         `;
         container.appendChild(div);
     }
@@ -499,22 +425,13 @@
     function addLogiqueSequenceRow(serie = '', reponse = '', regle = '') {
         const container = document.getElementById('logiqueSequencesContainer');
         if(!container) return;
-        
         const div = document.createElement('div');
         div.className = 'sequence-row row mb-2';
         div.innerHTML = `
-            <div class="col-md-5">
-                <input type="text" class="form-control" placeholder="Série (ex: 2,4,6,8,?)" value="${escapeHtml(serie)}">
-            </div>
-            <div class="col-md-4">
-                <input type="text" class="form-control" placeholder="Réponse" value="${escapeHtml(reponse)}">
-            </div>
-            <div class="col-md-2">
-                <input type="text" class="form-control" placeholder="Règle" value="${escapeHtml(regle)}">
-            </div>
-            <div class="col-md-1">
-                <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.sequence-row').remove()">🗑️</button>
-            </div>
+            <div class="col-md-5"><input type="text" class="form-control" placeholder="Série (ex: 2,4,6,8,?)" value="${escapeHtml(serie)}"></div>
+            <div class="col-md-4"><input type="text" class="form-control" placeholder="Réponse" value="${escapeHtml(reponse)}"></div>
+            <div class="col-md-2"><input type="text" class="form-control" placeholder="Règle" value="${escapeHtml(regle)}"></div>
+            <div class="col-md-1"><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.sequence-row').remove()">🗑️</button></div>
         `;
         container.appendChild(div);
     }
@@ -522,22 +439,13 @@
     function addChronoDefiRow(question = '', reponse = '', points = 10) {
         const container = document.getElementById('chronoDefisContainer');
         if(!container) return;
-        
         const div = document.createElement('div');
         div.className = 'defi-row row mb-2';
         div.innerHTML = `
-            <div class="col-md-6">
-                <input type="text" class="form-control" placeholder="Question" value="${escapeHtml(question)}">
-            </div>
-            <div class="col-md-4">
-                <input type="text" class="form-control" placeholder="Réponse" value="${escapeHtml(reponse)}">
-            </div>
-            <div class="col-md-1">
-                <input type="number" class="form-control" placeholder="Points" value="${points}">
-            </div>
-            <div class="col-md-1">
-                <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.defi-row').remove()">🗑️</button>
-            </div>
+            <div class="col-md-6"><input type="text" class="form-control" placeholder="Question" value="${escapeHtml(question)}"></div>
+            <div class="col-md-4"><input type="text" class="form-control" placeholder="Réponse" value="${escapeHtml(reponse)}"></div>
+            <div class="col-md-1"><input type="number" class="form-control" placeholder="Points" value="${points}"></div>
+            <div class="col-md-1"><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.defi-row').remove()">🗑️</button></div>
         `;
         container.appendChild(div);
     }
@@ -550,12 +458,6 @@
             if(m === '>') return '&gt;';
             return m;
         });
-    }
-    
-    function removeInvalidClass(input) {
-        input.classList.remove('is-invalid');
-        const errorDiv = input.parentElement.querySelector('.error-message');
-        if(errorDiv) errorDiv.style.display = 'none';
     }
     
     function changeExerciceType() {
@@ -589,9 +491,38 @@
         if(configId) document.getElementById(configId).classList.add('active');
     }
     
+    function showCurrentConfig() {
+        const currentType = document.getElementById('exercice_type').value;
+        const configId = {
+            'MÉMOIRE': 'configMemoire',
+            'ATTENTION': 'configAttention',
+            'LOGIQUE': 'configLogique',
+            'CHRONO': 'configChrono'
+        }[currentType];
+        
+        // Cacher toutes les configs
+        const configs = ['configMemoire', 'configAttention', 'configLogique', 'configChrono'];
+        configs.forEach(c => { 
+            const el = document.getElementById(c); 
+            if(el) el.classList.remove('active'); 
+        });
+        
+        // Afficher la bonne config
+        if(configId) {
+            const el = document.getElementById(configId);
+            if(el) {
+                el.classList.add('active');
+                console.log("✅ Configuration affichée:", configId);
+            }
+        }
+    }
+    
     function loadExistingConfiguration() {
         const contenuJson = document.getElementById('contenuJson');
-        if(!contenuJson || !contenuJson.value) return;
+        if(!contenuJson || !contenuJson.value || contenuJson.value === '{}') {
+            showCurrentConfig();
+            return;
+        }
         
         try {
             const config = JSON.parse(contenuJson.value);
@@ -607,8 +538,8 @@
                 if(config.sousType) document.getElementById('attentionSousType').value = config.sousType;
                 if(config.tempsParQuestion) document.getElementById('attentionTemps').value = config.tempsParQuestion;
                 
-                if(config.questions && config.questions.length > 0) {
-                    const container = document.getElementById('attentionQuestionsContainer');
+                const container = document.getElementById('attentionQuestionsContainer');
+                if(container && config.questions && config.questions.length > 0) {
                     container.innerHTML = '';
                     config.questions.forEach(q => {
                         addAttentionQuestionRow(q.images || '', q.intrus || '', q.reponse || '');
@@ -618,8 +549,8 @@
             else if(type === 'LOGIQUE') {
                 if(config.sousType) document.getElementById('logiqueSousType').value = config.sousType;
                 
-                if(config.sequences && config.sequences.length > 0) {
-                    const container = document.getElementById('logiqueSequencesContainer');
+                const container = document.getElementById('logiqueSequencesContainer');
+                if(container && config.sequences && config.sequences.length > 0) {
                     container.innerHTML = '';
                     config.sequences.forEach(seq => {
                         addLogiqueSequenceRow(seq.serie || seq.debut || '', seq.reponse || '', seq.regle || '');
@@ -629,8 +560,8 @@
             else if(type === 'CHRONO') {
                 if(config.dureeTotale) document.getElementById('chronoDuree').value = config.dureeTotale;
                 
-                if(config.defis && config.defis.length > 0) {
-                    const container = document.getElementById('chronoDefisContainer');
+                const container = document.getElementById('chronoDefisContainer');
+                if(container && config.defis && config.defis.length > 0) {
                     container.innerHTML = '';
                     config.defis.forEach(defi => {
                         addChronoDefiRow(defi.question || '', defi.reponse || '', defi.points || 10);
@@ -638,7 +569,6 @@
                 }
             }
             
-            // Charger les jours
             if(config.jours && config.jours.length > 0) {
                 document.querySelectorAll('.planning-day').forEach(cb => {
                     cb.checked = config.jours.includes(cb.value);
@@ -648,75 +578,77 @@
                     if(cb && cb.checked) btn.classList.add('active');
                 });
             }
+            
+            showCurrentConfig();
+            
         } catch(e) {
             console.error('Erreur chargement configuration:', e);
+            showCurrentConfig();
         }
     }
     
-    // Fonction pour remplir la configuration avec les données IA
     function remplirConfigurationIA(type, config) {
         if (type === 'MÉMOIRE') {
-            if (config.theme) document.getElementById('memoireTheme').value = config.theme;
-            if (config.taille) document.getElementById('memoireTaille').value = config.taille;
-            if (config.tempsAffichage) document.getElementById('memoireTemps').value = config.tempsAffichage;
-            if (config.pointsParPaire) document.getElementById('memoirePoints').value = config.pointsParPaire;
+            if(config.theme) document.getElementById('memoireTheme').value = config.theme;
+            if(config.taille) document.getElementById('memoireTaille').value = config.taille;
+            if(config.tempsAffichage) document.getElementById('memoireTemps').value = config.tempsAffichage;
+            if(config.pointsParPaire) document.getElementById('memoirePoints').value = config.pointsParPaire;
         }
         else if (type === 'ATTENTION') {
-            if (config.sousType) document.getElementById('attentionSousType').value = config.sousType;
-            if (config.tempsParQuestion) document.getElementById('attentionTemps').value = config.tempsParQuestion;
-            
-            if (config.questions && config.questions.length > 0) {
+            if(config.sousType) document.getElementById('attentionSousType').value = config.sousType;
+            if(config.tempsParQuestion) document.getElementById('attentionTemps').value = config.tempsParQuestion;
+            if(config.questions && config.questions.length > 0) {
                 const container = document.getElementById('attentionQuestionsContainer');
                 container.innerHTML = '';
-                config.questions.forEach(q => {
-                    addAttentionQuestionRow(q.images || '', q.intrus || '', '');
-                });
+                config.questions.forEach(q => addAttentionQuestionRow(q.images || '', q.intrus || '', ''));
             }
         }
         else if (type === 'LOGIQUE') {
-            if (config.sousType) document.getElementById('logiqueSousType').value = config.sousType;
-            
-            if (config.sequences && config.sequences.length > 0) {
+            if(config.sousType) document.getElementById('logiqueSousType').value = config.sousType;
+            if(config.sequences && config.sequences.length > 0) {
                 const container = document.getElementById('logiqueSequencesContainer');
                 container.innerHTML = '';
-                config.sequences.forEach(seq => {
-                    addLogiqueSequenceRow(seq.debut || '', seq.reponse || '', seq.regle || '');
-                });
+                config.sequences.forEach(seq => addLogiqueSequenceRow(seq.debut || '', seq.reponse || '', seq.regle || ''));
             }
         }
         else if (type === 'CHRONO') {
-            if (config.dureeTotale) document.getElementById('chronoDuree').value = config.dureeTotale;
-            
-            if (config.defis && config.defis.length > 0) {
+            if(config.dureeTotale) document.getElementById('chronoDuree').value = config.dureeTotale;
+            if(config.defis && config.defis.length > 0) {
                 const container = document.getElementById('chronoDefisContainer');
                 container.innerHTML = '';
-                config.defis.forEach(defi => {
-                    addChronoDefiRow(defi.question || '', defi.reponse || '', defi.points || 10);
-                });
+                config.defis.forEach(defi => addChronoDefiRow(defi.question || '', defi.reponse || '', defi.points || 10));
             }
         }
+        showCurrentConfig();
     }
     
-    document.addEventListener('DOMContentLoaded', function() {
-        // Ajouter les exemples par défaut
-        addAttentionQuestionRow('🐶,🐱,🐭,🐹,🐰,🦊', '🦊', '🦊');
-        addAttentionQuestionRow('🍎,🍎,🍎,🍎,🍏', '🍏', '🍏');
-        addLogiqueSequenceRow('2, 4, 6, 8, ?', '10', '+2');
-        addLogiqueSequenceRow('5, 10, 15, 20, ?', '25', '+5');
-        addChronoDefiRow('Combien font 2 + 2 ?', '4', 10);
-        addChronoDefiRow('Quelle est la capitale de la France ?', 'Paris', 15);
+    // Fonction d'initialisation principale
+    function initEditPage() {
+        console.log("🚀 Initialisation page édition");
         
-        // Gestion du changement de type
         const typeSelect = document.getElementById('exercice_type');
         if(typeSelect) {
-            typeSelect.addEventListener('change', changeExerciceType);
-            changeExerciceType();
+            typeSelect.addEventListener('change', function() {
+                changeExerciceType();
+            });
         }
         
-        // Charger la configuration existante
+        // Charger la configuration
         loadExistingConfiguration();
         
-        // Gestion des enfants
+        // Mettre à jour le badge
+        const currentType = document.getElementById('exercice_type').value;
+        const typeBadge = document.getElementById('typeBadge');
+        const badgeClass = {
+            'MÉMOIRE': 'badge-memoire',
+            'ATTENTION': 'badge-attention',
+            'LOGIQUE': 'badge-logique',
+            'CHRONO': 'badge-chrono'
+        };
+        typeBadge.textContent = currentType;
+        typeBadge.className = 'badge-type ms-2 ' + (badgeClass[currentType] || 'badge-memoire');
+        
+        // Gestion enfants
         const tousEnfantsRadio = document.getElementById('tousEnfantsRadio');
         const selectionEnfantsRadio = document.getElementById('selectionEnfantsRadio');
         const enfantsDiv = document.getElementById('enfantsSelectionDiv');
@@ -738,7 +670,6 @@
             pourTousEnfants.addEventListener('change', toggleEnfantsSelection);
             toggleEnfantsSelection();
         }
-        
         if (selectionEnfantsRadio) {
             selectionEnfantsRadio.addEventListener('change', function() {
                 if (this.checked && pourTousEnfants) {
@@ -747,7 +678,6 @@
                 }
             });
         }
-        
         if (tousEnfantsRadio) {
             tousEnfantsRadio.addEventListener('change', function() {
                 if (this.checked && pourTousEnfants) {
@@ -757,35 +687,19 @@
             });
         }
         
-        // Style pour les boutons de jours
+        // Jours d'assignation
         const dayBtns = document.querySelectorAll('.day-btn');
         dayBtns.forEach(btn => {
             const checkbox = btn.querySelector('.planning-day');
             if (checkbox) {
                 checkbox.addEventListener('change', function() {
-                    if (this.checked) {
-                        btn.classList.add('active');
-                        btn.style.backgroundColor = '#FF9800';
-                        btn.style.borderColor = '#FF9800';
-                        btn.style.color = 'white';
-                    } else {
-                        btn.classList.remove('active');
-                        btn.style.backgroundColor = '';
-                        btn.style.borderColor = '';
-                        btn.style.color = '';
-                    }
+                    if (this.checked) btn.classList.add('active');
+                    else btn.classList.remove('active');
                 });
             }
         });
         
-        // Enlever la classe is-invalid quand l'utilisateur modifie
-        const inputs = document.querySelectorAll('.form-control, .form-select');
-        inputs.forEach(input => {
-            input.addEventListener('input', function() { removeInvalidClass(this); });
-            input.addEventListener('change', function() { removeInvalidClass(this); });
-        });
-        
-        // ========== GÉNÉRATION IA ==========
+        // Génération IA
         const generateBtn = document.getElementById('generateIABtn');
         const iaLoading = document.getElementById('iaLoading');
         
@@ -793,11 +707,7 @@
             generateBtn.addEventListener('click', function() {
                 const titre = document.getElementById('exercice_titre').value;
                 const type = document.getElementById('exercice_type').value;
-                
-                if (!titre) {
-                    alert('Veuillez saisir un titre d\'abord');
-                    return;
-                }
+                if (!titre) { alert('Veuillez saisir un titre d\'abord'); return; }
                 
                 generateBtn.disabled = true;
                 generateBtn.style.opacity = '0.6';
@@ -805,14 +715,8 @@
                 
                 fetch('/exercice/api/generer-exercice-ia', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        titre: titre,
-                        type: type,
-                        nbQuestions: 5
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ titre: titre, type: type, nbQuestions: 5 })
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -823,10 +727,7 @@
                         alert('Erreur: ' + (data.error || 'Génération échouée'));
                     }
                 })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    alert('Erreur lors de la génération IA');
-                })
+                .catch(error => { console.error('Erreur:', error); alert('Erreur lors de la génération IA'); })
                 .finally(() => {
                     generateBtn.disabled = false;
                     generateBtn.style.opacity = '1';
@@ -835,7 +736,7 @@
             });
         }
         
-        // Construction du JSON avant soumission
+        // Soumission du formulaire
         const form = document.getElementById('exerciceForm');
         if(form) {
             form.addEventListener('submit', function(e) {
@@ -903,7 +804,6 @@
                     };
                 }
                 
-                // Ajouter les jours sélectionnés
                 const jours = [];
                 document.querySelectorAll('.planning-day:checked').forEach(cb => {
                     jours.push(cb.value);
@@ -916,6 +816,22 @@
                 console.log('JSON sauvegardé:', configJson);
             });
         }
-    });
+    }
+    
+    // Exécuter quand le DOM est prêt
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initEditPage);
+    } else {
+        // DOM déjà chargé, exécuter directement
+        initEditPage();
+    }
+    
+    // Forcer un dernier affichage après 500ms (sécurité)
+    setTimeout(function() {
+        if (document.getElementById('exercice_type')) {
+            showCurrentConfig();
+            console.log("🔁 Rafraîchissement sécurité de la configuration");
+        }
+    }, 500);
 </script>
 {% endblock %}

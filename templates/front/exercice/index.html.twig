@@ -91,6 +91,17 @@
             margin-left: 10px;
         }
         
+        /* Message jour non autorisé */
+        .day-disabled-message {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #E65100;
+        }
+        
         /* ========== STYLES DU PLANNING ========== */
         .planning-container {
             background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
@@ -116,7 +127,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         
-        /* En-tête des jours */
         .fc-col-header-cell-cushion {
             color: #FF9800 !important;
             font-weight: bold !important;
@@ -124,7 +134,6 @@
             font-size: 13px;
         }
         
-        /* Cellules des jours */
         .fc-daygrid-day {
             transition: all 0.2s;
             border: 1px solid #f0f0f0;
@@ -133,13 +142,11 @@
             background: #FFF3E0;
         }
         
-        /* Case "aujourd'hui" */
         .fc-day-today {
             background: #FFF3E0 !important;
             border: 2px solid #FF9800 !important;
         }
         
-        /* Événements (exercices) */
         .fc-event {
             border-radius: 20px !important;
             padding: 5px 8px !important;
@@ -157,7 +164,6 @@
             font-weight: 600;
         }
         
-        /* Boutons de navigation */
         .fc-button-primary {
             background-color: #FF9800 !important;
             border-color: #FF9800 !important;
@@ -171,7 +177,6 @@
             transform: translateY(-2px);
         }
         
-        /* Titre du mois */
         .fc-toolbar-title {
             color: #2C3E50;
             font-weight: bold;
@@ -224,7 +229,17 @@
 
             <div class="row" id="exercicesGrid">
                 {% for exercice in exercices %}
-                <div class="col-md-6 col-lg-4 mb-4 exercice-item" data-titre="{{ exercice.titre|lower }}" data-type="{{ exercice.type }}">
+                    {% set joursAutorises = joursParExercice[exercice.id]|default([]) %}
+                    {% set todayNom = "now"|date('l')|replace({
+                        'Monday': 'Lundi', 'Tuesday': 'Mardi', 'Wednesday': 'Mercredi',
+                        'Thursday': 'Jeudi', 'Friday': 'Vendredi', 'Saturday': 'Samedi', 'Sunday': 'Dimanche'
+                    }) %}
+                    {% set estAutoriseAujourdhui = todayNom in joursAutorises %}
+                    
+                <div class="col-md-6 col-lg-4 mb-4 exercice-item" 
+                     data-titre="{{ exercice.titre|lower }}" 
+                     data-type="{{ exercice.type }}"
+                     data-jours="{{ joursAutorises|join(',') }}">
                     <div class="exercice-card {% if currentType == 'complete' %}card-completed{% endif %}">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <span class="badge-type 
@@ -246,11 +261,28 @@
                             {% endif %}
                         </h5>
                         <p class="text-muted small mb-3">{{ exercice.consigne|length > 80 ? exercice.consigne|slice(0, 80) ~ '...' : exercice.consigne }}</p>
-                        <div class="d-flex justify-content-between align-items-center">
+                        
+                        {% if joursAutorises|length > 0 %}
+                            <div class="day-disabled-message">
+                                <i class="ti ti-calendar"></i> 📅 Jours autorisés : 
+                                {% for jour in joursAutorises %}
+                                    <span class="badge bg-warning text-dark">{{ jour }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3">
                             <small class="text-muted">⏱️ {{ exercice.duree }}s</small>
                             {% if currentType == 'non_complete' %}
-                                {% set jeuPath = path('app_front_jeu_' ~ exercice.type|lower, {'id': exercice.id}) %}
-                                <a href="{{ jeuPath }}" class="btn-faire btn-sm">📝 FAIRE</a>
+                                {% if joursAutorises|length == 0 or estAutoriseAujourdhui %}
+                                    {% set jeuPath = path('app_front_jeu_' ~ exercice.type|lower, {'id': exercice.id}) %}
+                                    <a href="{{ jeuPath }}" class="btn-faire btn-sm">📝 FAIRE</a>
+                                {% else %}
+                                    <button class="btn-faire btn-sm btn-faire-disabled" disabled 
+                                            title="Exercice disponible uniquement les {{ joursAutorises|join(', ') }}">
+                                        🔒 Non disponible aujourd'hui
+                                    </button>
+                                {% endif %}
                             {% else %}
                                 <button class="btn-faire btn-sm btn-faire-disabled" disabled>✅ FAIT</button>
                             {% endif %}
@@ -346,7 +378,6 @@
                         }
                     },
                     eventDidMount: function(info) {
-                        // Tooltip au survol
                         info.el.setAttribute('title', '📝 ' + info.event.title + '\n🖱️ Clique pour faire l\'exercice');
                         info.el.style.cursor = 'pointer';
                     },

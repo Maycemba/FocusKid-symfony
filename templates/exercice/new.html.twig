@@ -185,7 +185,7 @@
                             <span id="typeBadge" class="badge-type badge-memoire ms-2">MÉMOIRE</span>
                         </h5>
                         
-                        <div id="configMemoire" class="type-config active">
+                        <div id="configMemoire" class="type-config">
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">🎨 Thème</label>
@@ -379,17 +379,15 @@
     function addChronoDefiRow(question = '', reponse = '', points = 10) {
         const container = document.getElementById('chronoDefisContainer');
         if(!container) return;
-        const index = container.children.length;
         const div = document.createElement('div');
         div.className = 'defi-row row mb-2';
         div.innerHTML = `
-            <div class="col-md-6"><input type="text" name="chrono_question_${index}" class="form-control" placeholder="Question" value="${escapeHtml(question)}"></div>
-            <div class="col-md-4"><input type="text" name="chrono_reponse_${index}" class="form-control" placeholder="Réponse" value="${escapeHtml(reponse)}"></div>
-            <div class="col-md-1"><input type="number" name="chrono_points_${index}" class="form-control" placeholder="Points" value="${points}"></div>
+            <div class="col-md-6"><input type="text" class="form-control" placeholder="Question" value="${escapeHtml(question)}"></div>
+            <div class="col-md-4"><input type="text" class="form-control" placeholder="Réponse" value="${escapeHtml(reponse)}"></div>
+            <div class="col-md-1"><input type="number" class="form-control" placeholder="Points" value="${points}"></div>
             <div class="col-md-1"><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.defi-row').remove()">🗑️</button></div>
         `;
         container.appendChild(div);
-        console.log("Défi ajouté:", question, reponse, points);
     }
     
     function escapeHtml(str) {
@@ -402,58 +400,94 @@
         });
     }
     
-    function changeExerciceType() {
-        const typeSelect = document.getElementById('exercice_type');
-        const typeBadge = document.getElementById('typeBadge');
-        const configs = ['configMemoire', 'configAttention', 'configLogique', 'configChrono'];
-        configs.forEach(c => { const el = document.getElementById(c); if(el) el.classList.remove('active'); });
-        
-        const selectedType = typeSelect.value;
-        const badgeClass = {
-            'MÉMOIRE': 'badge-memoire',
-            'ATTENTION': 'badge-attention',
-            'LOGIQUE': 'badge-logique',
-            'CHRONO': 'badge-chrono'
-        };
-        typeBadge.textContent = selectedType;
-        typeBadge.className = 'badge-type ms-2 ' + (badgeClass[selectedType] || 'badge-memoire');
-        
-        const configId = {
-            'MÉMOIRE': 'configMemoire',
-            'ATTENTION': 'configAttention',
-            'LOGIQUE': 'configLogique',
-            'CHRONO': 'configChrono'
-        }[selectedType];
-        if(configId) document.getElementById(configId).classList.add('active');
+   function changeExerciceType() {
+    const typeSelect = document.getElementById('exercice_type');
+    const typeBadge = document.getElementById('typeBadge');
+    const configs = ['configMemoire', 'configAttention', 'configLogique', 'configChrono'];
+    
+    console.log("🔄 Changement de type vers:", typeSelect.value);
+    
+    // Cacher toutes les configs
+    configs.forEach(c => { 
+        const el = document.getElementById(c); 
+        if(el) {
+            el.classList.remove('active');
+            console.log("❌ Caché:", c);
+        }
+    });
+    
+    const selectedType = typeSelect.value;
+    
+    // Mettre à jour le badge
+    const badgeClass = {
+        'MÉMOIRE': 'badge-memoire',
+        'ATTENTION': 'badge-attention',
+        'LOGIQUE': 'badge-logique',
+        'CHRONO': 'badge-chrono'
+    };
+    
+    typeBadge.textContent = selectedType;
+    typeBadge.className = 'badge-type ms-2 ' + (badgeClass[selectedType] || 'badge-memoire');
+    
+    // Afficher la config du type sélectionné
+    let configId = null;
+    switch(selectedType) {
+        case 'MÉMOIRE':
+            configId = 'configMemoire';
+            break;
+        case 'ATTENTION':
+            configId = 'configAttention';
+            break;
+        case 'LOGIQUE':
+            configId = 'configLogique';
+            break;
+        case 'CHRONO':
+            configId = 'configChrono';
+            break;
+        default:
+            configId = 'configMemoire';
     }
     
-    // Ajouter vos questions personnalisées
+    console.log("🎯 Configuration à afficher:", configId);
+    
+    const configEl = document.getElementById(configId);
+    if(configEl) {
+        configEl.classList.add('active');
+        console.log("✅ Affiché:", configId);
+        console.log("✅ Style display:", window.getComputedStyle(configEl).display);
+    } else {
+        console.error("❌ Élément non trouvé:", configId);
+    }
+}
+    
     function addDefaultExamples() {
-        // Pour CHRONO - VOS QUESTIONS
+        // Exemples pour CHRONO
         addChronoDefiRow('6 × 7 = ?', '42', 15);
         addChronoDefiRow('40 + 38 = ?', '78', 15);
         addChronoDefiRow('45 - 4 = ?', '41', 17);
         addChronoDefiRow('Quel est le plus grand océan ?', 'Pacifique', 11);
         addChronoDefiRow('49 - 24 = ?', '25', 11);
         
-        // Pour ATTENTION
+        // Exemples pour ATTENTION
         addAttentionQuestionRow('🐶,🐱,🐭,🐹,🐰,🦊', '🦊', '🦊');
         addAttentionQuestionRow('🍎,🍎,🍎,🍎,🍏', '🍏', '🍏');
         
-        // Pour LOGIQUE
+        // Exemples pour LOGIQUE
         addLogiqueSequenceRow('2, 4, 6, 8, ?', '10', '+2');
         addLogiqueSequenceRow('5, 10, 15, 20, ?', '25', '+5');
     }
     
     document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM chargé, initialisation...");
+        
         // Ajouter les exemples par défaut
         addDefaultExamples();
         
-        // Changement de type
+        // Gestion du changement de type
         const typeSelect = document.getElementById('exercice_type');
         if(typeSelect) {
             typeSelect.addEventListener('change', changeExerciceType);
-            changeExerciceType();
+            changeExerciceType(); // Appel initial pour afficher la bonne config
         }
         
         // Gestion enfants
@@ -495,7 +529,7 @@
             });
         }
         
-        // Jours
+        // Jours d'assignation
         const dayBtns = document.querySelectorAll('.day-btn');
         dayBtns.forEach(btn => {
             const checkbox = btn.querySelector('.planning-day');
@@ -507,7 +541,7 @@
             }
         });
         
-        // SOUMISSION DU FORMULAIRE - VERSION CORRIGÉE
+        // SOUMISSION DU FORMULAIRE
         const form = document.getElementById('exerciceForm');
         if (form) {
             form.addEventListener('submit', function(e) {
@@ -575,14 +609,7 @@
                     };
                 }
                 
-                // Mettre à jour le champ caché du JSON
-                const contenuField = document.getElementById('contenuJson');
-                if (contenuField) {
-                    contenuField.value = JSON.stringify(configJson);
-                    console.log("✅ JSON envoyé:", contenuField.value);
-                }
-                
-                // 🔥 RÉCUPÉRER LES JOURS ET LES METTRE DANS LE CHAMP CACHÉ
+                // Récupérer les jours
                 const jours = [];
                 document.querySelectorAll('.planning-day:checked').forEach(cb => {
                     jours.push(cb.value);
@@ -591,7 +618,13 @@
                 const joursHidden = document.getElementById('joursHidden');
                 if (joursHidden) {
                     joursHidden.value = jours.join(',');
-                    console.log("📅 Jours envoyés:", joursHidden.value);
+                }
+                
+                // Mettre à jour le champ caché du JSON
+                const contenuField = document.getElementById('contenuJson');
+                if (contenuField) {
+                    contenuField.value = JSON.stringify(configJson);
+                    console.log("✅ JSON envoyé:", contenuField.value);
                 }
             });
         }

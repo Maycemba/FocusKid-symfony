@@ -1,58 +1,107 @@
 // public/base-front/js/exercice-guardian.js
 
 const ExerciceGuardian = {
+    verificationComplete: false,
+    isChildVerified: false,
+    DEMO_MODE: false,  // ← METTRE À true POUR ACTIVER LE MODE DÉMO
+    
     async init() {
-        await FaceDetectionService.init();
-        return { success: true, faceLoaded: FaceDetectionService.isCalibrated };
-    },
-
-    async calibrateAuto(videoElement) {
-        console.log('📸 Calibration automatique dans 3 secondes...');
-        // Compter à rebours visuel
-        for (let i = 3; i > 0; i--) {
-            console.log(`${i}...`);
-            await new Promise(r => setTimeout(r, 1000));
+        console.log('🔧 ExerciceGuardian initialisation...');
+        
+        if (this.DEMO_MODE) {
+            console.log('🎮 MODE DÉMO - Vérification désactivée');
+            FaceDetectionService.isModelLoaded = true;
+            FaceDetectionService.isCalibrated = true;
+            return true;
         }
-        return await FaceDetectionService.calibrate(videoElement);
+        
+        const success = await FaceDetectionService.init();
+        console.log('FaceDetectionService init:', success);
+        return success;
     },
-
-    start(videoElement, onStop, onViolation) {
-        FaceDetectionService.startCamera(videoElement).then(async (success) => {
-            if (!success) {
-                if (onStop) onStop('❌ Impossible d\'accéder à la caméra');
+    
+    async start(videoElement, onStop, onViolation) {
+        if (this.DEMO_MODE) {
+            console.log('🎮 MODE DÉMO - Démarrage immédiat du jeu');
+            
+            const statusSpan = document.getElementById('faceStatus');
+            if (statusSpan) {
+                statusSpan.innerHTML = '🎮 MODE DÉMO (caméra désactivée)';
+                statusSpan.style.background = '#FF9800';
+            }
+            
+            // Cacher la caméra en mode démo
+            const cameraContainer = document.getElementById('cameraContainer');
+            if (cameraContainer) {
+                cameraContainer.style.display = 'none';
+            }
+            
+            // Simuler une vérification enfant après 1 seconde
+            setTimeout(() => {
+                console.log('✅ Simulation: enfant vérifié');
+                if (onViolation) onViolation(0, { age: 8, isChild: true });
+            }, 1000);
+            
+            return;
+        }
+        
+        // Code normal si pas en mode démo
+        console.log('🎮 Démarrage ExerciceGuardian.start...');
+        
+        const cameraStarted = await FaceDetectionService.startCamera(videoElement);
+        if (!cameraStarted) {
+            if (onStop) onStop('❌ Impossible d\'accéder à la caméra');
+            return;
+        }
+        
+        let waitCount = 0;
+        while (!FaceDetectionService.isModelLoaded && waitCount < 30) {
+            await new Promise(r => setTimeout(r, 500));
+            waitCount++;
+        }
+        
+        if (!FaceDetectionService.isModelLoaded) {
+            if (onStop) onStop('❌ Modèles non chargés');
+            return;
+        }
+        
+        console.log('✅ Modèles chargés, caméra active');
+        
+        if (!FaceDetectionService.isCalibrated) {
+            console.log('📸 Calibration automatique...');
+            const statusSpan = document.getElementById('faceStatus');
+            if (statusSpan) {
+                statusSpan.innerHTML = '📸 Calibration...';
+                statusSpan.style.background = '#FF9800';
+            }
+            
+            const calibrated = await FaceDetectionService.calibrate(videoElement);
+            if (!calibrated) {
+                if (onStop) onStop('❌ Calibration échouée');
                 return;
             }
-            
-            // Si pas calibré, calibration AUTO
-            if (!FaceDetectionService.isCalibrated) {
-                console.log('🔧 Première utilisation - Calibration automatique...');
-                const calibrated = await this.calibrateAuto(videoElement);
-                if (!calibrated) {
-                    if (onStop) onStop('❌ Calibration échouée. Placez-vous face à la caméra.');
-                    return;
+        }
+        
+        console.log('🔍 Début vérification enfant...');
+        
+        FaceDetectionService.startVerification(
+            videoElement,
+            (count, result) => {
+                if (onViolation) onViolation(count, result);
+                if (count >= 3 && onStop) {
+                    onStop('⚠️ Adulte détecté !');
                 }
-                console.log('✅ Calibration terminée, démarrage du jeu...');
+            },
+            (result) => {
+                if (onViolation) onViolation(0, result);
             }
-            
-            // Démarrer la vérification
-            FaceDetectionService.startVerification(
-                videoElement,
-                (count) => {
-                    if (onViolation) onViolation(count);
-                    if (count >= 3) {
-                        this.stop();
-                        if (onStop) onStop('⚠️ Adulte détecté ! Exercice arrêté.');
-                    }
-                },
-                () => {
-                    if (onViolation) onViolation(0);
-                }
-            );
-        });
+        );
     },
-
+    
     stop() {
-        FaceDetectionService.stopCamera();
+        if (!this.DEMO_MODE) {
+            FaceDetectionService.stopCamera();
+        }
     }
 };
 

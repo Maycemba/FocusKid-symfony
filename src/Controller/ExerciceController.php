@@ -343,7 +343,7 @@ public function frontIndex(Request $request, ExerciceRepository $exerciceReposit
     $exercicesEnfant = $exerciceEnfantRepository->findBy(['enfant_id' => $enfantId]);
     $exercicesIds = [];
     $completionStatus = [];
-    $joursParExercice = []; // Stocker les jours par exercice
+    $joursParExercice = [];
     
     foreach ($exercicesEnfant as $ee) {
         $exercicesIds[] = $ee->getExerciceId();
@@ -353,7 +353,12 @@ public function frontIndex(Request $request, ExerciceRepository $exerciceReposit
     
     $allExercices = [];
     if (count($exercicesIds) > 0) {
-        $allExercices = $exerciceRepository->findBy(['id' => $exercicesIds, 'archive' => false]);
+        // 🔥 FILTRER UNIQUEMENT LES EXERCICES ACTIFS ET NON ARCHIVÉS
+        $allExercices = $exerciceRepository->findBy([
+            'id' => $exercicesIds, 
+            'actif' => true,      // ← Seulement les actifs
+            'archive' => false    // ← Seulement les non archivés
+        ]);
     }
     
     // Filtrer selon le type
@@ -367,11 +372,12 @@ public function frontIndex(Request $request, ExerciceRepository $exerciceReposit
         }
     }
     
-    // Compter pour les badges
+    // Compter pour les badges (sur les exercices actifs uniquement)
     $nonCompleteCount = 0;
     $completeCount = 0;
-    foreach ($completionStatus as $status) {
-        if ($status) {
+    foreach ($allExercices as $exo) {
+        $isComplete = $completionStatus[$exo->getId()] ?? false;
+        if ($isComplete) {
             $completeCount++;
         } else {
             $nonCompleteCount++;
@@ -384,7 +390,7 @@ public function frontIndex(Request $request, ExerciceRepository $exerciceReposit
         'nonCompleteCount' => $nonCompleteCount,
         'completeCount' => $completeCount,
         'allExercices' => $allExercices,
-        'joursParExercice' => $joursParExercice, // ← Passer les jours séparément
+        'joursParExercice' => $joursParExercice,
         'showPlanning' => $showPlanning,
         'currentView' => $view,
         'currentDate' => $currentDate,
@@ -392,101 +398,112 @@ public function frontIndex(Request $request, ExerciceRepository $exerciceReposit
     ]);
 }
     
-    #[Route('/front/jeu/memoire/{id}', name: 'app_front_jeu_memoire', methods: ['GET'])]
-    public function jeuMemoire(int $id, ExerciceRepository $exerciceRepository): Response
-    {
-        // 🔥 Récupérer l'ID de l'enfant connecté
-        $user = $this->getUser();
-        $enfantId = $user ? $user->getId() : 1;
-        
-        $exercice = $exerciceRepository->find($id);
-        
-        if (!$exercice) {
-            throw $this->createNotFoundException('Exercice non trouvé');
-        }
-        
-        $contenu = $exercice->getContenu();
-        $questions = [];
-        
-        if ($contenu) {
-            $data = json_decode($contenu, true);
-            if ($data) {
-                if (isset($data['images']) && is_array($data['images'])) {
-                    $questions = $data['images'];
-                } elseif (isset($data['theme'])) {
-                    $themes = [
-                        'animaux' => ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'],
-                        'fruits' => ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓'],
-                        'chiffres' => ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣']
-                    ];
-                    $theme = $data['theme'] ?? 'animaux';
-                    $taille = $data['taille'] ?? '4x4';
-                    $nbCartes = $taille === '4x4' ? 8 : 18;
-                    $imagesList = $themes[$theme] ?? $themes['animaux'];
-                    for ($i = 0; $i < $nbCartes; $i++) {
-                        $questions[] = ['valeur' => $imagesList[$i % count($imagesList)]];
-                    }
-                }
-            }
-        }
-        
-        return $this->render('front/exercice/jeu_memoire.html.twig', [
-            'exercice' => $exercice,
-            'questions' => $questions,
-            'contenu_json' => $contenu,
-            'enfantId' => $enfantId,
-        ]);
+   #[Route('/front/jeu/memoire/{id}', name: 'app_front_jeu_memoire', methods: ['GET'])]
+public function jeuMemoire(int $id, ExerciceRepository $exerciceRepository): Response
+{
+    $user = $this->getUser();
+    $enfantId = $user ? $user->getId() : 1;
+    
+    $exercice = $exerciceRepository->find($id);
+    
+    if (!$exercice) {
+        throw $this->createNotFoundException('Exercice non trouvé');
     }
-
-    #[Route('/front/jeu/attention/{id}', name: 'app_front_jeu_attention', methods: ['GET'])]
-    public function jeuAttention(int $id, ExerciceRepository $exerciceRepository): Response
-    {
-        // 🔥 Récupérer l'ID de l'enfant connecté
-        $user = $this->getUser();
-        $enfantId = $user ? $user->getId() : 1;
+    
+    $contenu = $exercice->getContenu();
+    $questions = [];
+    
+    if ($contenu) {
+        $data = json_decode($contenu, true);
         
-        $exercice = $exerciceRepository->find($id);
-        
-        if (!$exercice) {
-            throw $this->createNotFoundException('Exercice non trouvé');
-        }
-        
-        $contenu = $exercice->getContenu();
-        $questions = [];
-        
-        if ($contenu) {
-            $data = json_decode($contenu, true);
-            if ($data && isset($data['questions']) && is_array($data['questions'])) {
-                $questions = $data['questions'];
-            } elseif ($data && isset($data['theme'])) {
-                $themes = [
-                    'emojis' => ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐸'],
-                    'animaux' => ['🦁','🐧','🐦','🐟','🐠','🐙','🦋','🐝','🐞','🐳'],
-                    'objets' => ['📚','✏️','🔍','💡','🔑','⌚','📱','💻','🖱️','📷']
-                ];
-                $theme = $data['theme'] ?? 'emojis';
-                $imagesList = $themes[$theme] ?? $themes['emojis'];
-                foreach ($imagesList as $img) {
-                    $questions[] = ['image' => $img, 'valeur' => $img];
-                }
+        // Format 1: tableau simple d'images
+        if ($data && isset($data['images']) && is_array($data['images'])) {
+            $questions = $data['images'];
+        } 
+        // Format 2: tableau avec 'valeur'
+        elseif ($data && isset($data['questions']) && is_array($data['questions'])) {
+            foreach ($data['questions'] as $q) {
+                $questions[] = $q['valeur'] ?? $q['image'] ?? '?';
             }
         }
+        // Format 3: avec thème
+        elseif ($data && isset($data['theme'])) {
+            $themes = [
+                'animaux' => ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'],
+                'fruits' => ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓'],
+                'chiffres' => ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣']
+            ];
+            $theme = $data['theme'] ?? 'animaux';
+            $questions = $themes[$theme] ?? $themes['animaux'];
+        }
+    }
+    
+    // Si toujours vide, utiliser valeurs par défaut
+    if (empty($questions)) {
+        $questions = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
+    }
+    
+    return $this->render('front/exercice/jeu_memoire.html.twig', [
+        'exercice' => $exercice,
+        'questions' => $questions,
+        'enfantId' => $enfantId,
+    ]);
+}
+
+#[Route('/front/jeu/attention/{id}', name: 'app_front_jeu_attention', methods: ['GET'])]
+public function jeuAttention(int $id, ExerciceRepository $exerciceRepository): Response
+{
+    $user = $this->getUser();
+    $enfantId = $user ? $user->getId() : 1;
+    
+    $exercice = $exerciceRepository->find($id);
+    
+    if (!$exercice) {
+        throw $this->createNotFoundException('Exercice non trouvé');
+    }
+    
+    $contenu = $exercice->getContenu();
+    $questions = [];
+    
+    if ($contenu) {
+        $data = json_decode($contenu, true);
         
-        if (empty($questions)) {
-            $defaultImages = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐸','🐧','🐦'];
-            foreach ($defaultImages as $img) {
+        // Format pour le jeu d'intrus (ton contenu actuel)
+        if ($data && isset($data['questions']) && is_array($data['questions'])) {
+            $questions = $data['questions'];
+        }
+        // Format simple
+        elseif ($data && isset($data['images']) && is_array($data['images'])) {
+            foreach ($data['images'] as $img) {
                 $questions[] = ['image' => $img, 'valeur' => $img];
             }
         }
-        
-        return $this->render('front/exercice/jeu_attention.html.twig', [
-            'exercice' => $exercice,
-            'questions' => $questions,
-            'contenu_json' => $contenu,
-            'enfantId' => $enfantId,
-        ]);
+        // Format avec thème
+        elseif ($data && isset($data['theme'])) {
+            $themes = [
+                'emojis' => ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'],
+                'animaux' => ['🦁','🐧','🐦','🐟','🐠','🐙','🦋','🐝'],
+                'objets' => ['📚','✏️','🔍','💡','🔑','⌚','📱','💻']
+            ];
+            $theme = $data['theme'] ?? 'emojis';
+            foreach ($themes[$theme] as $img) {
+                $questions[] = ['image' => $img, 'valeur' => $img];
+            }
+        }
     }
-
+    
+    // Si toujours vide, afficher une erreur
+    if (empty($questions)) {
+        $this->addFlash('error', 'Cet exercice ne contient pas de données valides.');
+        return $this->redirectToRoute('app_front_exercice_index');
+    }
+    
+    return $this->render('front/exercice/jeu_attention.html.twig', [
+        'exercice' => $exercice,
+        'questions' => $questions,
+        'enfantId' => $enfantId,
+    ]);
+}
     #[Route('/front/jeu/logique/{id}', name: 'app_front_jeu_logique', methods: ['GET'])]
     public function jeuLogique(int $id, ExerciceRepository $exerciceRepository): Response
     {

@@ -11,7 +11,7 @@ class QrCodeService
     public function generateRapportQrCode(int $enfantId): string
     {
         // Utilisez votre IP locale
-        $baseUrl = 'http://192.168.1.6:8000';
+        $baseUrl = 'http://192.168.137.19:8000';
         
         // URL directe vers le PDF
         $pdfUrl = $baseUrl . '/pdf/rapport/' . $enfantId;

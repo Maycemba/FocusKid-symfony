@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Âge - Simple</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        video {
+            width: 100%;
+            max-width: 640px;
+            border: 3px solid #333;
+            border-radius: 10px;
+            background: #000;
+        }
+        .result {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 30px;
+            margin: 10px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            background: #FF9800;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Détection Âge</h1>
+    <video id="video" autoplay playsinline muted></video>
+    <div id="status" class="status">🚀 Initialisation...</div>
+    <div class="result">
+        Âge: <span id="age">--</span> ans
+    </div>
+    <button onclick="startTest()">📷 Démarrer</button>
+    <button onclick="stopTest()">⏹️ Arrêter</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script>
+        let video = document.getElementById('video');
+        let stream = null;
+        let interval = null;
+        
+        async function loadModels() {
+            document.getElementById('status').innerHTML = '📥 Chargement modèles...';
+            document.getElementById('status').style.background = '#FF9800';
+            
+            try {
+                await faceapi.nets.tinyFaceDetector.loadFromUri('/models/face-api/');
+                await faceapi.nets.ageGenderNet.loadFromUri('/models/face-api/');
+                document.getElementById('status').innerHTML = '✅ Modèles chargés !';
+                document.getElementById('status').style.background = '#4CAF50';
+                return true;
+            } catch(e) {
+                document.getElementById('status').innerHTML = '❌ Erreur: ' + e.message;
+                document.getElementById('status').style.background = '#f44336';
+                return false;
+            }
+        }
+        
+        async function startTest() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                
+                await new Promise(r => { video.onloadedmetadata = () => { video.play(); r(); } });
+                
+                document.getElementById('status').innerHTML = '🔍 Analyse en cours...';
+                
+                interval = setInterval(async () => {
+                    if (!video.videoWidth) return;
+                    
+                    const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                        .withAgeAndGender();
+                    
+                    if (detection) {
+                        let age = Math.round(detection.age);
+                        document.getElementById('age').innerHTML = age;
+                        document.getElementById('status').innerHTML = '✅ Visage détecté';
+                        document.getElementById('status').style.background = '#4CAF50';
+                    } else {
+                        document.getElementById('status').innerHTML = '🔍 Aucun visage détecté';
+                        document.getElementById('status').style.background = '#FF9800';
+                    }
+                }, 1000);
+                
+            } catch(err) {
+                document.getElementById('status').innerHTML = '❌ Erreur: ' + err.message;
+                document.getElementById('status').style.background = '#f44336';
+            }
+        }
+        
+        function stopTest() {
+            if (interval) clearInterval(interval);
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            video.srcObject = null;
+            document.getElementById('status').innerHTML = '⏹️ Arrêté';
+            document.getElementById('age').innerHTML = '--';
+        }
+        
+        loadModels();
+    </script>
+</body>
+</html>
