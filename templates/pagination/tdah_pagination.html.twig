@@ -1,0 +1,97 @@
+{# templates/pagination/tdah_pagination.html.twig #}
+{% if pageCount > 1 %}
+    <nav class="tdah-pagination-container">
+        <div class="pagination-buttons">
+            {% if previous is defined %}
+                <a href="{{ path(route, query|merge({(pageParameterName): previous})) }}" class="btn-pagination btn-prev">
+                    <i class="fas fa-arrow-left"></i> Question précédente
+                </a>
+            {% else %}
+                <span class="btn-pagination btn-disabled">
+                     <i class="fas fa-arrow-left"></i> Question précédente
+                </span>
+            {% endif %}
+
+            <div class="progress-indicator">
+                Question {{ current }} sur {{ pageCount }}
+            </div>
+
+            {% if next is defined %}
+                <a href="{{ path(route, query|merge({(pageParameterName): next})) }}" class="btn-pagination btn-next">
+                    Question suivante <i class="fas fa-arrow-right"></i>
+                </a>
+            {% else %}
+                <a href="{{ path('app_game_results') }}" class="btn-pagination btn-finish">
+                    Terminer le jeu <i class="fas fa-check"></i>
+                </a>
+            {% endif %}
+        </div>
+    </nav>
+{% endif %}
+
+<style>
+.tdah-pagination-container {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
+}
+
+.pagination-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-pagination {
+    padding: 12px 24px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+}
+
+.btn-prev {
+    background-color: #f0f0f0;
+    color: #555;
+}
+
+.btn-next {
+    background-color: #4CAF50;
+    color: white;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.btn-finish {
+    background-color: #2196F3;
+    color: white;
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+
+.btn-disabled {
+    background-color: #eee;
+    color: #bbb;
+    cursor: not-allowed;
+}
+
+.btn-pagination:hover:not(.btn-disabled) {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.progress-indicator {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    background: #fff;
+    padding: 8px 20px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+</style>

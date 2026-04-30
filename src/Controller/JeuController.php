@@ -33,7 +33,7 @@ final class JeuController extends AbstractController
             $entityManager->persist($jeu);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_jeu_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_question_new', ['jeu_id' => $jeu->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('jeu/new.html.twig', [

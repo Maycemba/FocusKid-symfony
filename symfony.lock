@@ -1,4 +1,18 @@
 {
+    "api-platform/symfony": {
+        "version": "4.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "4.0",
+            "ref": "e9952e9f393c2d048f10a78f272cd35e807d972b"
+        },
+        "files": [
+            "./config/packages/api_platform.yaml",
+            "./config/routes/api_platform.yaml",
+            "./src/ApiResource/.gitignore"
+        ]
+    },
     "doctrine/deprecations": {
         "version": "1.1",
         "recipe": {
@@ -47,6 +61,7 @@
             "./migrations/.gitignore"
         ]
     },
+<<<<<<< HEAD
     "friendsofsymfony/elastica-bundle": {
         "version": "7.1",
         "recipe": {
@@ -78,6 +93,21 @@
         },
         "files": [
             "./config/packages/http_discovery.yaml"
+=======
+    "knplabs/knp-paginator-bundle": {
+        "version": "v6.10.0"
+    },
+    "nelmio/cors-bundle": {
+        "version": "2.6",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "1.5",
+            "ref": "6bea22e6c564fba3a1391615cada1437d0bde39c"
+        },
+        "files": [
+            "./config/packages/nelmio_cors.yaml"
+>>>>>>> jeu
         ]
     },
     "phpunit/phpunit": {
@@ -298,8 +328,22 @@
             "./templates/base.html.twig"
         ]
     },
+<<<<<<< HEAD
     "symfony/ux-chartjs": {
         "version": "v2.35.0"
+=======
+    "symfony/uid": {
+        "version": "6.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "6.2",
+            "ref": "d294ad4add3e15d7eb1bae0221588ca89b38e558"
+        },
+        "files": [
+            "./config/packages/uid.yaml"
+        ]
+>>>>>>> jeu
     },
     "symfony/ux-turbo": {
         "version": "2.35",

@@ -27,6 +27,7 @@ services:
             - '../src/Kernel.php'
             - '../src/Command/'
 
+<<<<<<< HEAD
     # Configuration explicite pour NotificationService (optionnel, car le bind ci-dessus s'en charge)
     App\Service\NotificationService:
         arguments:
@@ -54,3 +55,6 @@ services:
     App\Controller\ChatbotLeconController:
         arguments:
             $groqApiKey: '%env(GROQ_API_KEY)%'
+=======
+
+>>>>>>> jeu

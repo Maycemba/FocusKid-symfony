@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Question;
 use App\Form\QuestionType;
+use App\Repository\JeuRepository;
 use App\Repository\QuestionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,23 +23,53 @@ final class QuestionController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_question_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new/{jeu_id}', name: 'app_question_new', methods: ['GET', 'POST'], defaults: ['jeu_id' => null])]
+    public function new(Request $request, EntityManagerInterface $entityManager, JeuRepository $jeuRepository, $jeu_id = null): Response
     {
+        $jeu = $jeu_id ? $jeuRepository->find($jeu_id) : null;
+        
+        // On gère la soumission multiple manuelle
+        if ($request->isMethod('POST') && $request->request->has('multi_questions')) {
+            $questionsData = $request->request->all('questions');
+            foreach ($questionsData as $data) {
+                if (!empty($data['question_text'])) {
+                    $question = new Question();
+                    $question->setJeu($jeu);
+                    $question->setQuestionText($data['question_text']);
+                    $question->setOptionA($data['option_a']);
+                    $question->setOptionB($data['option_b']);
+                    $question->setOptionC($data['option_c']);
+                    $question->setBonneReponse($data['bonne_reponse']);
+                    $entityManager->persist($question);
+                }
+            }
+            $entityManager->flush();
+            $this->addFlash('success', 'Questions ajoutées avec succès !');
+            return $this->redirectToRoute('app_question_new', ['jeu_id' => $jeu_id]);
+        }
+
         $question = new Question();
-        $form = $this->createForm(QuestionType::class, $question);
+        if ($jeu) {
+            $question->setJeu($jeu);
+        }
+
+        $form = $this->createForm(QuestionType::class, $question, [
+            'disable_jeu' => $jeu_id !== null
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($question);
             $entityManager->flush();
-
-            return $this->redirectToRoute('app_question_index', [], Response::HTTP_SEE_OTHER);
+            $this->addFlash('success', 'Question ajoutée avec succès !');
+            return $this->redirectToRoute('app_question_new', ['jeu_id' => $jeu_id]);
         }
 
         return $this->render('question/new.html.twig', [
             'question' => $question,
-            'form' => $form,
+            'form' => $form->createView(),
+            'jeu_id' => $jeu_id,
+            'jeu' => $jeu
         ]);
     }
 
