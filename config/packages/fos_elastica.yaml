@@ -1,0 +1,9 @@
+fos_elastica:
+    clients:
+        default: { hosts: ['http://localhost:9200'] }
+    indexes:
+        app:
+            persistence:
+                driver: orm
+                model: App\Entity\Cour
+                finder: ~

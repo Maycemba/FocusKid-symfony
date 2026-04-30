@@ -1,6 +1,6 @@
 {% extends 'base-front.html.twig' %}
 
-{% block title %}Jeu d'Attention - FocusKid{% endblock %}
+{% block title %}Jeu d'Attention - Intrus - FocusKid{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -14,15 +14,16 @@
         .attention-card {
             background: white;
             border-radius: 15px;
-            padding: 30px;
+            padding: 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 48px;
-            min-height: 150px;
+            font-size: 32px;
+            min-height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-direction: column;
         }
         .attention-card:hover {
             transform: scale(1.05);
@@ -31,6 +32,10 @@
         .attention-card.selected {
             background: #C8E6C9;
             border: 3px solid #4CAF50;
+        }
+        .attention-card.wrong {
+            background: #FFCDD2;
+            border: 3px solid #F44336;
         }
         .score-board {
             background: white;
@@ -63,16 +68,16 @@
         .btn-game:hover {
             background: #F57C00;
         }
-        .message-success {
-            color: #4CAF50;
-            font-weight: bold;
+        .question-text {
+            font-size: 28px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
         }
-        .message-error {
-            color: #F44336;
-            font-weight: bold;
-        }
+        .message-success { color: #4CAF50; font-weight: bold; }
+        .message-error { color: #F44336; font-weight: bold; }
         
-        /* ========== STYLES VOIX ========== */
         .voice-controls {
             display: flex;
             align-items: center;
@@ -86,20 +91,9 @@
             padding: 5px 15px;
             font-size: 12px;
             cursor: pointer;
-            transition: all 0.3s;
         }
-        .voice-toggle:hover {
-            background: #1976D2;
-            transform: scale(1.05);
-        }
-        .voice-active {
-            background: #4CAF50;
-        }
-        .voice-active:hover {
-            background: #45a049;
-        }
+        .voice-active { background: #4CAF50; }
         
-        /* ========== STYLES CAMERA ========== */
         .camera-container {
             position: fixed;
             bottom: 20px;
@@ -111,17 +105,8 @@
             z-index: 1000;
             overflow: hidden;
             border: 3px solid #00b894;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            transition: all 0.3s;
         }
-        .camera-container.violation {
-            border-color: #d63031;
-            animation: pulse 0.5s infinite;
-        }
-        @keyframes pulse {
-            0% { border-color: #d63031; }
-            100% { border-color: #ff7675; }
-        }
+        .camera-container.violation { border-color: #d63031; }
         .camera-container video {
             width: 100%;
             height: 100%;
@@ -136,13 +121,7 @@
             padding: 5px 12px;
             border-radius: 20px;
             font-size: 12px;
-            font-weight: bold;
             display: none;
-            animation: blink 0.5s infinite;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
         }
         .face-status {
             position: absolute;
@@ -155,19 +134,11 @@
             font-size: 11px;
             padding: 5px;
             border-radius: 10px;
-            font-weight: bold;
         }
-        .face-status.alert {
-            background: #d63031;
-            animation: blink 0.5s infinite;
-        }
-        .face-status.success {
-            background: #00b894;
-        }
+        .face-status.success { background: #00b894; }
+        .face-status.alert { background: #d63031; }
         
-        /* Modal */
-        .modal-overlay {
-            display: none;
+        .game-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -175,110 +146,30 @@
             height: 100%;
             background: rgba(0,0,0,0.9);
             z-index: 2000;
+            display: flex;
             justify-content: center;
             align-items: center;
         }
-        .modal-content {
+        .game-overlay-content {
             background: white;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 400px;
-            margin: 100px auto;
-            text-align: center;
-        }
-        .modal-content video {
-            width: 100%;
-            border-radius: 10px;
-            margin: 15px 0;
-        }
-        .modal-btn {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 25px;
-            cursor: pointer;
-        }
-        .modal-btn-skip {
-            background: #ccc;
-            color: #333;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 25px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-        
-        /* Alerte violation */
-        .violation-alert {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px 50px;
             border-radius: 30px;
-            z-index: 3000;
+            padding: 40px;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: shake 0.5s ease-in-out;
-            min-width: 350px;
+            max-width: 400px;
         }
-        @keyframes shake {
-            0%, 100% { transform: translate(-50%, -50%) translateX(0); }
-            25% { transform: translate(-50%, -50%) translateX(-10px); }
-            75% { transform: translate(-50%, -50%) translateX(10px); }
+        .game-overlay-content h2 { color: #d63031; margin-bottom: 20px; }
+        .game-overlay-content .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
         }
-        .violation-alert .alert-icon {
-            font-size: 60px;
-            margin-bottom: 15px;
-        }
-        .violation-alert h3 {
-            margin: 0 0 10px 0;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .violation-alert p {
-            margin: 10px 0;
-            font-size: 16px;
-            opacity: 0.9;
-        }
-        .violation-alert .alert-progress {
-            width: 100%;
-            height: 4px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 2px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-        .violation-alert .alert-progress-bar {
-            width: 100%;
-            height: 100%;
-            background: white;
-            border-radius: 2px;
-            animation: progressBar 3s linear forwards;
-        }
-        @keyframes progressBar {
-            0% { width: 100%; }
-            100% { width: 0%; }
-        }
-        .violation-alert button {
-            background: white;
-            color: #667eea;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 50px;
-            margin-top: 15px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        .violation-alert button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 {% endblock %}
@@ -289,14 +180,15 @@
         <div class="game-container">
             <div class="score-board d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <h3 class="mb-0 me-3">🎯 Jeu d'Attention</h3>
+                    <h3 class="mb-0 me-3">🔍 Jeu d'Attention - Trouve l'intrus</h3>
                     <div class="voice-controls">
-                        <button id="voiceToggleBtn" class="voice-toggle" title="Activer/désactiver la voix">🔊 Voix ON</button>
+                        <button id="voiceToggleBtn" class="voice-toggle">🔊 Voix ON</button>
                     </div>
                 </div>
                 <div>
                     <span class="me-3">⭐ Score: <span id="score">0</span></span>
-                    <span>⏱️ Temps: <span id="timer">00:00</span></span>
+                    <span>⏱️ Question: <span id="questionNum">1</span>/<span id="totalQuestions">0</span></span>
+                    <span class="ms-3">⏱️ Temps: <span id="timer">00:00</span></span>
                 </div>
             </div>
             
@@ -305,10 +197,11 @@
             </div>
             
             <div class="text-center mt-3 mb-4">
+                <div class="question-text" id="questionText"></div>
                 <p id="message" class="message-success"></p>
             </div>
             
-            <div class="row" id="attentionGrid"></div>
+            <div class="row" id="imagesGrid"></div>
             
             <div class="text-center mt-4">
                 <a href="{{ path('app_front_exercice_index') }}" class="btn-game">⬅️ Retour aux exercices</a>
@@ -317,8 +210,7 @@
     </div>
 </div>
 
-<!-- Caméra de surveillance -->
-<div id="cameraContainer" class="camera-container" style="display: none;">
+<div id="cameraContainer" class="camera-container">
     <video id="surveillanceVideo" autoplay muted playsinline></video>
     <div id="violationBadge" class="violation-badge">⚠️ ALERTE</div>
     <div class="face-status">
@@ -326,358 +218,347 @@
     </div>
 </div>
 
-<!-- Modal d'enregistrement du visage -->
-<div id="registerModal" class="modal-overlay">
-    <div class="modal-content">
-        <h2>📸 Enregistrement du visage</h2>
-        <p>Placez-vous face à la caméra</p>
-        <video id="registerVideo" autoplay muted></video>
-        <button id="confirmRegisterBtn" class="modal-btn">✅ Enregistrer mon visage</button>
-        <button id="skipRegisterBtn" class="modal-btn-skip">⏭️ Passer</button>
+<div id="gameOverlay" class="game-overlay" style="display: flex;">
+    <div class="game-overlay-content">
+        <h2>🔒 Vérification requise</h2>
+        <p>Veuillez vous placer face à la caméra pour démarrer le jeu.</p>
+        <div class="spinner"></div>
+        <div id="overlayStatus">🔍 Détection en cours...</div>
+        <div id="detectedAge" style="margin-top: 15px; font-size: 14px; color: #666;"></div>
     </div>
-</div>
-
-<!-- Alerte violation -->
-<div id="violationAlert" class="violation-alert">
-    <div class="alert-icon">⚠️</div>
-    <h3>Attention !</h3>
-    <p id="violationReason"></p>
-    <div class="alert-progress">
-        <div class="alert-progress-bar"></div>
-    </div>
-    <button onclick="location.reload()">🔁 Recommencer l'exercice</button>
 </div>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script>
-        // Récupérer les données depuis Twig
+        // ========== DONNÉES DEPUIS SYMFONY ==========
         const exerciceId = {{ exercice.id }};
         const questionsData = {{ questions|default([])|json_encode|raw }};
         
-        // Variables du jeu
-        let images = [];
-        let currentTarget = null;
+        console.log('📦 Données questions:', questionsData);
+        
+        // ========== VARIABLES JEU ==========
+        let currentQuestionIndex = 0;
+        let questions = [];
         let score = 0;
         let timer = 0;
         let timerInterval = null;
         let gameActive = true;
-        let progressTimer = null;
-        let timeLeft = 100;
         let gameFinished = false;
         let reponsesDonnees = [];
+        let pointsParQuestion = 10;
         let gameStarted = false;
         
-        // Paramètres
-        let pointsParClick = 10;
-        let penalite = 5;
-        let tempsMax = 120;
-        
-        // Variables de surveillance
-        let surveillanceActive = false;
+        // ========== VARIABLES CAMÉRA ==========
+        let video = null;
+        let stream = null;
+        let detectionInterval = null;
+        let modelsLoaded = false;
+        let isAdultVerified = false;
         
         // ========== SYNTHÈSE VOCALE ==========
         let speechEnabled = true;
         let speechSynthesis = window.speechSynthesis;
         let currentUtterance = null;
         
-        // Initialiser la voix
-        function initVoice() {
-            if (!speechSynthesis) {
-                console.log('❌ Synthèse vocale non supportée');
-                speechEnabled = false;
-                const btn = document.getElementById('voiceToggleBtn');
-                if (btn) btn.style.opacity = '0.5';
-                return;
-            }
-            
-            // Charger la préférence
-            const saved = localStorage.getItem('voice_enabled');
-            if (saved !== null) {
-                speechEnabled = saved === 'true';
-            }
-            updateVoiceButton();
-            console.log('✅ Synthèse vocale prête');
-        }
-        
-        // Mettre à jour l'apparence du bouton
-        function updateVoiceButton() {
-            const btn = document.getElementById('voiceToggleBtn');
-            if (!btn) return;
-            if (speechEnabled) {
-                btn.innerHTML = '🔊 Voix ON';
-                btn.classList.add('voice-active');
-            } else {
-                btn.innerHTML = '🔇 Voix OFF';
-                btn.classList.remove('voice-active');
-            }
-        }
-        
-        // Lire un texte
         function speakText(text) {
             if (!speechEnabled) return;
-            
-            // Arrêter la lecture en cours
-            if (currentUtterance) {
-                speechSynthesis.cancel();
-            }
-            
-            // Créer une nouvelle utterance
+            if (currentUtterance) speechSynthesis.cancel();
             currentUtterance = new SpeechSynthesisUtterance(text);
             currentUtterance.lang = 'fr-FR';
             currentUtterance.rate = 0.9;
-            currentUtterance.pitch = 1.2;
-            currentUtterance.volume = 1;
-            
-            // Choisir une voix française
-            speechSynthesis.onvoiceschanged = () => {
-                const voices = speechSynthesis.getVoices();
-                const frenchVoice = voices.find(voice => voice.lang === 'fr-FR');
-                if (frenchVoice) {
-                    currentUtterance.voice = frenchVoice;
-                }
-                speechSynthesis.speak(currentUtterance);
-            };
-            
             speechSynthesis.speak(currentUtterance);
         }
         
-        // Lire l'image cible
-        function speakTarget(target) {
-            let text = '';
-            // Convertir les émojis en texte lisible
-            if (target.includes('🐶')) text = 'Chien';
-            else if (target.includes('🐱')) text = 'Chat';
-            else if (target.includes('🐭')) text = 'Souris';
-            else if (target.includes('🐹')) text = 'Hamster';
-            else if (target.includes('🐰')) text = 'Lapin';
-            else if (target.includes('🦊')) text = 'Renard';
-            else if (target.includes('🐻')) text = 'Ours';
-            else if (target.includes('🐼')) text = 'Panda';
-            else if (target.includes('🍎')) text = 'Pomme';
-            else if (target.includes('🍐')) text = 'Poire';
-            else if (target.includes('🍊')) text = 'Orange';
-            else if (target.includes('🍋')) text = 'Citron';
-            else if (target.includes('🍌')) text = 'Banane';
-            else if (target.includes('🍉')) text = 'Pastèque';
-            else if (target.includes('🍇')) text = 'Raisin';
-            else if (target.includes('🍓')) text = 'Fraise';
-            else if (target.includes('1️⃣')) text = 'Un';
-            else if (target.includes('2️⃣')) text = 'Deux';
-            else if (target.includes('3️⃣')) text = 'Trois';
-            else if (target.includes('4️⃣')) text = 'Quatre';
-            else if (target.includes('5️⃣')) text = 'Cinq';
-            else if (target.includes('6️⃣')) text = 'Six';
-            else if (target.includes('7️⃣')) text = 'Sept';
-            else if (target.includes('8️⃣')) text = 'Huit';
-            else if (target.includes('🔴')) text = 'Rouge';
-            else if (target.includes('🔵')) text = 'Bleu';
-            else if (target.includes('🟢')) text = 'Vert';
-            else if (target.includes('🟡')) text = 'Jaune';
-            else if (target.includes('⬛')) text = 'Noir';
-            else if (target.includes('⬜')) text = 'Blanc';
-            else if (target.includes('🟠')) text = 'Orange';
-            else if (target.includes('🟣')) text = 'Violet';
-            else if (target.includes('🟤')) text = 'Marron';
-            else if (target.includes('🔷')) text = 'Bleu';
-            else if (target.includes('🔶')) text = 'Orange';
-            else {
-                text = target;
-            }
+        function speakSuccess() { speakText('Bravo, c\'est la bonne réponse !'); }
+        function speakError() { speakText('Dommage, ce n\'est pas l\'intrus'); }
+        function speakStartGame() { speakText('Trouve l\'image différente dans chaque grille'); }
+        
+        // ========== CAMÉRA ==========
+        async function startCamera() {
+            console.log('🎥 Démarrage caméra...');
             
-            speakText(`Trouve l'image : ${text}`);
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video = document.getElementById('surveillanceVideo');
+                video.srcObject = stream;
+                await new Promise(r => { video.onloadedmetadata = () => { video.play(); r(); } });
+                console.log('✅ Caméra active');
+                document.getElementById('faceStatus').innerHTML = '📥 Chargement modèles...';
+                await loadModels();
+            } catch(err) {
+                console.error('❌ Erreur caméra:', err);
+                document.getElementById('faceStatus').innerHTML = '⚠️ Caméra indisponible';
+                document.getElementById('overlayStatus').innerHTML = '❌ Caméra non détectée. Vérifiez votre webcam.';
+            }
         }
         
-        // Lire un message de succès
-        function speakSuccess() {
-            const messages = ['Bravo', 'Très bien', 'Excellent', 'Super', 'Félicitations', 'Bonne réponse'];
-            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-            speakText(randomMsg);
+        async function loadModels() {
+            try {
+                const modelUrl = '/models/face-api/';
+                console.log('📥 Chargement depuis:', modelUrl);
+                
+                await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
+                console.log('✅ tinyFaceDetector chargé');
+                
+                await faceapi.nets.ageGenderNet.loadFromUri(modelUrl);
+                console.log('✅ ageGenderNet chargé');
+                
+                modelsLoaded = true;
+                console.log('✅ TOUS LES MODÈLES CHARGÉS!');
+                document.getElementById('faceStatus').innerHTML = '🔍 Recherche visage...';
+                document.getElementById('overlayStatus').innerHTML = '🔍 Recherche d\'un visage adulte...';
+                
+                startDetection();
+            } catch(err) {
+                console.error('❌ Erreur chargement modèles:', err);
+                document.getElementById('faceStatus').innerHTML = '⚠️ Détection indisponible';
+                document.getElementById('overlayStatus').innerHTML = '❌ Erreur chargement des modèles. Actualisez la page.';
+            }
         }
         
-        // Lire un message d'erreur
-        function speakError() {
-            const messages = ['Essaie encore', 'Presque', 'Réessaie', 'Concentre-toi', 'Pas tout à fait'];
-            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-            speakText(randomMsg);
+        async function startDetection() {
+            if (detectionInterval) clearInterval(detectionInterval);
+            
+            detectionInterval = setInterval(async () => {
+                if (!video || !video.videoWidth || !modelsLoaded) return;
+                if (isAdultVerified) return;
+                
+                try {
+                    const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                        .withAgeAndGender();
+                    
+                    if (detection) {
+                        let age = Math.round(detection.age);
+                        console.log(`👤 Âge détecté: ${age}`);
+                        document.getElementById('faceStatus').innerHTML = `👤 Âge: ${age} ans`;
+                        document.getElementById('overlayStatus').innerHTML = `🎯 Visage détecté - Âge estimé: ${age} ans`;
+                        document.getElementById('detectedAge').innerHTML = `Âge détecté: ${age} ans`;
+                        
+                        if (age >= 18 && !isAdultVerified && !gameStarted) {
+                            isAdultVerified = true;
+                            console.log('✅ Adulte vérifié, démarrage du jeu!');
+                            document.getElementById('faceStatus').innerHTML = `✅ Adulte (${age} ans) - Jeu démarré`;
+                            document.getElementById('faceStatus').classList.add('success');
+                            startGame();
+                        } else if (age < 18) {
+                            document.getElementById('overlayStatus').innerHTML = `👶 Enfant détecté (${age} ans). Un adulte est requis pour démarrer.`;
+                            document.getElementById('detectedAge').innerHTML = `👶 Enfant détecté - ${age} ans`;
+                        }
+                    } else {
+                        document.getElementById('overlayStatus').innerHTML = '🔍 Aucun visage détecté. Placez-vous face à la caméra.';
+                        document.getElementById('detectedAge').innerHTML = '';
+                    }
+                } catch(e) {
+                    console.log('Erreur détection:', e);
+                }
+            }, 1500);
         }
         
-        // Lire la consigne de début
-        function speakStartGame() {
-            speakText('Le jeu commence. Trouve les images demandées.');
+        function startGame() {
+            gameStarted = true;
+            
+            // Fermer l'overlay avec animation
+            const overlay = document.getElementById('gameOverlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
+            
+            if (detectionInterval) clearInterval(detectionInterval);
+            
+            // Démarrer le jeu
+            initGame();
+            startTimer();
+            
+            // Message vocal
+            speakText('Vérification réussie. Bon jeu !');
         }
         
-        // ========== FONCTIONS DU JEU ==========
+        // ========== JEU ==========
         function initGame() {
-            if (!questionsData || questionsData.length === 0) {
-                console.log('❌ Aucune donnée pour le jeu Attention');
+            console.log('🎮 Initialisation du jeu Attention - Intrus...');
+            
+            if (questionsData && questionsData.length > 0) {
+                questions = questionsData;
+            } else {
+                console.error('❌ Aucune question trouvée');
+                document.getElementById('imagesGrid').innerHTML = '<div class="alert alert-danger">Aucune donnée disponible</div>';
                 return;
             }
             
-            images = [];
-            for (let i = 0; i < questionsData.length; i++) {
-                images.push({
-                    id: i,
-                    value: questionsData[i].image || questionsData[i].valeur || '?',
-                    selected: false
-                });
-            }
+            document.getElementById('totalQuestions').textContent = questions.length;
             
             score = 0;
-            timeLeft = tempsMax;
             gameActive = true;
             gameFinished = false;
+            reponsesDonnees = [];
+            currentQuestionIndex = 0;
             updateScore();
-            updateProgressBar();
-            setNewTarget();
-            renderGrid();
+            loadQuestion();
             
-            // Lire la consigne
             setTimeout(() => {
                 speakStartGame();
             }, 500);
         }
         
-        function startGameTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-            if (progressTimer) clearInterval(progressTimer);
+        function loadQuestion() {
+            if (!gameActive || gameFinished) return;
+            if (currentQuestionIndex >= questions.length) {
+                finishGame();
+                return;
+            }
             
+            const q = questions[currentQuestionIndex];
+            document.getElementById('questionNum').textContent = currentQuestionIndex + 1;
+            document.getElementById('questionText').innerHTML = `🔍 Trouve l'intrus dans cette grille :`;
+            
+            const imagesList = q.images.split(',');
+            const intrus = q.intrus;
+            const shuffledImages = shuffleArray([...imagesList]);
+            
+            renderGrid(shuffledImages, intrus);
+            startQuestionTimer();
+        }
+        
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        function renderGrid(imagesList, intrus) {
+            const grid = document.getElementById('imagesGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            grid.style.display = 'grid';
+            grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            grid.style.gap = '15px';
+            
+            imagesList.forEach((img, index) => {
+                const card = document.createElement('div');
+                card.className = 'attention-card';
+                card.textContent = img.trim();
+                card.style.fontSize = '48px';
+                card.onclick = () => selectImage(img.trim(), intrus);
+                grid.appendChild(card);
+            });
+        }
+        
+        let questionTimerInterval = null;
+        
+        function startQuestionTimer() {
+            if (questionTimerInterval) clearInterval(questionTimerInterval);
+            let timeLeft = 10;
+            updateProgressBar(100);
+            
+            questionTimerInterval = setInterval(() => {
+                if (!gameActive || gameFinished || !gameStarted) return;
+                timeLeft--;
+                const percent = (timeLeft / 10) * 100;
+                updateProgressBar(percent);
+                
+                if (timeLeft <= 0) {
+                    clearInterval(questionTimerInterval);
+                    reponsesDonnees.push({
+                        question: currentQuestionIndex + 1,
+                        intrus: questions[currentQuestionIndex]?.intrus,
+                        reponse: null,
+                        reussite: false,
+                        temps: 'timeout'
+                    });
+                    currentQuestionIndex++;
+                    loadQuestion();
+                }
+            }, 1000);
+        }
+        
+        function updateProgressBar(percent) {
+            const fill = document.getElementById('progressFill');
+            if (fill) {
+                fill.style.width = Math.max(0, percent) + '%';
+                fill.style.background = percent < 30 ? '#F44336' : percent < 60 ? '#FF9800' : '#4CAF50';
+            }
+        }
+        
+        function selectImage(selectedValue, intrus) {
+            if (!gameActive || gameFinished || !gameStarted) return;
+            if (questionTimerInterval) clearInterval(questionTimerInterval);
+            
+            const isCorrect = (selectedValue === intrus);
+            
+            reponsesDonnees.push({
+                question: currentQuestionIndex + 1,
+                intrus: intrus,
+                reponse: selectedValue,
+                reussite: isCorrect,
+                temps: 'answered'
+            });
+            
+            if (isCorrect) {
+                score += pointsParQuestion;
+                updateScore();
+                document.getElementById('message').innerHTML = '✅ Bravo ! +' + pointsParQuestion + ' points';
+                document.getElementById('message').className = 'message-success';
+                speakSuccess();
+            } else {
+                document.getElementById('message').innerHTML = '❌ Ce n\'est pas l\'intrus ! L\'intrus était : ' + intrus;
+                document.getElementById('message').className = 'message-error';
+                speakError();
+            }
+            
+            currentQuestionIndex++;
+            
+            setTimeout(() => {
+                document.getElementById('message').innerHTML = '';
+                loadQuestion();
+            }, 1500);
+        }
+        
+        function updateScore() {
+            const span = document.getElementById('score');
+            if (span) span.textContent = score;
+        }
+        
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
             timer = 0;
             updateTimerDisplay();
-            
             timerInterval = setInterval(() => {
                 if (gameActive && !gameFinished && gameStarted) {
                     timer++;
                     updateTimerDisplay();
                 }
             }, 1000);
-            
-            progressTimer = setInterval(() => {
-                if (gameActive && !gameFinished && gameStarted && timeLeft > 0) {
-                    timeLeft--;
-                    updateProgressBar();
-                    if (timeLeft <= 0) {
-                        finishGame();
-                    }
-                }
-            }, 1000);
-        }
-        
-        function setNewTarget() {
-            const randomIndex = Math.floor(Math.random() * images.length);
-            currentTarget = images[randomIndex].value;
-            const msgDiv = document.getElementById('message');
-            if (msgDiv) msgDiv.innerHTML = `🎯 Trouve l'image : <strong>${currentTarget}</strong>`;
-            
-            // Lecture vocale
-            speakTarget(currentTarget);
-        }
-        
-        function renderGrid() {
-            const grid = document.getElementById('attentionGrid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            grid.style.display = 'grid';
-            grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
-            grid.style.gap = '15px';
-            
-            images.forEach((img, index) => {
-                const cardDiv = document.createElement('div');
-                cardDiv.className = 'attention-card';
-                if (img.selected) cardDiv.classList.add('selected');
-                cardDiv.textContent = img.value;
-                cardDiv.onclick = () => selectImage(index);
-                grid.appendChild(cardDiv);
-            });
-        }
-        
-        function selectImage(index) {
-            if (!gameActive || gameFinished || !gameStarted) return;
-            
-            const selectedImage = images[index];
-            
-            reponsesDonnees.push({
-                image: selectedImage.value,
-                est_cible: (selectedImage.value === currentTarget)
-            });
-            
-            if (selectedImage.value === currentTarget) {
-                score += pointsParClick;
-                updateScore();
-                selectedImage.selected = true;
-                renderGrid();
-                const msgDiv = document.getElementById('message');
-                if (msgDiv) {
-                    msgDiv.innerHTML = '✅ Bravo ! +' + pointsParClick + ' points';
-                    msgDiv.className = 'message-success';
-                }
-                
-                // Lecture vocale succès
-                speakSuccess();
-                
-                setTimeout(() => {
-                    setNewTarget();
-                    setTimeout(() => renderGrid(), 100);
-                }, 500);
-            } else {
-                score = Math.max(0, score - penalite);
-                updateScore();
-                const msgDiv = document.getElementById('message');
-                if (msgDiv) {
-                    msgDiv.innerHTML = '❌ Mauvaise image ! -' + penalite + ' points';
-                    msgDiv.className = 'message-error';
-                }
-                
-                // Lecture vocale erreur
-                speakError();
-                
-                setTimeout(() => {
-                    if (msgDiv) {
-                        msgDiv.innerHTML = `🎯 Trouve l'image : <strong>${currentTarget}</strong>`;
-                        msgDiv.className = 'message-success';
-                    }
-                }, 800);
-            }
-        }
-        
-        function updateScore() {
-            const scoreSpan = document.getElementById('score');
-            if (scoreSpan) scoreSpan.textContent = score;
-        }
-        
-        function updateProgressBar() {
-            const fill = document.getElementById('progressFill');
-            if (!fill) return;
-            const percent = (timeLeft / tempsMax) * 100;
-            fill.style.width = Math.max(0, percent) + '%';
-            if (timeLeft < 30) {
-                fill.style.background = '#F44336';
-            } else if (timeLeft < 60) {
-                fill.style.background = '#FF9800';
-            } else {
-                fill.style.background = '#4CAF50';
-            }
         }
         
         function updateTimerDisplay() {
             const m = Math.floor(timer / 60);
             const s = timer % 60;
-            const timerSpan = document.getElementById('timer');
-            if (timerSpan) timerSpan.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            const span = document.getElementById('timer');
+            if (span) span.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
         
         function saveGameResult() {
             if (gameFinished) return Promise.resolve(false);
             gameFinished = true;
             
+            const totalQuestions = questions.length;
+            const bonnesReponses = reponsesDonnees.filter(r => r.reussite === true).length;
+            const reussite = (bonnesReponses >= totalQuestions / 2);
+            
             const reponsesData = {
-                type: 'attention',
-                total_images: images.length,
-                bonnes_reponses: images.filter(i => i.selected).length,
+                type: 'attention_intrus',
+                total_questions: totalQuestions,
+                bonnes_reponses: bonnesReponses,
                 temps_total: timer,
                 score_final: score,
-                reponses: reponsesDonnees
+                details: reponsesDonnees
             };
             
             return fetch('/exercice/api/exercice-complete', {
@@ -689,7 +570,7 @@
                     score: score,
                     temps_passe: timer,
                     reponses: reponsesData,
-                    reussite: (score > 50)
+                    reussite: reussite
                 })
             })
             .then(response => response.json())
@@ -707,16 +588,13 @@
             if (!gameActive || gameFinished) return;
             
             gameActive = false;
-            gameStarted = false;
             if (timerInterval) clearInterval(timerInterval);
-            if (progressTimer) clearInterval(progressTimer);
+            if (questionTimerInterval) clearInterval(questionTimerInterval);
+            if (detectionInterval) clearInterval(detectionInterval);
+            if (stream) stream.getTracks().forEach(t => t.stop());
             
-            if (window.ExerciceGuardian) {
-                window.ExerciceGuardian.stop();
-            }
-            
-            const msgDiv = document.getElementById('message');
-            if (msgDiv) msgDiv.innerHTML = '📝 Sauvegarde en cours...';
+            document.getElementById('message').innerHTML = '📝 Sauvegarde en cours...';
+            speakText('Jeu terminé. Votre score final est ' + score);
             
             saveGameResult().then(success => {
                 if (success) {
@@ -728,120 +606,22 @@
             });
         }
         
-        // ========== SURVEILLANCE FACIALE ==========
-async function initSurveillance() {
-    console.log('Initialisation surveillance...');
-    await ExerciceGuardian.init();
-    
-    const isCalibrated = FaceDetectionService.isCalibrated;
-    console.log('Calibration existante:', isCalibrated);
-    
-    if (!isCalibrated) {
-        showRegisterModal();
-    } else {
-        startSurveillance();
-    }
-}
-
-function showRegisterModal() {
-    const modal = document.getElementById('registerModal');
-    const video = document.getElementById('registerVideo');
-    
-    modal.style.display = 'flex';
-    FaceDetectionService.startCamera(video);
-    
-    document.getElementById('confirmRegisterBtn').onclick = async () => {
-        const success = await ExerciceGuardian.calibrateAuto(video);
-        if (success) {
-            modal.style.display = 'none';
-            FaceDetectionService.stopCamera();
-            startSurveillance();
-        } else {
-            alert('❌ Placez-vous bien face à la caméra');
-        }
-    };
-    
-    document.getElementById('skipRegisterBtn').onclick = () => {
-        modal.style.display = 'none';
-        FaceDetectionService.stopCamera();
-        startGameWithoutSurveillance();
-    };
-}
-
-function startSurveillance() {
-    const cameraDiv = document.getElementById('cameraContainer');
-    const video = document.getElementById('surveillanceVideo');
-    
-    cameraDiv.style.display = 'block';
-    
-    ExerciceGuardian.start(
-        video,
-        (reason) => {
-            // Arrêt du jeu en cas de violation
-            gameActive = false;
-            gameStarted = false;
-            if (timerInterval) clearInterval(timerInterval);
-            if (progressTimer) clearInterval(progressTimer);
-            document.getElementById('violationReason').innerHTML = reason;
-            document.getElementById('violationAlert').style.display = 'flex';
-            speakText('Attention ! Personne non autorisée détectée. Exercice arrêté.');
-        },
-        (count) => {
-            const badge = document.getElementById('violationBadge');
-            const statusSpan = document.getElementById('faceStatus');
-            const cameraContainer = document.getElementById('cameraContainer');
-            
-            if (count > 0) {
-                badge.style.display = 'block';
-                statusSpan.innerHTML = `⚠️ ALERTE ${count}/3`;
-                statusSpan.className = 'face-status alert';
-                cameraContainer.classList.add('violation');
-            } else {
-                badge.style.display = 'none';
-                statusSpan.innerHTML = '✅ ENFANT VÉRIFIÉ';
-                statusSpan.className = 'face-status success';
-                cameraContainer.classList.remove('violation');
-                
-                // 🔥 DÉMARRER LE JEU SEULEMENT QUAND C'EST CONFIRMÉ
-                if (!gameStarted) {
-                    console.log('✅ Enfant vérifié, démarrage du jeu...');
-                    gameStarted = true;
-                    startGameTimer();
-                    speakText('Jeu démarré ! Bonne chance !');
-                }
-            }
-        }
-    );
-}
-
-function startGameWithoutSurveillance() {
-    console.log('Jeu démarré sans surveillance');
-    gameStarted = true;
-    startGameTimer();
-}
-        
-        // Initialiser le bouton voix
-        if (document.getElementById('voiceToggleBtn')) {
-            document.getElementById('voiceToggleBtn').addEventListener('click', () => {
-                speechEnabled = !speechEnabled;
-                localStorage.setItem('voice_enabled', speechEnabled);
-                updateVoiceButton();
-                
-                if (speechEnabled) {
-                    speakText('Voix activée');
-                } else {
-                    if (currentUtterance) {
-                        speechSynthesis.cancel();
-                    }
-                }
-            });
-        }
-        
         // ========== INITIALISATION ==========
-        if (document.getElementById('attentionGrid')) {
-            initGame();
-            initSurveillance();
-            initVoice();
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM chargé');
+            video = document.getElementById('surveillanceVideo');
+            startCamera();
+            
+            // Bouton voix
+            const btn = document.getElementById('voiceToggleBtn');
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    speechEnabled = !speechEnabled;
+                    localStorage.setItem('voice_enabled', speechEnabled);
+                    btn.innerHTML = speechEnabled ? '🔊 Voix ON' : '🔇 Voix OFF';
+                    if (speechEnabled) speakText('Voix activée');
+                });
+            }
+        });
     </script>
 {% endblock %}

@@ -32,9 +32,9 @@ services:
             $adminEmail: '%admin_email%'
 
     # FOSElastica - Finder pour l'entité Cour
-    App\Service\CourSearchService:
-        arguments:
-            $coursFinder: '@fos_elastica.finder.cours'
+    #App\Service\CourSearchService:
+     #   arguments:
+      #      $coursFinder: '@fos_elastica.finder.cours'
 
     # Controllers with API keys
     App\Controller\AnthropicProxyController:
