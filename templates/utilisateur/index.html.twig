@@ -1,47 +1,210 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}Utilisateur index{% endblock %}
+{% block title %}Gestion des Utilisateurs{% endblock %}
 
 {% block body %}
-    <h1>Utilisateur index</h1>
+<div class="container-fluid">
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>PasswordHash</th>
-                <th>Role</th>
-                <th>IsActive</th>
-                <th>CreatedAt</th>
-                <th>Notifications_email</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for utilisateur in utilisateurs %}
-            <tr>
-                <td>{{ utilisateur.id }}</td>
-                <td>{{ utilisateur.username }}</td>
-                <td>{{ utilisateur.email }}</td>
-                <td>{{ utilisateur.passwordHash }}</td>
-                <td>{{ utilisateur.role }}</td>
-                <td>{{ utilisateur.isActive ? 'Yes' : 'No' }}</td>
-                <td>{{ utilisateur.createdAt ? utilisateur.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ utilisateur.notificationsEmail ? 'Yes' : 'No' }}</td>
-                <td>
-                    <a href="{{ path('app_utilisateur_show', {'id': utilisateur.id}) }}">show</a>
-                    <a href="{{ path('app_utilisateur_edit', {'id': utilisateur.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="9">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    {# Header #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-semibold mb-1">Gestion des Utilisateurs</h4>
+            <p class="text-muted mb-0">{{ total }} utilisateur(s) au total</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_utilisateur_new') }}" class="btn btn-primary">
+                <i class="ti ti-plus me-1"></i> Nouvel utilisateur
+            </a>
+            <a href="{{ path('app_logout') }}" class="btn btn-danger">
+                <i class="ti ti-logout me-1"></i> Déconnexion
+            </a>
+        </div>
+    </div>
 
-    <a href="{{ path('app_utilisateur_new') }}">Create new</a>
+    {# Stats #}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-primary-subtle rounded-circle p-3">
+                        <i class="ti ti-users fs-5 text-primary"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 fs-2">Total</p>
+                        <h5 class="fw-bold mb-0">{{ utilisateurs|length }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-success-subtle rounded-circle p-3">
+                        <i class="ti ti-user-check fs-5 text-success"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 fs-2">Actifs</p>
+                        <h5 class="fw-bold mb-0">{{ utilisateurs|filter(u => u.isActive)|length }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-danger-subtle rounded-circle p-3">
+                        <i class="ti ti-shield fs-5 text-danger"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 fs-2">Admins</p>
+                        <h5 class="fw-bold mb-0">{{ utilisateurs|filter(u => u.role == 'admin')|length }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-info-subtle rounded-circle p-3">
+                        <i class="ti ti-school fs-5 text-info"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 fs-2">Enfants</p>
+                        <h5 class="fw-bold mb-0">{{ utilisateurs|filter(u => u.role == 'enfant')|length }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Filters #}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ path('app_utilisateur_index') }}"
+                  class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">🔍 Recherche</label>
+                    <input type="text" name="search" class="form-control"
+                           placeholder="Nom ou email..."
+                           value="{{ search }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">👤 Rôle</label>
+                    <select name="role" class="form-select">
+                        <option value="">Tous les rôles</option>
+                        <option value="admin"  {{ role == 'admin'  ? 'selected' : '' }}>👑 Admin</option>
+                        <option value="enfant" {{ role == 'enfant' ? 'selected' : '' }}>🎓 Enfant</option>
+                        <option value="parent" {{ role == 'parent' ? 'selected' : '' }}>👨‍👩‍👧 Parent</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">✅ Statut</label>
+                    <select name="status" class="form-select">
+                        <option value="">Tous</option>
+                        <option value="1" {{ status == '1' ? 'selected' : '' }}>✅ Actif</option>
+                        <option value="0" {{ status == '0' ? 'selected' : '' }}>❌ Inactif</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        Filtrer
+                    </button>
+                    <a href="{{ path('app_utilisateur_index') }}" class="btn btn-outline-secondary w-100">
+                        ✖
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# Table #}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Utilisateur</th>
+                            <th>Email</th>
+                            <th>Rôle</th>
+                            <th>Statut</th>
+                            <th>Créé le</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for u in utilisateurs %}
+                        <tr>
+                            <td class="text-muted">{{ u.id }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width:38px;height:38px;flex-shrink:0">
+                                        <span class="fw-bold text-primary">
+                                            {{ u.username|upper|slice(0,1) }}
+                                        </span>
+                                    </div>
+                                    <span class="fw-semibold">{{ u.username }}</span>
+                                </div>
+                            </td>
+                            <td class="text-muted">{{ u.email }}</td>
+                            <td>
+                                {% if u.role == 'admin' %}
+                                    <span class="badge bg-danger-subtle text-danger px-3 py-1 rounded-pill">👑 Admin</span>
+                                {% elseif u.role == 'enfant' %}
+                                    <span class="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill">🎓 Enfant</span>
+                                {% elseif u.role == 'parent' %}
+                                    <span class="badge bg-success-subtle text-success px-3 py-1 rounded-pill">👨‍👩‍👧 Parent</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary px-3 py-1 rounded-pill">{{ u.role }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if u.isActive %}
+                                    <span class="badge bg-success-subtle text-success px-3 py-1 rounded-pill">✅ Actif</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger px-3 py-1 rounded-pill">❌ Inactif</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted">
+                                {{ u.createdAt ? u.createdAt|date('d/m/Y') : '—' }}
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-1">
+                                    <a href="{{ path('app_utilisateur_show', {'id': u.id}) }}"
+                                       class="btn btn-sm btn-outline-info" title="Voir">
+                                        <i class="ti ti-eye"></i>
+                                    </a>
+                                    <a href="{{ path('app_utilisateur_edit', {'id': u.id}) }}"
+                                       class="btn btn-sm btn-outline-warning" title="Modifier">
+                                        <i class="ti ti-pencil"></i>
+                                    </a>
+                                    <form method="post"
+                                          action="{{ path('app_utilisateur_delete', {'id': u.id}) }}"
+                                          onsubmit="return confirm('Supprimer « {{ u.username }} » ?')">
+                                        <input type="hidden" name="_token"
+                                               value="{{ csrf_token('delete' ~ u.id) }}">
+                                        <button class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="ti ti-users-off fs-1 d-block mb-2"></i>
+                                Aucun utilisateur trouvé.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
 {% endblock %}
