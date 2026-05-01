@@ -1,50 +1,96 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}Utilisateur{% endblock %}
+{% block title %}Profil — {{ utilisateur.username }}{% endblock %}
 
 {% block body %}
-    <h1>Utilisateur</h1>
+<div class="container-fluid">
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ utilisateur.id }}</td>
-            </tr>
-            <tr>
-                <th>Username</th>
-                <td>{{ utilisateur.username }}</td>
-            </tr>
-            <tr>
-                <th>Email</th>
-                <td>{{ utilisateur.email }}</td>
-            </tr>
-            <tr>
-                <th>PasswordHash</th>
-                <td>{{ utilisateur.passwordHash }}</td>
-            </tr>
-            <tr>
-                <th>Role</th>
-                <td>{{ utilisateur.role }}</td>
-            </tr>
-            <tr>
-                <th>IsActive</th>
-                <td>{{ utilisateur.isActive ? 'Yes' : 'No' }}</td>
-            </tr>
-            <tr>
-                <th>CreatedAt</th>
-                <td>{{ utilisateur.createdAt ? utilisateur.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Notifications_email</th>
-                <td>{{ utilisateur.notificationsEmail ? 'Yes' : 'No' }}</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-semibold mb-1">Profil utilisateur</h4>
+            <p class="text-muted mb-0">Détails de « {{ utilisateur.username }} »</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_utilisateur_edit', {'id': utilisateur.id}) }}"
+               class="btn btn-warning">
+                <i class="ti ti-pencil me-1"></i> Modifier
+            </a>
+            <a href="{{ path('app_utilisateur_index') }}" class="btn btn-outline-secondary">
+                <i class="ti ti-arrow-left me-1"></i> Retour
+            </a>
+        </div>
+    </div>
 
-    <a href="{{ path('app_utilisateur_index') }}">back to list</a>
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
 
-    <a href="{{ path('app_utilisateur_edit', {'id': utilisateur.id}) }}">edit</a>
+                    {# Avatar #}
+                    <div class="text-center mb-4">
+                        <div class="bg-primary-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                             style="width:80px;height:80px">
+                            <span class="fw-bold text-primary" style="font-size:32px">
+                                {{ utilisateur.username|upper|slice(0,1) }}
+                            </span>
+                        </div>
+                        <h5 class="fw-bold mb-1">{{ utilisateur.username }}</h5>
+                        <p class="text-muted mb-0">{{ utilisateur.email }}</p>
+                    </div>
 
-    {{ include('utilisateur/_delete_form.html.twig') }}
+                    <hr>
+
+                    {# Details #}
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1 fs-2">Rôle</p>
+                            {% if utilisateur.role == 'admin' %}
+                                <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill">👑 Admin</span>
+                            {% elseif utilisateur.role == 'enfant' %}
+                                <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">🎓 Enfant</span>
+                            {% else %}
+                                <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">👨‍👩‍👧 Parent</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1 fs-2">Statut</p>
+                            {% if utilisateur.isActive %}
+                                <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">✅ Actif</span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill">❌ Inactif</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1 fs-2">Créé le</p>
+                            <p class="fw-semibold mb-0">
+                                {{ utilisateur.createdAt ? utilisateur.createdAt|date('d/m/Y à H:i') : '—' }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1 fs-2">Notifications email</p>
+                            <p class="fw-semibold mb-0">
+                                {{ utilisateur.notificationsEmail ? '✅ Oui' : '❌ Non' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    {# Delete #}
+                    <form method="post"
+                          action="{{ path('app_utilisateur_delete', {'id': utilisateur.id}) }}"
+                          onsubmit="return confirm('Supprimer définitivement « {{ utilisateur.username }} » ?')">
+                        <input type="hidden" name="_token"
+                               value="{{ csrf_token('delete' ~ utilisateur.id) }}">
+                        <button class="btn btn-outline-danger">
+                            <i class="ti ti-trash me-1"></i> Supprimer cet utilisateur
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
 {% endblock %}

@@ -12,6 +12,22 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class FrontController extends AbstractController
 {
+    #[Route('/', name: 'app_home')]
+    public function home(): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return $this->redirectToRoute('app_utilisateur_index');
+        }
+
+        return $this->redirectToRoute('app_index');
+    }
+
     #[Route('/index', name: 'app_index')]
     public function index(): Response
     {
@@ -39,9 +55,6 @@ final class FrontController extends AbstractController
         ]);
     }
 
-    /**
-     * Page front-office : sélection d'émotion (humeur journalière enfant)
-     */
     #[Route('/enfant/emotions', name: 'app_enfant_emotions', methods: ['GET'])]
     public function emotions(EmotionRepository $emotionRepository): Response
     {
@@ -50,9 +63,6 @@ final class FrontController extends AbstractController
         ]);
     }
 
-    /**
-     * Endpoint AJAX : retourne les scénarios associés à une émotion
-     */
     #[Route('/enfant/emotions/{emotionId}/scenarios', name: 'app_enfant_scenarios_emotion', methods: ['GET'])]
     public function scenariosParEmotion(int $emotionId, ScenarioRepository $scenarioRepository): JsonResponse
     {
