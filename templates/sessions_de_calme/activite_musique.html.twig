@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --kid-bg: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+    --kid-bg: linear-gradient(135deg, #f8e4c3 0%, #ffddb7 50%, #fcfcfc 100%);
     --kid-card-bg: #FFFFFF;
     --kid-primary: #FF6B6B;
     --kid-secondary: #4ECDC4;
@@ -1112,9 +1112,11 @@ function stopSession() {
   document.getElementById('playPauseBtn').textContent = '▶';
   isPlaying = false;
   
-  const dur = Math.round((Date.now() - sessionStartTime) / 60000);
-  const finalDur = dur < 1 ? 1 : dur;
-  document.getElementById('fDureeReelle').value = finalDur;
+  const dureePrevue = chosenDuration / 60;
+  const dureeReelle = Math.max(1, Math.round((Date.now() - sessionStartTime) / 60000));
+  
+  document.getElementById('fDureePrevue').value = dureePrevue;
+  document.getElementById('fDureeReelle').value = dureeReelle;
   
   document.getElementById('btnStop').style.display = 'none';
   document.getElementById('feedbackOverlay').style.display = 'block';

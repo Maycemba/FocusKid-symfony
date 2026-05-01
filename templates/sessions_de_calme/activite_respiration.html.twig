@@ -4,8 +4,13 @@
 
 {% block stylesheets %}
 {{ parent() }}
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
+  * {
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body.breathing-active > *:not(.breathing-universe) {
     display: none !important;
   }
@@ -24,7 +29,6 @@
     background: #0a1628;
   }
 
-  /* Dynamic gradient background that shifts with breath */
   .breathing-universe.phase-inspire {
     background: radial-gradient(ellipse at center, #0d2137 0%, #0a1628 40%, #061020 100%);
   }
@@ -35,7 +39,6 @@
     background: radial-gradient(ellipse at center, #071525 0%, #050f1e 40%, #030a15 100%);
   }
 
-  /* Particle layer */
   #particleCanvas {
     position: absolute;
     inset: 0;
@@ -45,7 +48,6 @@
     opacity: 0.4;
   }
 
-  /* The central organic orb */
   .orb-wrapper {
     position: relative;
     z-index: 2;
@@ -80,15 +82,8 @@
       rgba(30, 120, 160, 0.85) 40%,
       rgba(10, 60, 120, 0.9) 100%
     );
-    box-shadow:
-      0 0 80px rgba(50, 180, 180, 0.4),
-      0 0 160px rgba(30, 120, 160, 0.2),
-      inset 0 -20px 40px rgba(0, 40, 80, 0.3),
-      inset 0 20px 40px rgba(150, 255, 240, 0.1);
-    transition:
-      transform 4s cubic-bezier(0.4, 0, 0.2, 1),
-      background 4s ease,
-      box-shadow 4s ease;
+    box-shadow: 0 0 80px rgba(50, 180, 180, 0.4), 0 0 160px rgba(30, 120, 160, 0.2);
+    transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1), background 4s ease, box-shadow 4s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -105,11 +100,7 @@
       rgba(50, 180, 160, 0.9) 40%,
       rgba(20, 100, 140, 0.9) 100%
     );
-    box-shadow:
-      0 0 120px rgba(80, 220, 200, 0.6),
-      0 0 240px rgba(50, 180, 160, 0.3),
-      inset 0 -20px 40px rgba(0, 60, 100, 0.2),
-      inset 0 20px 40px rgba(200, 255, 250, 0.15);
+    box-shadow: 0 0 120px rgba(80, 220, 200, 0.6), 0 0 240px rgba(50, 180, 160, 0.3);
   }
 
   .orb.hold {
@@ -119,11 +110,7 @@
       rgba(50, 160, 100, 0.9) 40%,
       rgba(20, 80, 60, 0.9) 100%
     );
-    box-shadow:
-      0 0 120px rgba(80, 200, 120, 0.6),
-      0 0 240px rgba(50, 180, 100, 0.3),
-      inset 0 -20px 40px rgba(0, 50, 30, 0.2),
-      inset 0 20px 40px rgba(180, 255, 200, 0.15);
+    box-shadow: 0 0 120px rgba(80, 200, 120, 0.6), 0 0 240px rgba(50, 180, 100, 0.3);
   }
 
   .orb.contract {
@@ -133,11 +120,7 @@
       rgba(30, 80, 160, 0.85) 40%,
       rgba(10, 30, 80, 0.9) 100%
     );
-    box-shadow:
-      0 0 60px rgba(50, 120, 200, 0.3),
-      0 0 120px rgba(30, 80, 160, 0.15),
-      inset 0 -20px 40px rgba(0, 20, 60, 0.3),
-      inset 0 20px 40px rgba(120, 200, 255, 0.08);
+    box-shadow: 0 0 60px rgba(50, 120, 200, 0.3), 0 0 120px rgba(30, 80, 160, 0.15);
   }
 
   .orb-text {
@@ -149,7 +132,6 @@
     text-align: center;
     text-shadow: 0 1px 10px rgba(0,0,0,0.5);
     line-height: 1;
-    transition: opacity 0.5s;
   }
 
   .orb-count {
@@ -161,7 +143,6 @@
     text-shadow: 0 0 20px rgba(150,255,240,0.5);
   }
 
-  /* Guide text below orb */
   .breath-guide {
     position: relative;
     z-index: 2;
@@ -175,7 +156,6 @@
     font-weight: 300;
     letter-spacing: 2px;
     min-height: 1.6em;
-    transition: opacity 0.5s, color 1s;
   }
 
   .cycle-display {
@@ -186,7 +166,6 @@
     margin-top: 8px;
   }
 
-  /* Progress ring */
   .progress-ring-container {
     position: relative;
     z-index: 2;
@@ -208,10 +187,9 @@
     stroke: rgba(80, 200, 180, 0.7);
     stroke-width: 3;
     stroke-linecap: round;
-    transition: stroke-dashoffset 1s linear, stroke 2s ease;
+    transition: stroke-dashoffset 1s linear;
   }
 
-  /* Timer in ring center */
   .ring-timer {
     position: absolute;
     top: 50%;
@@ -234,7 +212,6 @@
     text-transform: uppercase;
   }
 
-  /* Controls */
   .breath-controls {
     position: relative;
     z-index: 2;
@@ -277,7 +254,6 @@
     color: rgba(240, 150, 150, 1);
   }
 
-  /* Sound controls */
   .sound-picker {
     position: relative;
     z-index: 2;
@@ -305,7 +281,6 @@
     background: rgba(80, 200, 180, 0.08);
   }
 
-  /* Feedback layer */
   .feedback-layer {
     display: none;
     position: fixed;
@@ -335,7 +310,6 @@
   }
 
   .feedback-card h2 {
-    font-family: 'Nunito', sans-serif;
     font-size: 1.8rem;
     font-weight: 300;
     color: rgba(150, 220, 210, 0.9);
@@ -404,7 +378,6 @@
     box-shadow: 0 6px 30px rgba(50, 180, 160, 0.4);
   }
 
-  /* Static entry page (before session starts) */
   .entry-page {
     max-width: 600px;
     margin: 0 auto;
@@ -493,13 +466,21 @@
     transform: translateY(-3px);
     box-shadow: 0 6px 30px rgba(30,120,160,0.4);
   }
+
+  @media (max-width: 768px) {
+    .orb { width: 160px; height: 160px; }
+    .orb.expand { transform: scale(1.4); }
+    .orb.contract { transform: scale(0.7); }
+    .breath-btn { padding: 8px 20px; font-size: 0.85rem; }
+    .sound-chip { font-size: 0.7rem; }
+    .feedback-card { margin: 20px; padding: 32px 24px; }
+  }
 </style>
 {% endblock %}
 
 {% block body %}
-<!-- Entry page (visible before session) -->
 <div class="entry-page" id="entryPage">
-  <div class="entry-orb-preview" onclick="launchImmersive()">
+  <div class="entry-orb-preview">
     <span style="font-size:2.5rem; color:rgba(255,255,255,0.8)">🌬️</span>
   </div>
   <h2 class="entry-title">Respiration guidée</h2>
@@ -507,16 +488,15 @@
 
   <div style="margin-bottom:16px; font-size:0.8rem; color:#9ca3af; text-transform:uppercase; letter-spacing:2px;">Choisir un rythme</div>
   <div class="pattern-selector">
-    <button class="pattern-btn active" data-in="4" data-hold="4" data-out="4" onclick="setPattern(this)">⬡ Carré · 4-4-4</button>
-    <button class="pattern-btn" data-in="4" data-hold="7" data-out="8" onclick="setPattern(this)">🌙 4-7-8</button>
-    <button class="pattern-btn" data-in="5" data-hold="0" data-out="5" onclick="setPattern(this)">🌊 Vague · 5-5</button>
-    <button class="pattern-btn" data-in="3" data-hold="0" data-out="3" onclick="setPattern(this)">⚡ Rapide · 3-3</button>
+    <button class="pattern-btn active" data-in="4" data-hold="4" data-out="4">⬡ Carré · 4-4-4</button>
+    <button class="pattern-btn" data-in="4" data-hold="7" data-out="8">🌙 4-7-8</button>
+    <button class="pattern-btn" data-in="5" data-hold="0" data-out="5">🌊 Vague · 5-5</button>
+    <button class="pattern-btn" data-in="3" data-hold="0" data-out="3">⚡ Rapide · 3-3</button>
   </div>
 
-  <button class="start-immersive-btn" onclick="launchImmersive()">Commencer l'expérience</button>
+  <button class="start-immersive-btn">Commencer l'expérience</button>
 </div>
 
-<!-- IMMERSIVE UNIVERSE -->
 <div class="breathing-universe" id="breathingUniverse" style="display:none;">
   <canvas id="particleCanvas"></canvas>
 
@@ -548,31 +528,30 @@
   </div>
 
   <div class="sound-picker">
-    <button class="sound-chip active" data-sound="none" onclick="setSound(this)">🔇 Silence</button>
-    <button class="sound-chip" data-sound="rain" onclick="setSound(this)">🌧️ Pluie</button>
-    <button class="sound-chip" data-sound="wind" onclick="setSound(this)">🍃 Vent</button>
-    <button class="sound-chip" data-sound="forest" onclick="setSound(this)">🌿 Forêt</button>
+    <button class="sound-chip active" data-sound="none">🔇 Silence</button>
+    <button class="sound-chip" data-sound="rain">🌧️ Pluie</button>
+    <button class="sound-chip" data-sound="wind">🍃 Vent</button>
+    <button class="sound-chip" data-sound="forest">🌿 Forêt</button>
   </div>
 
   <div class="breath-controls">
-    <button class="breath-btn breath-btn-stop" id="stopBreathBtn" onclick="stopImmersive()">⏹ Terminer la session</button>
+    <button class="breath-btn breath-btn-stop" id="stopBreathBtn">⏹ Terminer la session</button>
   </div>
 </div>
 
-<!-- FEEDBACK LAYER -->
-<div class="feedback-layer" id="feedbackLayer" style="display:flex; display:none;">
+<div class="feedback-layer" id="feedbackLayer">
   <div class="feedback-card">
     <h2>Bien respiré ✨</h2>
     <p>COMMENT TE SENS-TU MAINTENANT ?</p>
 
-    <form method="post" action="{{ path('app_session_calme_save') }}">
+    <form method="post" action="{{ path('app_session_calme_save') }}" id="feedbackForm">
       <input type="hidden" name="type_activite" value="respiration">
       <input type="hidden" name="duree_reelle" id="fDuree">
       <input type="hidden" name="feedback_enfant" id="fFeedback">
 
       <div class="star-row">
         {% for i in 1..5 %}
-        <button type="button" class="star-btn" data-val="{{ i }}" onclick="rateStar({{ i }})">◯</button>
+        <button type="button" class="star-btn" data-val="{{ i }}">◯</button>
         {% endfor %}
       </div>
 
@@ -587,212 +566,381 @@
 {% block javascripts %}
 {{ parent() }}
 <script>
-// ── PATTERN ───────────────────────────────────────────────
+// Configuration
 let pattern = { in: 4, hold: 4, out: 4 };
 let sessionDuration = 5 * 60;
-let sessionStart, sessionTimer, breathingRunner;
-let cycleCount = 0, totalBreaths = 0;
+let sessionStart = null;
+let sessionTimer = null;
+let breathingRunner = null;
+let currentPhaseInterval = null;
+let cycleCount = 0;
+let totalBreaths = 0;
 let audioCtx = null;
-let noiseNode = null;
+let noiseSource = null;
+let animationFrame = null;
+let isRunning = false;
 
-function setPattern(btn) {
-  document.querySelectorAll('.pattern-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  pattern = {
-    in: parseInt(btn.dataset.in),
-    hold: parseInt(btn.dataset.hold),
-    out: parseInt(btn.dataset.out)
-  };
+// DOM Elements
+const entryPage = document.getElementById('entryPage');
+const breathingUniverse = document.getElementById('breathingUniverse');
+const feedbackLayer = document.getElementById('feedbackLayer');
+const breathOrb = document.getElementById('breathOrb');
+const orbLabel = document.getElementById('orbLabel');
+const orbCount = document.getElementById('orbCount');
+const breathInstruction = document.getElementById('breathInstruction');
+const cycleDisplay = document.getElementById('cycleDisplay');
+const ringTimer = document.getElementById('ringTimer');
+const progressRing = document.getElementById('progressRing');
+const stopBtn = document.getElementById('stopBreathBtn');
+const startBtn = document.querySelector('.start-immersive-btn');
+const patternBtns = document.querySelectorAll('.pattern-btn');
+const soundChips = document.querySelectorAll('.sound-chip');
+const starBtns = document.querySelectorAll('.star-btn');
+const feedbackForm = document.getElementById('feedbackForm');
+const fDuree = document.getElementById('fDuree');
+const fFeedback = document.getElementById('fFeedback');
+
+const circumference = 2 * Math.PI * 44;
+
+// Pattern selection
+patternBtns.forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    patternBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    pattern = {
+      in: parseInt(btn.dataset.in),
+      hold: parseInt(btn.dataset.hold),
+      out: parseInt(btn.dataset.out)
+    };
+  });
+});
+
+// Start session
+function launchImmersive() {
+  if (isRunning) return;
+  
+  entryPage.style.display = 'none';
+  breathingUniverse.style.display = 'flex';
+  document.body.classList.add('breathing-active');
+  
+  initParticles();
+  startParticleAnimation();
+  
+  sessionStart = Date.now();
+  let timeLeft = sessionDuration;
+  
+  // Update timer every second
+  sessionTimer = setInterval(() => {
+    if (!isRunning) return;
+    timeLeft--;
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    ringTimer.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+    
+    const progress = 1 - (timeLeft / sessionDuration);
+    const offset = circumference * (1 - progress);
+    progressRing.style.strokeDashoffset = offset;
+    
+    if (timeLeft <= 0) {
+      clearInterval(sessionTimer);
+      stopImmersive();
+    }
+  }, 1000);
+  
+  isRunning = true;
+  runBreathingCycle();
 }
 
-// ── AMBIENT SOUND ─────────────────────────────────────────
-function setSound(btn) {
-  document.querySelectorAll('.sound-chip').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const sound = btn.dataset.sound;
-
-  if (audioCtx) { audioCtx.close(); audioCtx = null; }
-  if (sound === 'none') return;
-
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const bufferSize = 4096;
-  const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-  const output = noiseBuffer.getChannelData(0);
-
-  for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
-
-  const source = audioCtx.createBufferSource();
-  source.buffer = noiseBuffer;
-  source.loop = true;
-
-  const filter = audioCtx.createBiquadFilter();
-  if (sound === 'rain') { filter.type = 'highpass'; filter.frequency.value = 800; }
-  else if (sound === 'wind') { filter.type = 'bandpass'; filter.frequency.value = 300; filter.Q.value = 0.5; }
-  else if (sound === 'forest') { filter.type = 'lowpass'; filter.frequency.value = 600; }
-
-  const gain = audioCtx.createGain();
-  gain.gain.value = 0.08;
-
-  source.connect(filter);
-  filter.connect(gain);
-  gain.connect(audioCtx.destination);
-  source.start();
-
-  // Gentle volume envelope
-  gain.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 2);
+// Breathing cycle
+function runBreathingCycle() {
+  if (!isRunning) return;
+  
+  totalBreaths++;
+  cycleCount = (totalBreaths + 1) / 2;
+  cycleDisplay.textContent = `Cycle ${Math.floor(cycleCount)} · ${totalBreaths} respiration${totalBreaths > 1 ? 's' : ''}`;
+  
+  animatePhase('Inspire', pattern.in, 'expand', 'Inspire doucement par le nez...', () => {
+    if (pattern.hold > 0) {
+      animatePhase('Retiens', pattern.hold, 'hold', 'Retiens ton souffle doucement...', () => {
+        animatePhase('Expire', pattern.out, 'contract', 'Expire lentement par la bouche...', runBreathingCycle);
+      });
+    } else {
+      animatePhase('Expire', pattern.out, 'contract', 'Expire lentement par la bouche...', runBreathingCycle);
+    }
+  });
 }
 
-// ── PARTICLE CANVAS ───────────────────────────────────────
-const pCanvas = document.getElementById('particleCanvas');
-const pCtx = pCanvas.getContext('2d');
+function animatePhase(label, seconds, className, instruction, nextFn) {
+  if (!isRunning) return;
+  
+  breathOrb.className = 'orb ' + className;
+  orbLabel.textContent = label;
+  breathInstruction.textContent = instruction;
+  
+  const universe = breathingUniverse;
+  universe.className = 'breathing-universe phase-' + 
+    (className === 'expand' ? 'inspire' : className === 'hold' ? 'hold' : 'expire');
+  
+  let count = seconds;
+  orbCount.textContent = count;
+  
+  if (currentPhaseInterval) clearInterval(currentPhaseInterval);
+  
+  currentPhaseInterval = setInterval(() => {
+    if (!isRunning) {
+      clearInterval(currentPhaseInterval);
+      return;
+    }
+    count--;
+    orbCount.textContent = Math.max(0, count);
+    if (count <= 0) {
+      clearInterval(currentPhaseInterval);
+      currentPhaseInterval = null;
+      nextFn();
+    }
+  }, 1000);
+}
+
+// Stop session
+function stopImmersive() {
+  isRunning = false;
+  
+  if (sessionTimer) {
+    clearInterval(sessionTimer);
+    sessionTimer = null;
+  }
+  
+  if (currentPhaseInterval) {
+    clearInterval(currentPhaseInterval);
+    currentPhaseInterval = null;
+  }
+  
+  if (animationFrame) {
+    cancelAnimationFrame(animationFrame);
+    animationFrame = null;
+  }
+  
+  if (audioCtx) {
+    audioCtx.close().catch(console.error);
+    audioCtx = null;
+    noiseSource = null;
+  }
+  
+  breathingUniverse.style.display = 'none';
+  document.body.classList.remove('breathing-active');
+  
+   const duration = Math.max(1, Math.round((Date.now() - sessionStart) / 60000));
+  const dureeInput = document.getElementById('fDuree');
+  if (dureeInput) {
+    dureeInput.value = duration;
+  }
+  
+  entryPage.style.display = 'block';
+  feedbackLayer.style.display = 'flex';
+}
+
+// Ambient sounds
+async function setSound(soundType) {
+  if (audioCtx) {
+    await audioCtx.close();
+    audioCtx = null;
+    noiseSource = null;
+  }
+  
+  if (soundType === 'none') return;
+  
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    await audioCtx.resume();
+    
+    const bufferSize = 4096;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+    
+    noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+    noiseSource.loop = true;
+    
+    const filter = audioCtx.createBiquadFilter();
+    switch(soundType) {
+      case 'rain':
+        filter.type = 'highpass';
+        filter.frequency.value = 600;
+        break;
+      case 'wind':
+        filter.type = 'bandpass';
+        filter.frequency.value = 300;
+        filter.Q.value = 0.7;
+        break;
+      case 'forest':
+        filter.type = 'lowpass';
+        filter.frequency.value = 800;
+        break;
+    }
+    
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.05;
+    
+    noiseSource.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    noiseSource.start();
+    
+    gain.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 2);
+  } catch (err) {
+    console.warn('Audio error:', err);
+  }
+}
+
+// Sound selection
+soundChips.forEach(chip => {
+  chip.addEventListener('click', (e) => {
+    soundChips.forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    setSound(chip.dataset.sound);
+  });
+});
+
+// Particle system
+const canvas = document.getElementById('particleCanvas');
+const ctx = canvas.getContext('2d');
 let particles = [];
-let animFrame;
 
 function resizeCanvas() {
-  pCanvas.width = window.innerWidth;
-  pCanvas.height = window.innerHeight;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
 
 function initParticles() {
+  resizeCanvas();
   particles = [];
-  for (let i = 0; i < 40; i++) {
+  const particleCount = Math.min(60, Math.floor(window.innerWidth / 20));
+  
+  for (let i = 0; i < particleCount; i++) {
     particles.push({
-      x: Math.random() * pCanvas.width,
-      y: Math.random() * pCanvas.height,
-      r: Math.random() * 2 + 0.5,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      alpha: Math.random() * 0.5 + 0.1
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: Math.random() * 3 + 1,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      alpha: Math.random() * 0.3 + 0.1
     });
   }
 }
 
 function drawParticles() {
-  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
   particles.forEach(p => {
     p.x += p.vx;
     p.y += p.vy;
-    if (p.x < 0) p.x = pCanvas.width;
-    if (p.x > pCanvas.width) p.x = 0;
-    if (p.y < 0) p.y = pCanvas.height;
-    if (p.y > pCanvas.height) p.y = 0;
-
-    pCtx.beginPath();
-    pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    pCtx.fillStyle = `rgba(80, 200, 180, ${p.alpha})`;
-    pCtx.fill();
+    
+    if (p.x < 0) p.x = canvas.width;
+    if (p.x > canvas.width) p.x = 0;
+    if (p.y < 0) p.y = canvas.height;
+    if (p.y > canvas.height) p.y = 0;
+    
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(80, 200, 180, ${p.alpha})`;
+    ctx.fill();
   });
-  animFrame = requestAnimationFrame(drawParticles);
 }
 
-// ── BREATHING CYCLE ───────────────────────────────────────
-const circumference = 2 * Math.PI * 44; // 276.46
-
-function animatePhase(label, seconds, className, instruction, nextFn) {
-  const orb = document.getElementById('breathOrb');
-  const orbLabel = document.getElementById('orbLabel');
-  const orbCount = document.getElementById('orbCount');
-  const breathInstruction = document.getElementById('breathInstruction');
-  const universe = document.getElementById('breathingUniverse');
-
-  orb.className = 'orb ' + className;
-  orbLabel.textContent = label;
-  orbInstruction = instruction;
-  breathInstruction.textContent = instruction;
-
-  // Phase bg class
-  universe.className = 'breathing-universe phase-' + (className === 'expand' ? 'inspire' : className === 'hold' ? 'hold' : 'expire');
-
-  // Ring progress
-  const ring = document.getElementById('progressRing');
-
-  let count = seconds;
-  orbCount.textContent = count;
-
-  const iv = setInterval(() => {
-    count--;
-    orbCount.textContent = Math.max(0, count);
-    if (count <= 0) {
-      clearInterval(iv);
-      nextFn();
-    }
-  }, 1000);
-
-  breathingRunner = { iv };
+function startParticleAnimation() {
+  if (animationFrame) cancelAnimationFrame(animationFrame);
+  
+  function animate() {
+    if (!breathingUniverse || breathingUniverse.style.display === 'none') return;
+    drawParticles();
+    animationFrame = requestAnimationFrame(animate);
+  }
+  animate();
 }
 
-function runCycle() {
-  totalBreaths++;
-  cycleCount++;
-  document.getElementById('cycleDisplay').textContent = `Cycle ${cycleCount} · ${totalBreaths} respirations`;
+// Star rating system
+let currentRating = 0;
 
-  animatePhase('Inspire', pattern.in, 'expand', 'Inspire doucement par le nez...', () => {
-    if (pattern.hold > 0) {
-      animatePhase('Retiens', pattern.hold, 'hold', 'Retiens ton souffle doucement...', () => {
-        animatePhase('Expire', pattern.out, 'contract', 'Expire lentement par la bouche...', runCycle);
-      });
+starBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const val = parseInt(btn.dataset.val);
+    currentRating = val;
+    fFeedback.value = val;
+    
+    starBtns.forEach((star, index) => {
+      const starVal = parseInt(star.dataset.val);
+      if (starVal <= val) {
+        star.textContent = '★';
+        star.classList.add('lit');
+      } else {
+        star.textContent = '☆';
+        star.classList.remove('lit');
+      }
+    });
+  });
+});
+
+// Form submission
+feedbackForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  if (currentRating === 0) {
+    alert('Veuillez donner une note à votre expérience 🌟');
+    return;
+  }
+  
+  const formData = new FormData(feedbackForm);
+  
+  try {
+    const response = await fetch(feedbackForm.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+    
+    if (response.ok) {
+      alert('Merci pour ton retour ! 🌟');
+      feedbackLayer.style.display = 'none';
+      window.location.reload();
     } else {
-      animatePhase('Expire', pattern.out, 'contract', 'Expire lentement par la bouche...', runCycle);
+      alert('Une erreur est survenue, mais votre expérience a été enregistrée.');
+      window.location.reload();
     }
-  });
-}
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Merci pour votre session !');
+    window.location.reload();
+  }
+});
 
-// ── LAUNCH ────────────────────────────────────────────────
-function launchImmersive() {
-  document.getElementById('entryPage').style.display = 'none';
-  const universe = document.getElementById('breathingUniverse');
-  universe.style.display = 'flex';
-  document.body.classList.add('breathing-active');
+// Event listeners
+startBtn.addEventListener('click', launchImmersive);
+stopBtn.addEventListener('click', stopImmersive);
 
-  resizeCanvas();
-  initParticles();
-  drawParticles();
-
-  sessionStart = Date.now();
-  let timeLeft = sessionDuration;
-
-  sessionTimer = setInterval(() => {
-    timeLeft--;
-    const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
-    document.getElementById('ringTimer').textContent = `${m}:${String(s).padStart(2,'0')}`;
-
-    const progress = 1 - (timeLeft / sessionDuration);
-    const offset = circumference * (1 - progress);
-    document.getElementById('progressRing').style.strokeDashoffset = offset;
-
-    if (timeLeft <= 0) { clearInterval(sessionTimer); stopImmersive(); }
-  }, 1000);
-
-  runCycle();
-}
-
-function stopImmersive() {
-  clearInterval(sessionTimer);
-  if (breathingRunner) clearInterval(breathingRunner.iv);
-  if (animFrame) cancelAnimationFrame(animFrame);
-  if (audioCtx) { audioCtx.close(); audioCtx = null; }
-
-  document.getElementById('breathingUniverse').style.display = 'none';
-  document.body.classList.remove('breathing-active');
-
-  const dur = Math.round((Date.now() - sessionStart) / 60000);
-  document.getElementById('fDuree').value = dur || 1;
-  document.getElementById('feedbackLayer').style.display = 'flex';
-}
-
-// ── STARS ─────────────────────────────────────────────────
-function rateStar(val) {
-  document.getElementById('fFeedback').value = val;
-  document.querySelectorAll('.star-btn').forEach(s => {
-    s.textContent = parseInt(s.dataset.val) <= val ? '◉' : '◯';
-    s.classList.toggle('lit', parseInt(s.dataset.val) <= val);
-  });
-}
-
+// Window resize handler
 window.addEventListener('resize', () => {
-  if (document.getElementById('breathingUniverse').style.display !== 'none') {
-    resizeCanvas();
+  if (breathingUniverse.style.display !== 'none') {
     initParticles();
+  }
+});
+
+// Initialize stars
+starBtns.forEach(btn => {
+  btn.textContent = '☆';
+});
+
+// Prevent accidental navigation
+window.addEventListener('beforeunload', (e) => {
+  if (isRunning) {
+    e.preventDefault();
+    e.returnValue = 'La session est en cours. Voulez-vous vraiment quitter ?';
   }
 });
 </script>
