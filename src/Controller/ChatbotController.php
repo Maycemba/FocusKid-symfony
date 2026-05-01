@@ -16,12 +16,13 @@ class ChatbotController extends AbstractController
         private HttpClientInterface $httpClient,
         private string $groqApiKey,
         private CoursIAService $ia
-    ) {}
+    ) {
+    }
 
     #[Route('/suggest', name: 'chatbot_suggest', methods: ['POST'])]
     public function suggest(Request $request): JsonResponse
     {
-        $data    = json_decode($request->getContent(), true);
+        $data = json_decode($request->getContent(), true);
         $message = trim($data['message'] ?? '');
         $context = $data['context'] ?? [];
         $forceLocal = (bool) ($data['force_local'] ?? false);
@@ -30,10 +31,8 @@ class ChatbotController extends AbstractController
             return $this->json(['error' => 'Message vide'], 400);
         }
 
-        // 1. Essayer Groq API (LLaMA) en priorité, sauf si le client force le local
         if (!$forceLocal && $this->groqApiKey !== '') {
             try {
-                // ── System prompt optimisé TDAH ──────────────────────────────
                 $systemPrompt =
                     "Tu es un expert en pédagogie spécialisée pour les enfants TDAH (Trouble Déficit de l'Attention avec ou sans Hyperactivité), "
                     . "intégré dans la plateforme FocusKids.\n\n"
@@ -44,9 +43,9 @@ class ChatbotController extends AbstractController
                     . "- Formateur : " . $this->val($context['formateur'] ?? '') . "\n\n"
                     . "RÈGLES ABSOLUES — applique-les à CHAQUE réponse :\n"
                     . "1. TITRES : max 7 mots, commence par un verbe d'action ou une question, crée un défi/mystère/aventure. "
-                    . "   Exemples : 'Deviens un super calculateur !', 'Le mystère des formes cachées', 'Mission : décode les mots !'\n"
+                    . "Exemples : 'Deviens un super calculateur !', 'Le mystère des formes cachées', 'Mission : décode les mots !'\n"
                     . "2. DESCRIPTIONS : 2-3 phrases MAXIMUM. Parle DIRECTEMENT à l'enfant avec 'tu'. "
-                    . "   Mots simples. Mentionne une activité fun ou un défi concret. Donne envie IMMÉDIATEMENT.\n"
+                    . "Mots simples. Mentionne une activité fun ou un défi concret. Donne envie IMMÉDIATEMENT.\n"
                     . "3. ACTIVITÉS : courtes (max 15 min), avec mouvement ou défi, jamais passives.\n"
                     . "4. TON : énergique, enthousiaste, jamais scolaire ou ennuyeux.\n"
                     . "5. STRUCTURE : utilise des listes à puces avec un emoji par item.\n"
@@ -56,37 +55,40 @@ class ChatbotController extends AbstractController
                 $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
                     'headers' => [
                         'Authorization' => 'Bearer ' . $this->groqApiKey,
-                        'Content-Type'  => 'application/json',
+                        'Content-Type' => 'application/json',
                     ],
                     'json' => [
-                        'model'       => 'llama-3.3-70b-versatile',
-                        'messages'    => [
+                        'model' => 'llama-3.3-70b-versatile',
+                        'messages' => [
                             ['role' => 'system', 'content' => $systemPrompt],
-                            ['role' => 'user',   'content' => $message],
+                            ['role' => 'user', 'content' => $message],
                         ],
                         'temperature' => 0.85,
-                        'max_tokens'  => 900,
+                        'max_tokens' => 900,
                     ],
                 ]);
 
                 $result = $response->toArray();
-                $reply  = $result['choices'][0]['message']['content'] ?? null;
+                $reply = $result['choices'][0]['message']['content'] ?? null;
 
                 if ($reply) {
                     return $this->json(['reply' => $reply]);
                 }
             } catch (\Throwable) {
-                // Groq indisponible → fallback TF-IDF
+                // Groq indisponible -> fallback local
             }
         }
 
-        // 2. Fallback : modèle local entraîné
         try {
             $reply = $forceLocal
                 ? $this->ia->genererPackCours($message, $context)
                 : $this->ia->repondre($message, $context);
 
-            return $this->json(['reply' => $forceLocal ? $reply : $reply . "\n\n_(réponse locale - vérifiez votre clé Groq)_"]);
+            return $this->json([
+                'reply' => $forceLocal
+                    ? $reply
+                    : $reply . "\n\n_(réponse locale - vérifiez votre clé Groq)_"
+            ]);
         } catch (\Throwable $e) {
             return $this->json(['error' => 'Service indisponible : ' . $e->getMessage()], 500);
         }
