@@ -187,6 +187,58 @@ class CoursIAService
         return $this->genererReponse($intention, $matiere, $confiance);
     }
 
+    public function genererPackCours(string $question = '', array $context = []): string
+    {
+        $this->chargerModele();
+
+        $titreCours = trim((string) ($context['titre'] ?? ''));
+        $niveau = trim((string) ($context['niveau'] ?? ''));
+        $description = trim((string) ($context['description'] ?? ''));
+        $seed = $this->calculerSeed($question, $titreCours, $niveau, $description);
+        $matiere = $this->detecterMatiere($titreCours . ' ' . $description);
+
+        $titres = $this->selectionnerSuggestions('titre', $matiere, 4, $seed);
+        $descriptions = $this->selectionnerSuggestions('description', $matiere, 2, $seed + 11);
+        $objectifs = $this->selectionnerSuggestions('objectif', $matiere, 4, $seed + 23);
+        $plan = $this->selectionnerSuggestions('plan', $matiere, 4, $seed + 37);
+        $activites = $this->selectionnerSuggestions('activite', $matiere, 4, $seed + 53);
+
+        $titreContexte = $this->creerSuggestionContextuelle('titre', $matiere, $titreCours, $niveau);
+        $descriptionContexte = $this->creerSuggestionContextuelle('description', $matiere, $titreCours, $niveau);
+        $objectifContexte = $this->creerSuggestionContextuelle('objectif', $matiere, $titreCours, $niveau);
+        $planContexte = $this->creerSuggestionContextuelle('plan', $matiere, $titreCours, $niveau);
+        $activiteContexte = $this->creerSuggestionContextuelle('activite', $matiere, $titreCours, $niveau);
+
+        if ($titreContexte !== null) {
+            array_unshift($titres, $titreContexte);
+        }
+        if ($descriptionContexte !== null) {
+            array_unshift($descriptions, $descriptionContexte);
+        }
+        if ($objectifContexte !== null) {
+            array_unshift($objectifs, $objectifContexte);
+        }
+        if ($planContexte !== null) {
+            array_unshift($plan, $planContexte);
+        }
+        if ($activiteContexte !== null) {
+            array_unshift($activites, $activiteContexte);
+        }
+
+        return implode("\n\n", [
+            '###TITRES###',
+            implode("\n", array_map(fn($item) => "- $item", array_slice($titres, 0, 5))),
+            '###DESCRIPTIONS###',
+            implode("\n", array_map(fn($item) => "- $item", array_slice($descriptions, 0, 3))),
+            '###OBJECTIFS###',
+            implode("\n", array_map(fn($item) => "- $item", array_slice($objectifs, 0, 5))),
+            '###PLAN###',
+            implode("\n", array_map(fn($item) => "- $item", array_slice($plan, 0, 5))),
+            '###ACTIVITES###',
+            implode("\n", array_map(fn($item) => "- $item", array_slice($activites, 0, 5))),
+        ]);
+    }
+
     private function predire(string $texte): array
     {
         $vecteur = $this->tfidfVectorize($texte);
@@ -265,9 +317,10 @@ class CoursIAService
 
         $matieres = [
             'mathematiques' => ['math', 'calcul', 'nombre', 'geometrie', 'algebre', 'fraction', 'equation', 'chiffre', 'operation'],
+            'animaux'       => ['animal', 'animaux', 'faune', 'mammifere', 'oiseaux', 'oiseau', 'reptile', 'poisson', 'insecte', 'espece', 'habitat', 'nature'],
             'francais'      => ['francais', 'lecture', 'grammaire', 'orthographe', 'conjugaison', 'vocabulaire', 'redaction', 'ecriture', 'mot'],
             'sciences'      => ['science', 'biologie', 'physique', 'chimie', 'nature', 'vivant', 'experience', 'corps', 'plante'],
-            'histoire'      => ['histoire', 'geographie', 'chronologie', 'civilisation', 'guerre', 'revolution', 'moyen age', 'pharaon'],
+            'histoire'      => ['histoire', 'geographie', 'chronologie', 'civilisation', 'guerre', 'revolution', 'moyen age', 'pharaon', 'antiquite', 'roi', 'reine', 'passe', 'passé'],
             'anglais'       => ['anglais', 'english', 'vocabulary', 'grammar', 'speaking', 'mot anglais'],
         ];
 
@@ -312,6 +365,132 @@ class CoursIAService
         $contenu = implode("\n", array_map(fn($i) => "• $i", $items));
 
         return "$intro\n\n$contenu";
+    }
+
+    private function selectionnerSuggestions(string $intention, string $matiere, int $limite, int $seed = 0): array
+    {
+        $specifique = $this->suggestionsSpecifiques($intention, $matiere);
+        if (!empty($specifique)) {
+            usort($specifique, function (string $a, string $b) use ($seed): int {
+                return strcmp(md5($seed . '|' . $a), md5($seed . '|' . $b));
+            });
+
+            return array_slice(array_values(array_unique($specifique)), 0, $limite);
+        }
+
+        $pool = $this->reponses[$intention] ?? $this->reponses['aide'];
+        $liste = $pool[$matiere] ?? $pool['default'] ?? $pool[array_key_first($pool)];
+
+        $liste = array_values(array_unique(array_filter($liste)));
+        usort($liste, function (string $a, string $b) use ($seed): int {
+            return strcmp(md5($seed . '|' . $a), md5($seed . '|' . $b));
+        });
+
+        return array_slice($liste, 0, $limite);
+    }
+
+    private function suggestionsSpecifiques(string $intention, string $matiere): array
+    {
+        $bank = [
+            'animaux' => [
+                'titre' => [
+                    '🐾 Mission animaux : qui vit où ?',
+                    '🦁 Détective de la faune - à toi de jouer !',
+                    '⚡ Chasse aux espèces : trouve les bons animaux !',
+                    '🎯 Le grand quiz du monde animal !',
+                    '🐶 Quel animal se cache derrière l\'indice ?',
+                ],
+                'description' => [
+                    '🐾 Tu pars à la découverte du monde des animaux avec des missions rapides et amusantes ! Tu observes, tu compares et tu apprends en jouant.',
+                    '🦁 Aujourd\'hui, tu deviens un vrai explorateur de la nature ! Des animaux surprenants, des défis express et des mini-enquêtes t\'attendent.',
+                    '⚡ Tu vas apprendre sur les animaux sans t\'ennuyer une seule seconde ! Chaque étape te fait découvrir une nouvelle espèce.',
+                ],
+                'objectif' => [
+                    '🐾 Identifier plusieurs animaux et les classer selon leurs caractéristiques',
+                    '🦴 Comprendre où vivent les animaux et comment ils se déplacent',
+                    '🎯 Retenir 5 informations clés sur un animal étudié',
+                    '🏆 Comparer deux espèces sans se tromper',
+                    '🚀 Décrire un animal avec des mots simples et précis',
+                ],
+                'activite' => [
+                    '🦁 Quiz animal express : reconnaître l\'animal en 5 indices',
+                    '🐾 Tri des animaux : classer ceux qui vivent dans l\'eau, la terre ou les airs',
+                    '🔎 Enquête nature : retrouver les empreintes et deviner l\'animal',
+                    '🎯 Mime animalier : faire deviner l\'animal sans parler',
+                    '🏃 Défi des habitats : courir vers la bonne zone selon l\'animal montré',
+                ],
+            ],
+            'histoire' => [
+                'titre' => [
+                    '⚔️ Voyage dans le temps : mission histoire !',
+                    '🏰 Enquête sur le passé - prêt à remonter le temps ?',
+                    '📜 Les secrets de l\'histoire à découvrir !',
+                    '🗺️ Chasseur de repères : l\'histoire comme aventure !',
+                    '🏛️ Civilisations mystères : qui était qui ?',
+                ],
+                'description' => [
+                    '📜 Tu voyages dans le temps et tu découvres le passé comme un vrai enquêteur ! Des indices, des repères et des mystères t\'attendent.',
+                    '🏛️ Tu explores les grandes époques de l\'histoire avec des défis rapides et des surprises à chaque étape.',
+                    '⚡ Tu vas apprendre l\'histoire sans t\'ennuyer : des personnages, des dates et des aventures à remettre dans l\'ordre.',
+                ],
+                'objectif' => [
+                    '🏛️ Retrouver les grandes étapes d\'une période historique',
+                    '📜 Placer des événements dans le bon ordre chronologique',
+                    '🎯 Identifier les personnages importants d\'une époque',
+                    '🚀 Expliquer le passé avec des mots simples et clairs',
+                    '🏆 Retenir 5 repères historiques sans se perdre',
+                ],
+                'activite' => [
+                    '🏰 Frise humaine : se placer dans le bon ordre chronologique',
+                    '📜 Chasse aux repères : retrouver les dates et personnages cachés',
+                    '⚔️ Vrai/Faux historique : répondre vite sans se tromper',
+                    '🎭 Mini-scène du passé : rejouer un événement historique en 3 minutes',
+                    '🗺️ Carte flash : associer un lieu à une époque ou à un personnage',
+                ],
+            ],
+        ];
+
+        return $bank[$matiere][$intention] ?? [];
+    }
+
+    private function creerSuggestionContextuelle(string $section, string $matiere, string $titreCours, string $niveau): ?string
+    {
+        $titre = $this->raccourcirTexte($titreCours, 7);
+        $niveau = $niveau !== '' ? $this->raccourcirTexte($niveau, 4) : '';
+
+        return match ($section) {
+            'titre' => $titre !== '' ? "✨ Mission : $titre" : null,
+            'description' => $titre !== ''
+                ? 'Tu vas travailler sur "' . $titre . '" avec des défis rapides et un objectif clair.'
+                : null,
+            'objectif' => $titre !== ''
+                ? 'Réussir un défi sur "' . $titre . '"' . ($niveau !== '' ? ' pour le niveau ' . $niveau : '')
+                : null,
+            'plan' => $titre !== ''
+                ? 'Commencer par "' . $titre . '" puis avancer par étapes courtes et dynamiques.'
+                : null,
+            'activite' => $titre !== ''
+                ? 'Transformer "' . $titre . '" en mini-jeu chrono avec une consigne simple.'
+                : null,
+            default => null,
+        };
+    }
+
+    private function calculerSeed(string $question, string $titre, string $niveau, string $description): int
+    {
+        return abs((int) crc32($question . '|' . $titre . '|' . $niveau . '|' . $description));
+    }
+
+    private function raccourcirTexte(string $texte, int $maxMots): string
+    {
+        $mots = preg_split('/\s+/', trim($texte)) ?: [];
+        $mots = array_values(array_filter($mots, fn($mot) => $mot !== ''));
+
+        if (count($mots) <= $maxMots) {
+            return trim(implode(' ', $mots));
+        }
+
+        return trim(implode(' ', array_slice($mots, 0, $maxMots))) . '...';
     }
 
     private function chargerModele(): void

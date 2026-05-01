@@ -24,13 +24,14 @@ class ChatbotController extends AbstractController
         $data    = json_decode($request->getContent(), true);
         $message = trim($data['message'] ?? '');
         $context = $data['context'] ?? [];
+        $forceLocal = (bool) ($data['force_local'] ?? false);
 
         if ($message === '') {
             return $this->json(['error' => 'Message vide'], 400);
         }
 
-        // 1. Essayer Groq API (LLaMA) en priorité
-        if ($this->groqApiKey !== '') {
+        // 1. Essayer Groq API (LLaMA) en priorité, sauf si le client force le local
+        if (!$forceLocal && $this->groqApiKey !== '') {
             try {
                 // ── System prompt optimisé TDAH ──────────────────────────────
                 $systemPrompt =
@@ -79,10 +80,13 @@ class ChatbotController extends AbstractController
             }
         }
 
-        // 2. Fallback : modèle TF-IDF local entraîné
+        // 2. Fallback : modèle local entraîné
         try {
-            $reply = $this->ia->repondre($message, $context);
-            return $this->json(['reply' => $reply . "\n\n_(réponse locale - vérifiez votre clé Groq)_"]);
+            $reply = $forceLocal
+                ? $this->ia->genererPackCours($message, $context)
+                : $this->ia->repondre($message, $context);
+
+            return $this->json(['reply' => $forceLocal ? $reply : $reply . "\n\n_(réponse locale - vérifiez votre clé Groq)_"]);
         } catch (\Throwable $e) {
             return $this->json(['error' => 'Service indisponible : ' . $e->getMessage()], 500);
         }

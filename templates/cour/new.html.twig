@@ -393,7 +393,7 @@ Réponds EXACTEMENT dans ce format (copie les marqueurs tels quels) :
                 const res  = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: prompt, context: ctx }),
+                    body: JSON.stringify({ message: prompt, context: ctx, force_local: true }),
                 });
                 const data = await res.json();
 
