@@ -34,3 +34,6 @@ services:
     App\Controller\ChatbotLeconController:
         arguments:
             $groqApiKey: '%env(GROQ_API_KEY)%'
+    App\Service\CoursIAService:
+        arguments:
+            $modelPath: '%kernel.project_dir%/var/ai/model.json'

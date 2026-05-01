@@ -11,169 +11,196 @@
         .badge-publie      { background:#4CAF50; color:white; }
         .badge-archive     { background:#9E9E9E; color:white; }
 
-        /* ── Bouton flottant ─────────────────────────────────── */
-        #chatbot-toggle {
-            position: fixed;
-            bottom: 28px;
-            right: 28px;
-            width: 58px;
-            height: 58px;
-            border-radius: 50%;
+        /* ── Bouton IA ───────────────────────────────────────── */
+        #btn-generer-ia {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: #fff;
             border: none;
-            font-size: 24px;
+            border-radius: 10px;
+            padding: 10px 22px;
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(102,126,234,.55);
-            z-index: 1050;
-            display: flex;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(102,126,234,.4);
+            transition: transform .2s, box-shadow .2s;
+            margin-bottom: 1.2rem;
+        }
+        #btn-generer-ia:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,.55); }
+        #btn-generer-ia:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+        /* ── Modal ───────────────────────────────────────────── */
+        #ia-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            z-index: 2000;
             align-items: center;
             justify-content: center;
+        }
+        #ia-modal-overlay.open { display: flex; }
+
+        #ia-modal {
+            background: #fff;
+            border-radius: 18px;
+            width: 680px;
+            max-width: 95vw;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,.25);
+            animation: popIn .25s cubic-bezier(.34,1.56,.64,1);
+        }
+        @keyframes popIn { from { transform: scale(.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .ia-modal-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .ia-modal-header h5 { margin: 0; font-size: 17px; font-weight: 700; }
+        .ia-modal-header p  { margin: 0; font-size: 12px; opacity: .8; }
+        .ia-modal-close {
+            margin-left: auto;
+            background: rgba(255,255,255,.2);
+            border: none;
+            color: #fff;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .ia-modal-close:hover { background: rgba(255,255,255,.35); }
+
+        .ia-modal-body {
+            padding: 20px 22px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Sections suggestions */
+        .ia-section { margin-bottom: 20px; }
+        .ia-section-title {
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #667eea;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #f0f0ff;
+        }
+
+        /* Cards de suggestion */
+        .ia-card {
+            border: 1.5px solid #e8e8f0;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            line-height: 1.55;
+            cursor: pointer;
+            transition: border-color .15s, background .15s, transform .1s;
+            position: relative;
+        }
+        .ia-card:hover {
+            border-color: #667eea;
+            background: #f5f5ff;
+            transform: translateX(3px);
+        }
+        .ia-card .ia-card-use {
+            position: absolute;
+            right: 12px; top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity .15s;
+        }
+        .ia-card:hover .ia-card-use { opacity: 1; }
+
+        /* Loading spinner */
+        .ia-loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #667eea;
+        }
+        .ia-spinner {
+            width: 40px; height: 40px;
+            border: 4px solid #f0f0ff;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            margin: 0 auto 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Chatbot flottant ─────────────────────────────────── */
+        #chatbot-toggle {
+            position: fixed; bottom: 28px; right: 28px;
+            width: 58px; height: 58px; border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff; border: none; font-size: 24px; cursor: pointer;
+            box-shadow: 0 6px 20px rgba(102,126,234,.55);
+            z-index: 1050; display: flex; align-items: center; justify-content: center;
             transition: transform .2s, box-shadow .2s;
         }
         #chatbot-toggle:hover { transform:scale(1.1); box-shadow:0 8px 26px rgba(102,126,234,.7); }
         #chatbot-toggle .badge-notif {
             position:absolute; top:4px; right:4px;
-            background:#ff4757; color:#fff;
-            border-radius:50%; width:16px; height:16px;
-            font-size:10px; display:flex; align-items:center; justify-content:center;
+            background:#ff4757; color:#fff; border-radius:50%;
+            width:16px; height:16px; font-size:10px;
+            display:flex; align-items:center; justify-content:center;
         }
-
-        /* ── Fenêtre chatbot ─────────────────────────────────── */
         #chatbot-window {
-            position: fixed;
-            bottom: 98px;
-            right: 28px;
-            width: 370px;
-            max-height: 520px;
-            background: #fff;
-            border-radius: 18px;
-            box-shadow: 0 12px 40px rgba(0,0,0,.18);
-            display: flex;
-            flex-direction: column;
-            z-index: 1049;
-            overflow: hidden;
-            transform: scale(.85) translateY(30px);
-            opacity: 0;
-            pointer-events: none;
+            position: fixed; bottom: 98px; right: 28px;
+            width: 370px; max-height: 520px; background: #fff;
+            border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.18);
+            display: flex; flex-direction: column; z-index: 1049; overflow: hidden;
+            transform: scale(.85) translateY(30px); opacity: 0; pointer-events: none;
             transition: transform .25s cubic-bezier(.34,1.56,.64,1), opacity .2s;
         }
-        #chatbot-window.open {
-            transform: scale(1) translateY(0);
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        /* Header */
-        .cb-header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            padding: 14px 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .cb-header .cb-avatar {
-            width: 36px; height: 36px; border-radius: 50%;
-            background: rgba(255,255,255,.25);
-            display:flex; align-items:center; justify-content:center;
-            font-size:18px;
-        }
+        #chatbot-window.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+        .cb-header { background: linear-gradient(135deg,#667eea,#764ba2); color:#fff; padding:14px 18px; display:flex; align-items:center; gap:10px; }
+        .cb-header .cb-avatar { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center; font-size:18px; }
         .cb-header .cb-title   { font-weight:700; font-size:15px; }
         .cb-header .cb-subtitle{ font-size:11px; opacity:.8; }
-        .cb-header .cb-close   { margin-left:auto; background:none; border:none; color:#fff; font-size:20px; cursor:pointer; line-height:1; }
-
-        /* Suggestions rapides */
-        .cb-quick {
-            padding: 10px 14px 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        .cb-quick button {
-            font-size: 11.5px;
-            padding: 5px 11px;
-            border-radius: 20px;
-            border: 1.5px solid #667eea;
-            color: #667eea;
-            background: #f0f0ff;
-            cursor: pointer;
-            transition: background .15s, color .15s;
-            white-space: nowrap;
-        }
+        .cb-header .cb-close   { margin-left:auto; background:none; border:none; color:#fff; font-size:20px; cursor:pointer; }
+        .cb-quick { padding:10px 14px 0; display:flex; flex-wrap:wrap; gap:6px; }
+        .cb-quick button { font-size:11.5px; padding:5px 11px; border-radius:20px; border:1.5px solid #667eea; color:#667eea; background:#f0f0ff; cursor:pointer; transition:background .15s,color .15s; white-space:nowrap; }
         .cb-quick button:hover { background:#667eea; color:#fff; }
-
-        /* Messages */
-        .cb-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            scroll-behavior: smooth;
-        }
+        .cb-messages { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; scroll-behavior:smooth; }
         .cb-msg { display:flex; gap:8px; align-items:flex-start; }
-        .cb-msg.bot .cb-bubble {
-            background: #f0f0ff;
-            border-radius: 4px 14px 14px 14px;
-            color: #2d2d2d;
-        }
+        .cb-msg.bot .cb-bubble { background:#f0f0ff; border-radius:4px 14px 14px 14px; color:#2d2d2d; }
         .cb-msg.user { flex-direction:row-reverse; }
-        .cb-msg.user .cb-bubble {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            border-radius: 14px 4px 14px 14px;
-        }
-        .cb-bubble {
-            padding: 10px 13px;
-            font-size: 13.5px;
-            line-height: 1.5;
-            max-width: 265px;
-            word-break: break-word;
-        }
-        .cb-bubble ul { margin:6px 0 0 16px; padding:0; }
-        .cb-bubble li { margin-bottom:3px; }
-        .cb-msg-icon {
-            width:28px; height:28px; border-radius:50%;
-            background:#667eea; color:#fff;
-            display:flex; align-items:center; justify-content:center;
-            font-size:14px; flex-shrink:0; margin-top:2px;
-        }
+        .cb-msg.user .cb-bubble { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border-radius:14px 4px 14px 14px; }
+        .cb-bubble { padding:10px 13px; font-size:13.5px; line-height:1.5; max-width:265px; word-break:break-word; }
+        .cb-msg-icon { width:28px; height:28px; border-radius:50%; background:#667eea; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; margin-top:2px; }
         .cb-msg.user .cb-msg-icon { background:#764ba2; }
-
-        /* Typing dots */
         .cb-typing { display:flex; gap:4px; padding:10px 13px; align-items:center; }
-        .cb-typing span {
-            width:7px; height:7px; border-radius:50%;
-            background:#aaa; animation:bounce 1.2s infinite;
-        }
+        .cb-typing span { width:7px; height:7px; border-radius:50%; background:#aaa; animation:bounce 1.2s infinite; }
         .cb-typing span:nth-child(2){ animation-delay:.2s; }
         .cb-typing span:nth-child(3){ animation-delay:.4s; }
         @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-7px)} }
-
-        /* Input */
-        .cb-input-row {
-            display: flex;
-            gap: 8px;
-            padding: 12px 14px;
-            border-top: 1px solid #eee;
-        }
-        .cb-input-row input {
-            flex:1; border:1.5px solid #ddd; border-radius:22px;
-            padding:9px 15px; font-size:13.5px; outline:none;
-            transition:border-color .15s;
-        }
+        .cb-input-row { display:flex; gap:8px; padding:12px 14px; border-top:1px solid #eee; }
+        .cb-input-row input { flex:1; border:1.5px solid #ddd; border-radius:22px; padding:9px 15px; font-size:13.5px; outline:none; }
         .cb-input-row input:focus { border-color:#667eea; }
-        .cb-input-row button {
-            width:38px; height:38px; border-radius:50%;
-            background:linear-gradient(135deg,#667eea,#764ba2);
-            border:none; color:#fff; font-size:16px;
-            cursor:pointer; display:flex; align-items:center; justify-content:center;
-            transition:transform .15s;
-        }
-        .cb-input-row button:hover { transform:scale(1.08); }
-        .cb-input-row button:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+        .cb-input-row button { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); border:none; color:#fff; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+        .cb-input-row button:disabled { opacity:.5; cursor:not-allowed; }
     </style>
 {% endblock %}
 
@@ -196,7 +223,34 @@
             </div>
 
             <div class="card-body">
+
+                {# ── BOUTON IA ── #}
+                <button id="btn-generer-ia" type="button">
+                    ✨ Générer avec l'IA
+                </button>
+
                 {{ include('cour/_form.html.twig', {'button_label': 'Enregistrer le cours'}) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════════
+   MODAL IA
+══════════════════════════════════════════════════ #}
+<div id="ia-modal-overlay">
+    <div id="ia-modal">
+        <div class="ia-modal-header">
+            <div>
+                <h5>✨ Suggestions IA pour votre cours</h5>
+                <p>Cliquez sur une suggestion pour l'utiliser dans le formulaire</p>
+            </div>
+            <button class="ia-modal-close" id="ia-modal-close">✕</button>
+        </div>
+        <div class="ia-modal-body" id="ia-modal-body">
+            <div class="ia-loading">
+                <div class="ia-spinner"></div>
+                <p>L'IA génère vos suggestions...</p>
             </div>
         </div>
     </div>
@@ -205,14 +259,11 @@
 {# ══════════════════════════════════════════════════
    CHATBOT FLOTTANT
 ══════════════════════════════════════════════════ #}
-
-{# Bouton flottant #}
 <button id="chatbot-toggle" title="Assistant pédagogique IA">
     🤖
     <span class="badge-notif" id="chatbot-notif">1</span>
 </button>
 
-{# Fenêtre chatbot #}
 <div id="chatbot-window">
     <div class="cb-header">
         <div class="cb-avatar">🎓</div>
@@ -222,28 +273,23 @@
         </div>
         <button class="cb-close" id="chatbot-close" title="Fermer">✕</button>
     </div>
-
-    {# Suggestions rapides #}
     <div class="cb-quick">
-        <button data-q="Suggère-moi un titre accrocheur">💡 Titre</button>
-        <button data-q="Donne-moi des idées de description">📝 Description</button>
-        <button data-q="Quels objectifs pédagogiques pour ce cours ?">🎯 Objectifs</button>
-        <button data-q="Propose un plan de cours structuré">📚 Plan</button>
-        <button data-q="Des activités ludiques adaptées au niveau ?">🎮 Activités</button>
+        <button data-q="Donne-moi 5 titres ultra-accrocheurs pour un enfant TDAH, courts et dynamiques avec un défi ou une aventure">💡 Titres TDAH</button>
+        <button data-q="Écris 3 descriptions courtes et percutantes pour un enfant TDAH, 2-3 phrases max, parle-lui directement avec 'tu', donne envie tout de suite">📝 Descriptions</button>
+        <button data-q="Propose 5 activités ludiques très courtes et stimulantes adaptées aux enfants TDAH, avec du mouvement ou du défi">🎮 Activités fun</button>
+        <button data-q="Donne-moi un plan de séance en 5 étapes courtes adapté aux enfants TDAH avec des transitions rapides">📚 Plan rapide</button>
+        <button data-q="Comment capter et garder l'attention d'un enfant TDAH pendant ce cours ? Donne des astuces concrètes">🧠 Astuces TDAH</button>
     </div>
-
     <div class="cb-messages" id="cb-messages">
-        {# Message de bienvenue #}
         <div class="cb-msg bot">
             <div class="cb-msg-icon">🎓</div>
             <div class="cb-bubble">
-                Bonjour ! Je suis votre assistant pédagogique IA. 👋<br><br>
-                Je peux vous aider à trouver des <strong>idées de titres, descriptions, objectifs et plans de cours</strong>.<br><br>
+                Bonjour ! Je suis votre assistant pédagogique spécialisé <strong>TDAH</strong>. 🧠⚡<br><br>
+                Je génère des <strong>titres percutants, descriptions accrocheuses et activités dynamisantes</strong> pensées pour capter l'attention des enfants TDAH.<br><br>
                 Utilisez les boutons rapides ou posez-moi une question !
             </div>
         </div>
     </div>
-
     <div class="cb-input-row">
         <input type="text" id="cb-input" placeholder="Posez une question..." maxlength="400" />
         <button id="cb-send" title="Envoyer">➤</button>
@@ -254,20 +300,229 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-    // ── Statut badge ──────────────────────────────────────────────
+    const apiUrl = '{{ path("chatbot_suggest") }}';
+
+    // ── Utilitaire : récupère le contexte du formulaire ───────────
+    function getFormContext() {
+        return {
+            titre:       document.getElementById('cour_titre')?.value       || '',
+            niveau:      document.getElementById('cour_niveau')?.value      || '',
+            description: document.getElementById('cour_description')?.value || '',
+            formateur:   document.getElementById('cour_formateur')?.value   || '',
+        };
+    }
+
+    // ── Utilitaire : markdown simple → HTML ──────────────────────
+    function mdToHtml(text) {
+        return text
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g,'<em>$1</em>')
+            .replace(/^[*\-•+]\s+(.+)$/gm,'<li>$1</li>')
+            .replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
+            .replace(/\n/g,'<br>');
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // BOUTON IA + MODAL
+    // ══════════════════════════════════════════════════════════════
     (function () {
-        const statutField = document.getElementById('cour_statut');
-        const statutBadge = document.getElementById('statutBadge');
+        const btn     = document.getElementById('btn-generer-ia');
+        const overlay = document.getElementById('ia-modal-overlay');
+        const body    = document.getElementById('ia-modal-body');
+        const closeBtn= document.getElementById('ia-modal-close');
+
+        // Ouvrir la modal et lancer la génération
+        btn.addEventListener('click', async () => {
+            overlay.classList.add('open');
+            body.innerHTML = `
+                <div class="ia-loading">
+                    <div class="ia-spinner"></div>
+                    <p>L'IA génère vos suggestions...</p>
+                </div>`;
+
+            btn.disabled = true;
+
+            const ctx = getFormContext();
+            const niveau = ctx.niveau || 'non précisé';
+            const titre  = ctx.titre  || 'sans titre';
+
+            // Marqueurs ###SECTION### détectés côté JS sans risque de décalage d'index
+            const prompt = `Tu es un expert en pédagogie pour enfants TDAH. Génère du contenu CAPTIVANT pour un cours intitulé "${titre}", niveau "${niveau}".
+
+RÈGLES ABSOLUES :
+- Titres : max 7 mots, verbe d'action ou défi. Ex: "Mission : bats le record !", "Le secret des nombres !".
+- Descriptions : 2-3 phrases MAX, tutoiement direct ("tu"), ton énergique, mentionne une activité fun.
+- JAMAIS de texte introductif. Commence DIRECTEMENT par ###TITRES###.
+
+Réponds EXACTEMENT dans ce format (copie les marqueurs tels quels) :
+
+###TITRES###
+- [titre 1]
+- [titre 2]
+- [titre 3]
+- [titre 4]
+- [titre 5]
+
+###DESCRIPTIONS###
+- [description 1 : 2-3 phrases, tutoiement, ton dynamique]
+- [description 2 : 2-3 phrases, tutoiement, ton dynamique]
+- [description 3 : 2-3 phrases, tutoiement, ton dynamique]
+
+###OBJECTIFS###
+- [objectif 1]
+- [objectif 2]
+- [objectif 3]
+- [objectif 4]
+- [objectif 5]
+
+###PLAN###
+- [étape 1]
+- [étape 2]
+- [étape 3]
+- [étape 4]
+- [étape 5]
+
+###ACTIVITES###
+- [activité 1]
+- [activité 2]
+- [activité 3]
+- [activité 4]`.trim();
+
+            try {
+                const res  = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: prompt, context: ctx }),
+                });
+                const data = await res.json();
+
+                if (data.error) {
+                    body.innerHTML = `<div class="alert alert-danger">❌ ${data.error}</div>`;
+                } else {
+                    afficherSuggestions(data.reply, ctx);
+                }
+            } catch (e) {
+                body.innerHTML = `<div class="alert alert-danger">❌ Impossible de contacter l'IA.</div>`;
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // Fermer la modal
+        closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+
+        // ══════════════════════════════════════════════════════════
+        // afficherSuggestions — parsing par marqueurs ###SECTION###
+        // Robuste : le champ cible est lié au NOM du marqueur,
+        // jamais à l'index → aucun risque de décalage.
+        // ══════════════════════════════════════════════════════════
+        function afficherSuggestions(texte, ctx) {
+
+            // Mapping marqueur → champ HTML + label affiché
+            const SECTIONS = {
+                'TITRES':      { champ: 'cour_titre',        label: '💡 Titres accrocheurs TDAH' },
+                'DESCRIPTIONS':{ champ: 'cour_description',  label: '📝 Descriptions engageantes' },
+                'OBJECTIFS':   { champ: null,                label: '🎯 Objectifs pédagogiques' },
+                'PLAN':        { champ: null,                label: '📚 Plan de séance' },
+                'ACTIVITES':   { champ: null,                label: '🎮 Activités fun' },
+            };
+
+            // Découper le texte sur les marqueurs ###NOM###
+            // Tout texte avant le premier marqueur est ignoré (intro du LLM)
+            const regex = /###([A-ZÉÈÀÂÊÎÔÛÙÇ_]+)###/g;
+            const positions = [];
+            let match;
+            while ((match = regex.exec(texte)) !== null) {
+                positions.push({ nom: match[1], debut: match.index, fin: match.index + match[0].length });
+            }
+
+            let html = '';
+
+            positions.forEach((pos, i) => {
+                const cfg = SECTIONS[pos.nom];
+                if (!cfg) return; // marqueur inconnu → ignorer
+
+                // Contenu entre ce marqueur et le suivant (ou fin du texte)
+                const contenuBrut = texte.slice(pos.fin, i + 1 < positions.length ? positions[i + 1].debut : undefined);
+
+                // Extraire les items de liste (lignes commençant par -, *, •, +)
+                const items = contenuBrut
+                    .split('\n')
+                    .map(l => l.replace(/^[\*\-•+]\s*/, '').trim())
+                    .filter(l => l.length > 0);
+
+                html += `<div class="ia-section">
+                    <div class="ia-section-title">${cfg.label}</div>`;
+
+                if (items.length > 0) {
+                    items.forEach(item => {
+                        const btnUse = cfg.champ
+                            ? `<button class="ia-card-use" data-champ="${cfg.champ}" data-valeur="${item.replace(/"/g,'&quot;')}">Utiliser</button>`
+                            : '';
+                        html += `<div class="ia-card">${item}${btnUse}</div>`;
+                    });
+                } else {
+                    html += `<div class="ia-card">${mdToHtml(contenuBrut.trim())}</div>`;
+                }
+
+                html += `</div>`;
+            });
+
+            // Fallback si aucun marqueur trouvé (LLM n'a pas suivi le format)
+            if (!html) {
+                html = `<div class="ia-card">${mdToHtml(texte)}</div>`;
+            }
+
+            body.innerHTML = html;
+
+            // Boutons "Utiliser" → remplir le champ correspondant
+            body.querySelectorAll('.ia-card-use').forEach(b => {
+                b.addEventListener('click', e => {
+                    e.stopPropagation();
+                    const champ = b.dataset.champ;
+                    const valeur = b.dataset.valeur;
+                    const field = document.getElementById(champ);
+                    if (field) {
+                        field.value = valeur;
+                        field.dispatchEvent(new Event('input'));
+                        overlay.classList.remove('open');
+
+                        // Flash visuel sur le champ rempli
+                        field.style.transition = 'box-shadow .3s';
+                        field.style.boxShadow = '0 0 0 3px rgba(102,126,234,.5)';
+                        setTimeout(() => field.style.boxShadow = '', 1500);
+                    }
+                });
+            });
+
+            // Clic sur la card elle-même (sans bouton) → copier dans presse-papier
+            body.querySelectorAll('.ia-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const texte = card.textContent.replace('Utiliser', '').trim();
+                    navigator.clipboard?.writeText(texte);
+                });
+            });
+        }
+    })();
+
+    // ══════════════════════════════════════════════════════════════
+    // STATUT BADGE + COMPTEUR DESCRIPTION
+    // ══════════════════════════════════════════════════════════════
+    (function () {
+        const statutField    = document.getElementById('cour_statut');
+        const statutBadge    = document.getElementById('statutBadge');
         const descriptionField = document.getElementById('cour_description');
-        const charCount = document.getElementById('charCount');
+        const charCount      = document.getElementById('charCount');
 
         function updateBadge() {
             if (!statutField || !statutBadge) return;
             const value = (statutField.value || '').toLowerCase();
             statutBadge.className = 'badge-type';
-            if (value.includes('publi'))      statutBadge.classList.add('badge-publie');
-            else if (value === 'archive')     statutBadge.classList.add('badge-archive');
-            else                              statutBadge.classList.add('badge-brouillon');
+            if (value.includes('publi'))  statutBadge.classList.add('badge-publie');
+            else if (value === 'archive') statutBadge.classList.add('badge-archive');
+            else                          statutBadge.classList.add('badge-brouillon');
             statutBadge.textContent = (statutField.options[statutField.selectedIndex]?.text || 'BROUILLON').toUpperCase();
         }
 
@@ -276,31 +531,30 @@
             charCount.textContent = `${descriptionField.value.length}/500 caractères`;
         }
 
-        if (statutField)      { statutField.addEventListener('change', updateBadge); updateBadge(); }
-        if (descriptionField) { descriptionField.addEventListener('input', updateCounter); updateCounter(); }
+        if (statutField)       { statutField.addEventListener('change', updateBadge); updateBadge(); }
+        if (descriptionField)  { descriptionField.addEventListener('input', updateCounter); updateCounter(); }
     })();
 
-    // ── Chatbot ───────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════
+    // CHATBOT FLOTTANT
+    // ══════════════════════════════════════════════════════════════
     (function () {
-        const toggle   = document.getElementById('chatbot-toggle');
-        const win      = document.getElementById('chatbot-window');
-        const closeBtn = document.getElementById('chatbot-close');
-        const messages = document.getElementById('cb-messages');
-        const input    = document.getElementById('cb-input');
-        const sendBtn  = document.getElementById('cb-send');
-        const notif    = document.getElementById('chatbot-notif');
+        const toggle    = document.getElementById('chatbot-toggle');
+        const win       = document.getElementById('chatbot-window');
+        const closeBtn  = document.getElementById('chatbot-close');
+        const messages  = document.getElementById('cb-messages');
+        const input     = document.getElementById('cb-input');
+        const sendBtn   = document.getElementById('cb-send');
+        const notif     = document.getElementById('chatbot-notif');
         const quickBtns = document.querySelectorAll('.cb-quick button');
-        const apiUrl   = '{{ path("chatbot_suggest") }}';
-
         let isOpen = false;
 
-        // Ouvrir / fermer
         toggle.addEventListener('click', () => {
             isOpen = !isOpen;
             win.classList.toggle('open', isOpen);
             toggle.innerHTML = isOpen ? '✕' : '🤖';
             if (notif) notif.remove();
-            if (isOpen) { setTimeout(() => input.focus(), 300); }
+            if (isOpen) setTimeout(() => input.focus(), 300);
         });
         closeBtn.addEventListener('click', () => {
             isOpen = false;
@@ -308,45 +562,26 @@
             toggle.innerHTML = '🤖';
         });
 
-        // Récupère le contexte du formulaire
-        function getFormContext() {
-            return {
-                titre:       document.getElementById('cour_titre')?.value       || '',
-                niveau:      document.getElementById('cour_niveau')?.value      || '',
-                description: document.getElementById('cour_description')?.value || '',
-                formateur:   document.getElementById('cour_formateur')?.value   || '',
-            };
-        }
-
-        // Ajoute un message dans la fenêtre
         function addMessage(text, role) {
-            const wrap = document.createElement('div');
+            const wrap   = document.createElement('div');
             wrap.className = `cb-msg ${role}`;
-
-            const icon = document.createElement('div');
+            const icon   = document.createElement('div');
             icon.className = 'cb-msg-icon';
             icon.textContent = role === 'bot' ? '🎓' : '👤';
-
             const bubble = document.createElement('div');
             bubble.className = 'cb-bubble';
-
-            // Convertit les listes markdown simples
-            const html = text
+            bubble.innerHTML = text
                 .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
                 .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g,'<em>$1</em>')
                 .replace(/^[-•]\s+(.+)$/gm,'<li>$1</li>')
-                .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+                .replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
                 .replace(/\n/g,'<br>');
-            bubble.innerHTML = html;
-
             wrap.appendChild(icon);
             wrap.appendChild(bubble);
             messages.appendChild(wrap);
             messages.scrollTop = messages.scrollHeight;
         }
 
-        // Indicateur de frappe
         function addTyping() {
             const wrap = document.createElement('div');
             wrap.className = 'cb-msg bot';
@@ -361,44 +596,33 @@
             messages.scrollTop = messages.scrollHeight;
         }
 
-        function removeTyping() {
-            document.getElementById('cb-typing-indicator')?.remove();
-        }
+        function removeTyping() { document.getElementById('cb-typing-indicator')?.remove(); }
 
-        // Envoi du message
         async function send(text) {
             const msg = (text || input.value).trim();
             if (!msg) return;
-
             input.value = '';
             sendBtn.disabled = true;
             addMessage(msg, 'user');
             addTyping();
-
             try {
-                const res = await fetch(apiUrl, {
+                const res  = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: msg, context: getFormContext() }),
                 });
                 const data = await res.json();
                 removeTyping();
-
-                if (data.error) {
-                    addMessage('❌ Erreur : ' + data.error, 'bot');
-                } else {
-                    addMessage(data.reply, 'bot');
-                }
+                addMessage(data.error ? '❌ ' + data.error : data.reply, 'bot');
             } catch (e) {
                 removeTyping();
-                addMessage('❌ Impossible de contacter l\'assistant. Vérifiez votre connexion.', 'bot');
+                addMessage('❌ Impossible de contacter l\'assistant.', 'bot');
             } finally {
                 sendBtn.disabled = false;
                 input.focus();
             }
         }
 
-        // Événements
         sendBtn.addEventListener('click', () => send());
         input.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
         quickBtns.forEach(btn => btn.addEventListener('click', () => send(btn.dataset.q)));
