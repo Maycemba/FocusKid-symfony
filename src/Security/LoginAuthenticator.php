@@ -4,6 +4,7 @@ namespace App\Security;
 
 use App\Entity\Utilisateur;
 use App\Repository\UtilisateurRepository;
+use App\Service\AnomalyDetector;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,7 +23,8 @@ class LoginAuthenticator extends AbstractAuthenticator
 {
     public function __construct(
         private RouterInterface $router,
-        private UtilisateurRepository $userRepo
+        private UtilisateurRepository $userRepo,
+        private AnomalyDetector $anomalyDetector
     ) {}
 
     public function supports(Request $request): ?bool
@@ -36,6 +38,7 @@ class LoginAuthenticator extends AbstractAuthenticator
         $username = trim($request->request->get('username', ''));
         $password = $request->request->get('password', '');
         $session  = $request->getSession();
+        $ip       = $request->getClientIp() ?? '0.0.0.0';
 
         // ── CAPTCHA ────────────────────────────────────────────────
         $expected = strtoupper(trim((string) $session->get('captcha_code', '')));
@@ -67,6 +70,8 @@ class LoginAuthenticator extends AbstractAuthenticator
         $user = $this->userRepo->findOneBy(['username' => $username]);
 
         if (!$user) {
+            // ── Anomaly detection on failure ────────────────────────
+            $this->anomalyDetector->analyze($username, $ip);
             throw new CustomUserMessageAuthenticationException(
                 'Nom d\'utilisateur introuvable.'
             );
@@ -78,24 +83,23 @@ class LoginAuthenticator extends AbstractAuthenticator
             );
         }
 
-        $hash = $user->getPasswordHash();
+        $hash  = $user->getPasswordHash();
         $valid = false;
 
         if (str_starts_with($hash, '$2y$') || str_starts_with($hash, '$2a$')) {
-            // bcrypt hash
             $valid = password_verify($password, $hash);
         } else {
-            // plain text (legacy) — direct comparison
             $valid = ($password === $hash);
         }
 
         if (!$valid) {
+            // ── Anomaly detection on failure ────────────────────────
+            $this->anomalyDetector->analyze($username, $ip);
             throw new CustomUserMessageAuthenticationException(
                 'Mot de passe incorrect.'
             );
         }
 
-        // All good — return a self-validating passport (we already checked password)
         return new SelfValidatingPassport(
             new UserBadge($username, fn() => $user)
         );
