@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Controller;
-
+use App\Service\SessionAnalyzerService;
+use App\Entity\Utilisateur;
 use App\Entity\SessionsDeCalme;
 use App\Form\SessionsDeCalmeType;
 use App\Repository\SessionsDeCalmeRepository;
@@ -50,44 +51,65 @@ final class SessionsDeCalmeController extends AbstractController
         ]);
     }
 
-    #[Route('/save-session', name: 'app_session_calme_save', methods: ['POST'])]
-    public function saveSession(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $session = new SessionsDeCalme();
-        
-        // Récupérer l'utilisateur connecté (enfant)
-        // À adapter selon votre système d'authentification
-        // $user = $this->getUser();
-        // $session->setUtilisateur($user);
-        
-        $session->setTypeActivite($request->request->get('type_activite'));
-        $session->setDeclencheur('enfant');
-        $session->setHorodatage(new \DateTime());
-        
-        if ($request->request->get('duree_prevue')) {
-            $session->setDureePrevue((int)$request->request->get('duree_prevue'));
-        }
-        
-        if ($request->request->get('duree_reelle')) {
-            $session->setDureeReelle((int)$request->request->get('duree_reelle'));
-        }
-        
-        if ($request->request->get('feedback_enfant')) {
-            $session->setFeedbackEnfant((int)$request->request->get('feedback_enfant'));
-        }
-        
-        if ($request->request->get('note_parent')) {
-            $session->setNoteParent($request->request->get('note_parent'));
-        }
-        
-        $entityManager->persist($session);
-        $entityManager->flush();
-        
-        $this->addFlash('success', 'Merci pour ta session de calme ! Bravo pour ce moment de détente 🎉');
-        
-        return $this->redirectToRoute('app_sessions_de_calme_front');
+    // Dans SessionsDeCalmeController.php, remplacez la méthode saveSession par :
+#[Route('/save-session', name: 'app_session_calme_save', methods: ['POST'])]
+public function saveSession(
+    Request $request, 
+    EntityManagerInterface $entityManager,
+    SessionAnalyzerService $sessionAnalyzerService  // Injection du service
+): Response
+{
+    $session = new SessionsDeCalme();
+    
+    // Récupérer l'utilisateur connecté
+    $user = $this->getUser();
+    if ($user) {
+        $session->setUtilisateur($user);
     }
-
+    
+    $session->setTypeActivite($request->request->get('type_activite'));
+    $session->setDeclencheur('enfant');
+    $session->setHorodatage(new \DateTime());
+    
+    if ($request->request->get('duree_prevue')) {
+        $session->setDureePrevue((int)$request->request->get('duree_prevue'));
+    }
+    
+    if ($request->request->get('duree_reelle')) {
+        $session->setDureeReelle((int)$request->request->get('duree_reelle'));
+    }
+    
+    if ($request->request->get('feedback_enfant')) {
+        $session->setFeedbackEnfant((int)$request->request->get('feedback_enfant'));
+    }
+    
+    if ($request->request->get('note_parent')) {
+        $session->setNoteParent($request->request->get('note_parent'));
+    }
+    
+    $entityManager->persist($session);
+    $entityManager->flush();
+    
+    // ✅ AJOUTER CETTE LIGNE : Vérifier les 3 dernières sessions
+    if ($user && $session->getFeedbackEnfant() !== null) {
+        $sessionAnalyzerService->checkAndNotifyLastThreeSessions($user->getUserIdentifier());
+    }
+    
+    // Messages et redirection...
+    $type = $request->request->get('type_activite');
+    $messages = [
+        'coloriage' => '🎨 Bravo pour ton chef-d\'œuvre ! Tes parents seront fiers de toi !',
+        'histoire' => '📚 Quelle belle histoire ! Continue à rêver et à t\'évader !',
+        'musique' => '🎵 La musique adoucit les émotions. Continue à t\'apaiser en musique !',
+        'respiration' => '🌬️ Tu as bien respiré ! Garde ce calme précieux en toi !'
+    ];
+    
+    $message = $messages[$type] ?? 'Merci pour ta session de calme ! Bravo pour ce moment de détente 🎉';
+    
+    $this->addFlash('success', $message);
+    
+    return $this->redirectToRoute('app_sessions_de_calme_front');
+}
     //////fonctions back office
 
     #[Route(name: 'app_sessions_de_calme_index', methods: ['GET'])]

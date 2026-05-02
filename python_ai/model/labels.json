@@ -1,0 +1,18 @@
+{
+  "emotions": [
+    "angry",
+    "fear",
+    "happy",
+    "neutral",
+    "sad",
+    "surprise"
+  ],
+  "stress_scores": {
+    "angry": 90,
+    "fear": 85,
+    "sad": 65,
+    "surprise": 50,
+    "neutral": 20,
+    "happy": 5
+  }
+}
