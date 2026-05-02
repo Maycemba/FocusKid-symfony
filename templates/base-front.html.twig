@@ -296,44 +296,34 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav mx-auto">
-<<<<<<< HEAD
-                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index') }}">
-                        <i class="fas fa-home me-1"></i> Accueil
-                    </a>
-                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_sessions_de_calme_front') }}">
-                        <i class="fas fa-spa me-1"></i> Calme
-                    </a>
-                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index') }}">
-                        <i class="fas fa-book me-1"></i> Cours
-                    </a>
-                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index', {'type': 'non_complete'}) }}">
-                        <i class="fas fa-puzzle-piece me-1"></i> Exercices
-                    </a>
-                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index') }}">
-                        <i class="fas fa-notebook me-1"></i> Carnet
-                    </a>
-                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_jeu_list') }}">
-                        <i class="fas fa-gamepad me-1"></i> Jeux
-                    </a>
-                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index') }}">
-                        <i class="fas fa-face-smile me-1"></i> Émotions
-                    </a>
-                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index') }}">
-                        <i class="fas fa-users me-1"></i> Parents
-                    </a>
-=======
-                    <a href="#" class="nav-item nav-link">Acceuil</a>
-                    <a href="{{ path('app_sessions_de_calme_front') }}" class="nav-item nav-link">Session de calme</a>
-                    <a href="{{ path('app_sessions_de_calme_front') }}" class="nav-item nav-link">cours</a>
-                    <a href="#" class="nav-item nav-link">exercices</a>
-                     <a href="#" class="nav-item nav-link">carnet educatif</a>
-                    <a href="{{ path('app_front_jeu_list') }}" class="nav-item nav-link ">Jeux</a>
-                  
-  
-                    <a href="contact.html" class="nav-item nav-link">Mes Emotions</a>
-                    <a href="contact.html" class="nav-item nav-link">Espace Parent</a> 
->>>>>>> session-de-calme
-                </div>
+    <!-- Menu principal avec les bonnes routes -->
+   <!-- APRÈS : pointe vers app_home (page d'accueil) -->
+<a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_index') }}">
+    <i class="fas fa-home me-1"></i> Accueil
+</a>
+    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_sessions_de_calme_front') }}">
+        <i class="fas fa-spa me-1"></i> Session de calme
+    </a>
+    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_enfant_cours') }}">
+        <i class="fas fa-book me-1"></i> Cours
+    </a>
+    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index', {'type': 'non_complete'}) }}">
+        <i class="fas fa-puzzle-piece me-1"></i> Exercices
+    </a>
+    <!-- ✅ CORRECTION ICI : le lien "Carnet" pointe vers app_carnet_educatif_index -->
+    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_carnet_educatif_index') }}">
+        <i class="fas fa-notebook me-1"></i> Carnet éducatif
+    </a>
+    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_jeu_list') }}">
+        <i class="fas fa-gamepad me-1"></i> Jeux
+    </a>
+    <a href="{{ path('app_emotion_index') }}" class="nav-item nav-link">
+    <i class="fas fa-face-smile me-1"></i> Mes Émotions
+</a>
+    <a href="#" class="nav-item nav-link ajax-link" data-url="#">
+        <i class="fas fa-users me-1"></i> Espace Parent
+    </a>
+</div>
                 <a href="#" class="btn btn-primary-custom px-4 d-none d-lg-block ajax-link" data-url="{{ path('app_front_exercice_index') }}">
                     <i class="fas fa-user me-2"></i>Mon compte
                 </a>
@@ -395,29 +385,29 @@
         </a>
     </div>
 
-<<<<<<< HEAD
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-=======
+
     <!-- PNJ Mascot -->
     {% include 'components/_mascot.html.twig' %}
 
    
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
->>>>>>> jeu
+
     <script src="{{ asset('base-front/lib/wow/wow.min.js') }}"></script>
     <script src="{{ asset('base-front/lib/easing/easing.min.js') }}"></script>
     <script src="{{ asset('base-front/lib/waypoints/waypoints.min.js') }}"></script>
     <script src="{{ asset('base-front/lib/owlcarousel/owl.carousel.min.js') }}"></script>
-<<<<<<< HEAD
+
 
     <script src="{{ asset('base-front/js/face-detection.js') }}"></script>
     <script src="{{ asset('base-front/js/exercice-guardian.js') }}"></script>
-=======
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js">
     
->>>>>>> session-de-calme
+
     <script src="{{ asset('base-front/js/main.js') }}"></script>
 
     <script>

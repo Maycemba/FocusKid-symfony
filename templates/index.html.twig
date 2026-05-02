@@ -1,0 +1,143 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}FocusKid - Apprentissage ludique pour enfants{% endblock %}
+
+{% block body %}
+<!-- Hero Section -->
+<div class="container-fluid bg-gradient-primary text-white py-5" style="background: linear-gradient(135deg, #FF6B35, #4A90E2);">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6 text-center text-lg-start">
+                <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInUp">
+                    Apprendre en s'amusant avec <span class="text-warning">FocusKid</span>
+                </h1>
+                <p class="lead mb-4 animate__animated animate__fadeInUp animate__delay-1s">
+                    Des exercices interactifs, des jeux éducatifs et un suivi personnalisé pour aider votre enfant à progresser.
+                </p>
+                <div class="d-flex gap-3 justify-content-center justify-content-lg-start animate__animated animate__fadeInUp animate__delay-2s">
+                    <a href="{{ path('app_front_exercice_index') }}" class="btn btn-light btn-lg rounded-pill px-4">
+                        <i class="fas fa-play me-2"></i> Commencer
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-lg rounded-pill px-4">
+                        <i class="fas fa-info-circle me-2"></i> En savoir plus
+                    </a>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold">Pourquoi choisir <span class="text-primary">FocusKid</span> ?</h2>
+        <p class="lead text-muted">Une plateforme complète pour l'épanouissement de votre enfant</p>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm text-center p-4 hover-card">
+                <div class="card-icon mb-3">
+                    <i class="fas fa-puzzle-piece fa-3x text-primary"></i>
+                </div>
+                <h4 class="fw-bold">Exercices interactifs</h4>
+                <p class="text-muted">Des exercices ludiques adaptés à chaque âge pour renforcer les acquis scolaires.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm text-center p-4 hover-card">
+                <div class="card-icon mb-3">
+                    <i class="fas fa-gamepad fa-3x text-success"></i>
+                </div>
+                <h4 class="fw-bold">Jeux éducatifs</h4>
+                <p class="text-muted">Apprendre en jouant avec des jeux qui développent la logique et la mémoire.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm text-center p-4 hover-card">
+                <div class="card-icon mb-3">
+                    <i class="fas fa-chart-line fa-3x text-warning"></i>
+                </div>
+                <h4 class="fw-bold">Suivi personnalisé</h4>
+                <p class="text-muted">Un tableau de bord pour suivre les progrès et les performances de votre enfant.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="container-fluid bg-light py-5">
+    <div class="container">
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="display-4 fw-bold text-primary">500+</h3>
+                    <p class="text-muted">Exercices disponibles</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="display-4 fw-bold text-success">50+</h3>
+                    <p class="text-muted">Jeux éducatifs</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="display-4 fw-bold text-warning">1000+</h3>
+                    <p class="text-muted">Enfants accompagnés</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="display-4 fw-bold text-info">98%</h3>
+                    <p class="text-muted">Parents satisfaits</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <h2 class="display-5 fw-bold mb-4">Prêt à commencer l'aventure ?</h2>
+            <p class="lead mb-4">Inscrivez votre enfant dès maintenant et découvrez une nouvelle façon d'apprendre.</p>
+            <a href="#" class="btn btn-primary btn-lg rounded-pill px-5">
+                <i class="fas fa-user-plus me-2"></i> Créer un compte
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+.hover-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+}
+.stat-item {
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+.stat-item:hover {
+    transform: scale(1.05);
+}
+.btn-primary {
+    background: linear-gradient(135deg, #FF6B35, #4A90E2);
+    border: none;
+    box-shadow: 0 5px 20px rgba(255,107,53,0.3);
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255,107,53,0.4);
+}
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #FF6B35, #4A90E2) !important;
+}
+</style>
+{% endblock %}

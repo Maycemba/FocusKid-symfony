@@ -6,8 +6,8 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
-  .bg-gradient-success {
-    background: linear-gradient(135deg, #1CC88A, #0eae70);
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #FF6B35, #4A90E2);
   }
   .rounded-top-4 {
     border-top-left-radius: 1rem !important;
@@ -19,6 +19,33 @@
   .shadow-lg {
     box-shadow: 0 1rem 2rem rgba(0,0,0,.1) !important;
   }
+  .btn-primary-custom {
+    background: linear-gradient(135deg, #FF6B35, #4A90E2);
+    border: none;
+    border-radius: 50px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    color: white;
+  }
+  .btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255,107,53,0.4);
+    color: white;
+  }
+  .btn-outline-custom {
+    border: 1.5px solid #FF6B35;
+    color: #FF6B35;
+    border-radius: 50px;
+    padding: 0.6rem 1.5rem;
+    transition: all 0.3s;
+  }
+  .btn-outline-custom:hover {
+    background: linear-gradient(135deg, #FF6B35, #4A90E2);
+    color: white;
+    border: none;
+    transform: translateY(-2px);
+  }
 </style>
 {% endblock %}
 
@@ -27,7 +54,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-lg border-0 rounded-4">
-                <div class="card-header bg-gradient-success text-white rounded-top-4">
+                <div class="card-header bg-gradient-primary text-white rounded-top-4">
                     <h3 class="mb-0">💬 Ajouter un commentaire</h3>
                     <p class="mb-0 small">Partagez votre avis sur la séance</p>
                 </div>
@@ -47,7 +74,7 @@
                         
                         {# Affichage du carnet associé #}
                         {% if carnet %}
-                            <div class="alert alert-info mb-3">
+                            <div class="alert alert-info mb-3" style="background: rgba(74,144,226,0.1); border-color: #4A90E2; color: #2d3561;">
                                 📘 Commentaire pour le carnet #{{ carnet.id }} - {{ carnet.matiere }} ({{ carnet.dateEtude|date('d/m/Y') }})
                             </div>
                         {% endif %}
@@ -65,14 +92,13 @@
                             <div class="col-12">
                                 {{ form_row(form.texte_commentaire) }}
                             </div>
-                            
                         </div>
                         
                         <div class="d-flex justify-content-between align-items-center mt-4">
-                            <a href="{{ carnet ? path('app_carnet_educatif_show', {'id': carnet.id}) : path('app_commentaire_index') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                            <a href="{{ carnet ? path('app_carnet_educatif_show', {'id': carnet.id}) : path('app_commentaire_index') }}" class="btn btn-outline-custom rounded-pill px-4 text-decoration-none">
                                 Annuler
                             </a>
-                            <button type="submit" class="btn btn-success rounded-pill px-4">
+                            <button type="submit" class="btn btn-primary-custom rounded-pill px-4">
                                 💾 Enregistrer
                             </button>
                         </div>

@@ -4,22 +4,34 @@ namespace App\Controller;
 
 use App\Repository\CourRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Knp\Component\Pager\PaginatorInterface;
 
 final class FrontController extends AbstractController
 {
-    #[Route('/index', name: 'app_index')]
-    public function index(): Response
-    {
-        return $this->render('front/index.html.twig');
-    }
-
+    #[Route('/', name: 'app_home')]
+#[Route('/index', name: 'app_index')]
+public function index(): Response
+{
+    return $this->render('/index.html.twig');
+}
     #[Route('/enfant', name: 'app_enfant_cours', methods: ['GET'])]
-    public function listeCours(CourRepository $courRepository): Response
+    public function listeCours(Request $request, CourRepository $courRepository, PaginatorInterface $paginator): Response
     {
+        // Récupérer tous les cours
+        $query = $courRepository->createQueryBuilder('c')->getQuery();
+        
+        // Paginer les résultats
+        $cours = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),  // Numéro de page
+            6  // Nombre d'éléments par page
+        );
+        
         return $this->render('front/cours.html.twig', [
-            'cours' => $courRepository->findAll(),
+            'cours' => $cours,  // Maintenant $cours est un objet de pagination
         ]);
     }
 
@@ -37,4 +49,5 @@ final class FrontController extends AbstractController
             'lecons' => $cour->getLecons(),
         ]);
     }
+    
 }

@@ -6,14 +6,14 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
-/* ===== Styles pour la page show ===== */
+/* ===== Styles pour la page show - Couleurs harmonisées ===== */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@600;700;800&display=swap');
 
 :root {
-  --primary: #1CC88A;
-  --primary-light: #d4f7ec;
-  --primary-dark: #0eae70;
-  --secondary: #4E73DF;
+  --primary: #FF6B35;
+  --primary-light: #fff0eb;
+  --primary-dark: #E55A2B;
+  --secondary: #4A90E2;
   --secondary-light: #e8edfd;
   --accent: #F6C90E;
   --accent-light: #fef9d7;
@@ -21,7 +21,7 @@
   --danger-light: #fdecea;
   --warning: #F39C12;
   --warning-light: #fef3e0;
-  --info: #3ABEF9;
+  --info: #3498DB;
   --info-light: #e7f7ff;
   --success: #1CC88A;
   --success-light: #d4f7ec;
@@ -55,8 +55,8 @@ body {
 }
 
 @keyframes pulse-ring {
-  0%,100% { box-shadow: 0 8px 24px rgba(28,200,138,.3); }
-  50% { box-shadow: 0 8px 36px rgba(28,200,138,.55); }
+  0%,100% { box-shadow: 0 8px 24px rgba(255,107,53,.3); }
+  50% { box-shadow: 0 8px 36px rgba(255,107,53,.55); }
 }
 
 @keyframes pulse-ia {
@@ -66,7 +66,7 @@ body {
 
 /* Hero banner */
 .show-hero {
-  background: linear-gradient(135deg, #f0fdf9 0%, #eef2ff 100%);
+  background: linear-gradient(135deg, #f8faff 0%, #eef2ff 60%, #fff0eb 100%);
   border-bottom: 2px solid var(--border);
   padding: 2.5rem 0 2rem;
   position: relative;
@@ -81,7 +81,7 @@ body {
   top: -60px;
   right: -50px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(28,200,138,.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255,107,53,.13) 0%, transparent 70%);
   animation: float 4s ease-in-out infinite;
 }
 
@@ -93,7 +93,7 @@ body {
   bottom: -40px;
   left: -30px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(78,115,223,.13) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(74,144,226,.13) 0%, transparent 70%);
   animation: float 5s ease-in-out infinite reverse;
 }
 
@@ -106,7 +106,7 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 1.8rem;
-  box-shadow: 0 10px 28px rgba(28,200,138,.4);
+  box-shadow: 0 10px 28px rgba(255,107,53,.4);
   animation: pulse-ring 2.5s ease infinite;
   flex-shrink: 0;
 }
@@ -116,6 +116,7 @@ body {
   font-size: 2rem;
   font-weight: 800;
   margin: 0;
+  color: var(--text);
 }
 
 .show-meta {
@@ -130,7 +131,7 @@ body {
   border: 1.5px solid var(--border);
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(78,115,223,.07);
+  box-shadow: 0 4px 20px rgba(255,107,53,.07);
   margin-bottom: 1.5rem;
   animation: fadeUp .5s ease both;
 }
@@ -203,7 +204,7 @@ body {
   border-radius: 999px;
   font-size: .82rem;
   font-weight: 800;
-  background: var(--primary-light);
+  background: var(--success-light);
   color: #0a7a52;
   border: 1.5px solid rgba(28,200,138,.3);
 }
@@ -227,7 +228,7 @@ body {
   border-radius: 20px;
   padding: 1.5rem;
   animation: fadeUp .5s ease both;
-  box-shadow: 0 4px 20px rgba(78,115,223,.07);
+  box-shadow: 0 4px 20px rgba(255,107,53,.07);
 }
 
 .text-card-label {
@@ -301,7 +302,7 @@ body {
 .btn-comment {
   background: var(--info-light);
   color: #1484c0;
-  border-color: rgba(58,190,249,.3);
+  border-color: rgba(52,152,219,.3);
 }
 .btn-comment:hover {
   background: #ccecff;
@@ -319,11 +320,10 @@ body {
   transform: translateY(-2px);
 }
 
-/* Bouton PDF */
 .btn-pdf {
   background: var(--info-light);
   color: #1484c0;
-  border-color: rgba(58,190,249,.3);
+  border-color: rgba(52,152,219,.3);
 }
 .btn-pdf:hover {
   animation: bounce-pdf 0.4s ease;
@@ -332,7 +332,6 @@ body {
   border-color: #1484c0;
 }
 
-/* Bouton IA */
 .btn-ia {
   background: linear-gradient(135deg, var(--ia-gradient-start), var(--ia-gradient-end));
   color: white;
@@ -383,8 +382,8 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 1rem;
-  background: var(--primary-light);
-  color: var(--primary-dark);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
 }
 
 .comments-title .s-title {
@@ -402,16 +401,16 @@ body {
   border-radius: 999px;
   font-size: .85rem;
   font-weight: 700;
-  background: var(--success-light);
-  color: #0a7a52;
-  border: 1.5px solid rgba(28,200,138,.3);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
   text-decoration: none;
   transition: all .2s;
 }
 .btn-add-comment:hover {
-  background: var(--primary);
-  color: white;
+  background: linear-gradient(135deg, #E55A2B, #3a7bc8);
   transform: translateY(-2px);
+  color: white;
 }
 
 .comment-item {
@@ -526,7 +525,7 @@ body {
     <div class="col-12">
       <div class="section-card">
         <div class="section-head">
-          <div class="s-icon" style="background:var(--primary-light);color:var(--primary-dark);">📋</div>
+          <div class="s-icon" style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;">📋</div>
           <div class="s-title">Informations générales</div>
         </div>
         <div class="info-grid">
@@ -543,7 +542,7 @@ body {
     <div class="col-md-6">
       <div class="section-card">
         <div class="section-head">
-          <div class="s-icon" style="background:var(--warning-light);color:var(--warning);">🎯</div>
+          <div class="s-icon" style="background:linear-gradient(135deg,var(--warning),#e67e22);color:white;">🎯</div>
           <div class="s-title">Évaluation cognitive</div>
         </div>
         <div class="info-grid">
@@ -552,7 +551,7 @@ body {
           <div class="info-item"><div class="info-label">Agitation</div><div class="info-value">{{ carnet_educatif.niveauAgitation }}/5</div></div>
           <div class="info-item"><div class="info-label">Autonomie</div><div class="info-value">{{ carnet_educatif.niveauAutonomie }}/5</div></div>
           <div class="info-item"><div class="info-label">Interruptions</div><div class="info-value">{{ carnet_educatif.nombreInterruptions }}</div></div>
-          <div class="info-item"><div class="info-label">Temps avant perte de concentration</div><div class="info-value">{{ carnet_educatif.tempsAvantPerteConcentration }} sec</div></div>
+          <div class="info-item"><div class="info-label">Temps avant perte de concentration</div><div class="info-value">{{ carnet_educatif.tempsAvantPerteConcentration }} min</div></div>
         </div>
       </div>
     </div>
@@ -560,7 +559,7 @@ body {
     <div class="col-md-6">
       <div class="section-card">
         <div class="section-head">
-          <div class="s-icon" style="background:var(--accent-light);color:#b87c00;">⚙️</div>
+          <div class="s-icon" style="background:linear-gradient(135deg,var(--success),#0eae70);color:white;">⚙️</div>
           <div class="s-title">Travail & autonomie</div>
         </div>
         <div class="info-grid">
@@ -627,11 +626,9 @@ body {
     <div class="action-bar">
       <a href="{{ path('app_carnet_educatif_index') }}" class="btn-back">← Retour à la liste</a>
       <div class="d-flex gap-2 flex-wrap">
-        <!-- BOUTON IA PERSONNALISÉ -->
         <button type="button" class="btn-ia" data-bs-toggle="modal" data-bs-target="#iaModal" data-carnet-id="{{ carnet_educatif.id }}">
           🤖 Conseil IA personnalisé
         </button>
-        
         <a href="{{ path('app_carnet_educatif_pdf', {'id': carnet_educatif.id}) }}" class="btn-pdf" target="_blank">📄 Télécharger PDF</a>
         <a href="{{ path('app_carnet_educatif_edit', {'id': carnet_educatif.id}) }}" class="btn-edit">✏️ Modifier</a>
         <button type="button" class="btn-delete" data-bs-toggle="modal" data-bs-target="#deleteModal">🗑️ Supprimer</button>
@@ -693,7 +690,6 @@ body {
 </div>
 
 <script>
-// Fonction pour imprimer le conseil
 function imprimerConseil() {
   const conseilHTML = document.getElementById('iaModalBody').innerHTML;
   const printWindow = window.open('', '_blank');
@@ -705,7 +701,7 @@ function imprimerConseil() {
       <style>
         body { font-family: Arial, sans-serif; padding: 40px; line-height: 1.6; }
         .conseil { background: #f5f5f5; padding: 20px; border-radius: 10px; }
-        h1 { color: #4E73DF; }
+        h1 { color: #FF6B35; }
         .footer { margin-top: 30px; text-align: center; color: #999; font-size: 12px; }
       </style>
     </head>
@@ -720,7 +716,6 @@ function imprimerConseil() {
   printWindow.print();
 }
 
-// Script pour le bouton IA
 document.addEventListener('DOMContentLoaded', function() {
   const btnIA = document.querySelector('.btn-ia');
   const modalBody = document.getElementById('iaModalBody');
@@ -729,7 +724,6 @@ document.addEventListener('DOMContentLoaded', function() {
     btnIA.addEventListener('click', async function() {
       const carnetId = this.dataset.carnetId;
       
-      // Réinitialiser le contenu du modal avec le chargement
       modalBody.innerHTML = `
         <div class="text-center py-4">
           <div class="spinner-border text-primary" role="status">
@@ -751,7 +745,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const data = await response.json();
         
         if (data.success) {
-          // Formater le conseil (remplacer **texte** par <strong>texte</strong>)
           let conseilHtml = data.conseil;
           conseilHtml = conseilHtml.replace(/\n/g, '<br>');
           conseilHtml = conseilHtml.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');

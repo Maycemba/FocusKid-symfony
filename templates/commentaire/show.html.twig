@@ -2,12 +2,77 @@
 
 {% block title %}Commentaire #{{ commentaire.id }}{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #FF6B35, #4A90E2);
+  }
+  .rounded-top-4 {
+    border-top-left-radius: 1rem !important;
+    border-top-right-radius: 1rem !important;
+  }
+  .rounded-4 {
+    border-radius: 1rem !important;
+  }
+  .shadow-lg {
+    box-shadow: 0 1rem 2rem rgba(0,0,0,.1) !important;
+  }
+  .badge-type {
+    background: linear-gradient(135deg, #FF6B35, #4A90E2);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .btn-outline-custom {
+    border: 1.5px solid #FF6B35;
+    color: #FF6B35;
+    border-radius: 50px;
+    padding: 0.5rem 1.2rem;
+    transition: all 0.3s;
+    text-decoration: none;
+  }
+  .btn-outline-custom:hover {
+    background: linear-gradient(135deg, #FF6B35, #4A90E2);
+    color: white;
+    border: none;
+    transform: translateY(-2px);
+  }
+  .btn-warning-custom {
+    background: #F39C12;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 0.5rem 1.2rem;
+    transition: all 0.3s;
+  }
+  .btn-warning-custom:hover {
+    background: #e67e22;
+    transform: translateY(-2px);
+  }
+  .btn-danger-custom {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 0.5rem 1.2rem;
+    transition: all 0.3s;
+  }
+  .btn-danger-custom:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+  }
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-lg border-0 rounded-4">
-                <div class="card-header bg-gradient-info text-white rounded-top-4">
+                <div class="card-header bg-gradient-primary text-white rounded-top-4">
                     <h3 class="mb-0">💬 Détail du commentaire</h3>
                 </div>
                 <div class="card-body p-4">
@@ -15,13 +80,13 @@
                         <dt class="col-sm-4">Date</dt>
                         <dd class="col-sm-8">{{ commentaire.dateCommentaire|date('d/m/Y H:i') }}</dd>
                         <dt class="col-sm-4">Type</dt>
-                        <dd class="col-sm-8"><span class="badge bg-secondary">{{ commentaire.typeCommentaire|capitalize }}</span></dd>
+                        <dd class="col-sm-8"><span class="badge-type">{{ commentaire.typeCommentaire|capitalize }}</span></dd>
                         <dt class="col-sm-4">Commentaire</dt>
                         <dd class="col-sm-8">{{ commentaire.texteCommentaire|nl2br }}</dd>
                         <dt class="col-sm-4">Carnet lié</dt>
                         <dd class="col-sm-8">
                             {% if commentaire.carnetEducatif %}
-                                <a href="{{ path('app_carnet_educatif_show', {'id': commentaire.carnetEducatif.id}) }}" class="text-decoration-none">
+                                <a href="{{ path('app_carnet_educatif_show', {'id': commentaire.carnetEducatif.id}) }}" class="text-decoration-none" style="color: #FF6B35;">
                                     Carnet #{{ commentaire.carnetEducatif.id }} - {{ commentaire.carnetEducatif.matiere }}
                                 </a>
                             {% else %}
@@ -31,9 +96,9 @@
                     </dl>
                 </div>
                 <div class="card-footer bg-light d-flex justify-content-between">
-                    <a href="{{ path('app_commentaire_index') }}" class="btn btn-outline-secondary">← Retour</a>
-                    <div>
-                        <a href="{{ path('app_commentaire_edit', {'id': commentaire.id}) }}" class="btn btn-warning">Modifier</a>
+                    <a href="{{ path('app_commentaire_index') }}" class="btn-outline-custom">← Retour</a>
+                    <div class="d-flex gap-2">
+                        <a href="{{ path('app_commentaire_edit', {'id': commentaire.id}) }}" class="btn-warning-custom">Modifier</a>
                         {{ include('commentaire/_delete_form.html.twig') }}
                     </div>
                 </div>

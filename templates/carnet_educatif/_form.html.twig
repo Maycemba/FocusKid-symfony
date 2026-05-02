@@ -1,0 +1,136 @@
+{{ form_start(form, {'attr': {'class': 'carnet-form'}}) }}
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="mb-3">{{ form_row(form.date_etude) }}</div>
+        <div class="mb-3">{{ form_row(form.heure_debut) }}</div>
+        <div class="mb-3">{{ form_row(form.heure_fin) }}</div>
+        <div class="mb-3">{{ form_row(form.duree_totale) }}</div>
+        <div class="mb-3">{{ form_row(form.lieu) }}</div>
+        <div class="mb-3">{{ form_row(form.matiere) }}</div>
+        <div class="mb-3">{{ form_row(form.type_activite) }}</div>
+        <div class="mb-3">{{ form_row(form.niveau_difficulte) }}</div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">{{ form_row(form.niveau_concentration) }}</div>
+        <div class="mb-3">{{ form_row(form.niveau_agitation) }}</div>
+        <div class="mb-3">{{ form_row(form.nombre_interruptions) }}</div>
+        <div class="mb-3">{{ form_row(form.temps_avant_perte_concentration) }}</div>
+        
+        <div class="mb-3">{{ form_row(form.travaille_seul) }}</div>
+        <div class="mb-3">{{ form_row(form.demande_aide) }}</div>
+        <div class="mb-3">{{ form_row(form.niveau_autonomie) }}</div>
+        
+        <div class="mb-3">
+            {{ form_label(form.travail_termine) }}
+            <div class="travail-statut-group">
+                {{ form_widget(form.travail_termine) }}
+                <span id="statut-texte" class="ms-2"></span>
+            </div>
+            {{ form_errors(form.travail_termine) }}
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">{{ form_row(form.difficultes) }}</div>
+<div class="mb-3">{{ form_row(form.points_positifs) }}</div>
+
+<div class="d-grid gap-2 mt-4">
+    <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow-sm">{{ button_label|default('💾 Enregistrer le carnet') }}</button>
+</div>
+
+{{ form_end(form) }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Récupération des champs
+    const heureDebut = document.getElementById('carnet_educatif_heure_debut');
+    const heureFin = document.getElementById('carnet_educatif_heure_fin');
+    const dureeTotale = document.getElementById('carnet_educatif_duree_totale');
+    
+    if (!heureDebut || !heureFin || !dureeTotale) {
+        console.error('Champs non trouvés');
+        return;
+    }
+    
+    // Fonction de calcul de la durée
+    function calculerDuree() {
+        const debutVal = heureDebut.value;
+        const finVal = heureFin.value;
+        
+        if (!debutVal || !finVal) {
+            dureeTotale.value = '';
+            return;
+        }
+        
+        // Conversion en minutes
+        const [hD, mD] = debutVal.split(':').map(Number);
+        const [hF, mF] = finVal.split(':').map(Number);
+        
+        let debutMinutes = (hD * 60) + mD;
+        let finMinutes = (hF * 60) + mF;
+        
+        // Si l'heure de fin est inférieure à l'heure de début (ex: 01:00 vs 23:00)
+        // on ajoute 24h à l'heure de fin
+        if (finMinutes <= debutMinutes) {
+            finMinutes += 24 * 60;
+        }
+        
+        const duree = finMinutes - debutMinutes;
+        dureeTotale.value = duree;
+    }
+    
+    // Écouteurs d'événements
+    heureDebut.addEventListener('change', calculerDuree);
+    heureDebut.addEventListener('input', calculerDuree);
+    heureFin.addEventListener('change', calculerDuree);
+    heureFin.addEventListener('input', calculerDuree);
+    
+    // Calcul initial
+    calculerDuree();
+    
+    // Gestion du statut du travail
+    const radios = document.querySelectorAll('input[name="carnet_educatif[travail_termine]"]');
+    const statutSpan = document.getElementById('statut-texte');
+    
+    function updateStatutTexte() {
+        let selectedValue = null;
+        radios.forEach(radio => {
+            if (radio.checked) selectedValue = radio.value;
+        });
+        
+        if (statutSpan) {
+            if (selectedValue === '1') {
+                statutSpan.innerHTML = '✔️ Travail terminé';
+                statutSpan.style.color = 'green';
+            } else if (selectedValue === '0') {
+                statutSpan.innerHTML = '❌ Travail non terminé';
+                statutSpan.style.color = 'red';
+            } else {
+                statutSpan.innerHTML = '';
+            }
+        }
+    }
+    
+    radios.forEach(radio => {
+        radio.addEventListener('change', updateStatutTexte);
+    });
+    updateStatutTexte();
+});
+</script>
+
+<style>
+    .travail-statut-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .travail-statut-group label {
+        margin-right: 1rem;
+    }
+    #statut-texte {
+        font-weight: 500;
+        margin-left: 0.5rem;
+    }
+</style>

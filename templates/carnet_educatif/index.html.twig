@@ -5,199 +5,464 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@600;700;800&display=swap');
-:root {
-  --primary:#1CC88A;--primary-light:#d4f7ec;--primary-dark:#0eae70;
-  --secondary:#4E73DF;--secondary-light:#e8edfd;
-  --warning:#F39C12;--warning-light:#fef3e0;
-  --info:#3ABEF9;--info-light:#e7f7ff;
-  --text:#2d3561;--muted:#8590a5;--surface:#f8faff;--border:#e8ecf5;
-  --danger:#e74c3c; --danger-light:#fdecea;
-}
-body{font-family:'Nunito',sans-serif;color:var(--text);background:#fff}
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@keyframes pulse-ring{0%,100%{box-shadow:0 8px 24px rgba(28,200,138,.3)}50%{box-shadow:0 8px 36px rgba(28,200,138,.55)}}
+    :root {
+        --primary: #FF6B35;
+        --primary-dark: #E55A2B;
+        --secondary: #4A90E2;
+        --success: #2ECC71;
+        --warning: #F39C12;
+        --info: #3498DB;
+        --danger: #E74C3C;
+        --dark: #2C3E50;
+        --light: #F8F9FA;
+        --gradient: linear-gradient(135deg, #FF6B35 0%, #4A90E2 100%);
+        --gradient-green: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --text: #2d3561;
+        --muted: #8590a5;
+        --surface: #f8faff;
+        --border: #e8ecf5;
+    }
 
-.page-hero{
-  background:linear-gradient(135deg,#f8faff 0%,#eef2ff 60%,#f0fdf9 100%);
-  border-bottom:2px solid var(--border);
-  padding:2.5rem 0 2rem;position:relative;overflow:hidden;
-}
-.page-hero::before,.page-hero::after{
-  content:'';position:absolute;border-radius:50%;
-  background:radial-gradient(circle,rgba(28,200,138,.13) 0%,transparent 70%);
-  animation:float 4s ease-in-out infinite;
-}
-.page-hero::before{width:220px;height:220px;top:-70px;right:-60px}
-.page-hero::after{width:160px;height:160px;bottom:-50px;left:-40px;animation-delay:1.5s;background:radial-gradient(circle,rgba(78,115,223,.12) 0%,transparent 70%)}
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-.hero-title{font-family:'Baloo 2',cursive;font-size:2.2rem;font-weight:800;display:flex;align-items:center;gap:.75rem;margin:0}
-.hero-icon{width:54px;height:54px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 8px 24px rgba(28,200,138,.35);animation:pulse-ring 2.5s ease infinite;flex-shrink:0}
-.hero-sub{font-size:.95rem;color:var(--muted);margin-top:.25rem}
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
 
-.btn-new{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.75rem;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:none;border-radius:999px;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;text-decoration:none;box-shadow:0 6px 20px rgba(28,200,138,.4);transition:all .25s;white-space:nowrap}
-.btn-new:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(28,200,138,.5);color:#fff}
+    @keyframes shine {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
 
-.table-card{background:#fff;border:1.5px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:0 8px 32px rgba(78,115,223,.08);animation:fadeUp .5s ease both .1s}
-.table-card table{width:100%;border-collapse:collapse}
-.table-card thead tr{background:linear-gradient(90deg,var(--surface) 0%,#edf0ff 100%);border-bottom:2px solid var(--border)}
-.table-card thead th{padding:1.1rem 1.25rem;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-.table-card tbody tr{border-bottom:1px solid var(--border);transition:background .18s;animation:fadeUp .4s ease both}
-.table-card tbody tr:last-child{border-bottom:none}
-.table-card tbody tr:hover{background:var(--surface)}
-.table-card tbody td{padding:.95rem 1.25rem;font-size:.92rem}
+    .page-hero {
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        border-bottom: 2px solid var(--border);
+        padding: 2.5rem 0 2rem;
+        position: relative;
+        overflow: hidden;
+    }
 
-.id-chip{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:var(--secondary-light);color:var(--secondary);border-radius:10px;font-weight:800;font-size:.85rem}
-.subject-tag{display:inline-block;padding:.25rem .75rem;background:var(--primary-light);color:#0a7a52;border-radius:8px;font-weight:700;font-size:.84rem}
-.duration-tag{display:inline-flex;align-items:center;gap:.3rem;font-weight:700;color:var(--text)}
+    .page-hero::before {
+        content: '';
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        top: -70px;
+        right: -60px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+        animation: float 4s ease-in-out infinite;
+    }
 
-.conc-wrap{display:flex;align-items:center;gap:.6rem}
-.conc-num{font-weight:800;font-size:.9rem;min-width:24px}
-.conc-track{flex:1;height:6px;background:var(--border);border-radius:999px;overflow:hidden;min-width:55px}
-.conc-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:999px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+    .hero-title {
+        font-family: 'Baloo 2', cursive;
+        font-size: 2rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0;
+        color: white;
+    }
 
-.btn-sm-see,.btn-sm-edit{display:inline-flex;align-items:center;gap:.3rem;padding:.38rem .9rem;border-radius:10px;font-size:.82rem;font-weight:700;font-family:'Nunito',sans-serif;text-decoration:none;transition:all .2s;border:none;cursor:pointer}
-.btn-sm-see{background:var(--info-light);color:#1484c0}.btn-sm-see:hover{background:#ccecff;transform:translateY(-1px)}
-.btn-sm-edit{background:var(--warning-light);color:#9a6200}.btn-sm-edit:hover{background:#fde8b0;transform:translateY(-1px)}
+    .hero-icon {
+        width: 54px;
+        height: 54px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        backdrop-filter: blur(10px);
+        flex-shrink: 0;
+    }
 
-.empty-wrap{text-align:center;padding:5rem 2rem;animation:fadeUp .6s ease both}
-.empty-icon{font-size:4rem;display:block;margin-bottom:1rem;animation:float 3s ease-in-out infinite}
+    .hero-sub {
+        color: rgba(255,255,255,0.9);
+        font-size: 0.95rem;
+        margin-top: 0.25rem;
+    }
 
-.badge-status {
-  display: inline-flex;
-  align-items: center;
-  gap: .3rem;
-  padding: .22rem .75rem;
-  border-radius: 999px;
-  font-size: .82rem;
-  font-weight: 800;
-}
-.badge-status.yes {
-  background: var(--primary-light);
-  color: #0a7a52;
-  border: 1.5px solid rgba(28,200,138,.3);
-}
-.badge-status.no {
-  background: var(--danger-light);
-  color: #c0392b;
-  border: 1.5px solid rgba(231,76,60,.25);
-}
+    .btn-new {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.5rem;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-new:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-3px);
+        color: white;
+    }
+
+    .btn-new-success {
+        background: rgba(46,204,113,0.8);
+    }
+
+    .btn-new-success:hover {
+        background: rgba(46,204,113,1);
+    }
+
+    .btn-new-warning {
+        background: rgba(243,156,18,0.8);
+    }
+
+    .btn-new-warning:hover {
+        background: rgba(243,156,18,1);
+    }
+
+    .btn-new-purple {
+        background: rgba(102,126,234,0.8);
+    }
+
+    .btn-new-purple:hover {
+        background: rgba(102,126,234,1);
+    }
+
+    .table-card {
+        background: white;
+        border: 1.5px solid var(--border);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        animation: fadeUp 0.5s ease both;
+    }
+
+    .table-card thead tr {
+        background: linear-gradient(90deg, var(--surface) 0%, #edf0ff 100%);
+        border-bottom: 2px solid var(--border);
+    }
+
+    .table-card thead th {
+        padding: 1rem 1.25rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+    }
+
+    .table-card tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: all 0.18s;
+    }
+
+    .table-card tbody tr:hover {
+        background: var(--surface);
+        transform: scale(1.01);
+    }
+
+    .table-card tbody td {
+        padding: 0.9rem 1.25rem;
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+
+    .subject-tag {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: rgba(255,107,53,0.1);
+        color: #FF6B35;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+
+    .duration-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-weight: 700;
+        color: var(--dark);
+    }
+
+    .conc-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .conc-num {
+        font-weight: 800;
+        font-size: 0.9rem;
+        min-width: 28px;
+        color: #FF6B35;
+    }
+
+    .conc-track {
+        flex: 1;
+        height: 8px;
+        background: var(--border);
+        border-radius: 999px;
+        overflow: hidden;
+        min-width: 80px;
+    }
+
+    .conc-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #FF6B35, #4A90E2);
+        border-radius: 999px;
+        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .conc-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        animation: shine 2s infinite;
+    }
+
+    .badge-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.22rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .badge-status.yes {
+        background: rgba(46,204,113,0.15);
+        color: #27ae60;
+        border: 1.5px solid rgba(46,204,113,0.3);
+    }
+
+    .badge-status.no {
+        background: rgba(231,76,60,0.1);
+        color: #c0392b;
+        border: 1.5px solid rgba(231,76,60,0.25);
+    }
+
+    .btn-sm-see, .btn-sm-edit {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.35rem 0.9rem;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-sm-see {
+        background: rgba(52,152,219,0.1);
+        color: #3498DB;
+    }
+
+    .btn-sm-see:hover {
+        background: rgba(52,152,219,0.2);
+        transform: translateY(-2px);
+    }
+
+    .btn-sm-edit {
+        background: rgba(243,156,18,0.1);
+        color: #F39C12;
+    }
+
+    .btn-sm-edit:hover {
+        background: rgba(243,156,18,0.2);
+        transform: translateY(-2px);
+    }
+
+    .empty-wrap {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--surface);
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        animation: fadeUp 0.5s ease both;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 1rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .form-label {
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        padding: 0.6rem 1rem;
+        transition: all 0.2s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #FF6B35;
+        box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
+        outline: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        border: none;
+        border-radius: 50px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255,107,53,0.4);
+    }
+
+    .btn-outline-secondary {
+        border-radius: 50px;
+        padding: 0.6rem 1.2rem;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title { font-size: 1.5rem; flex-wrap: wrap; }
+        .hero-icon { width: 45px; height: 45px; font-size: 1.2rem; }
+        .table-card { overflow-x: auto; }
+        .table-card table { min-width: 550px; }
+        .btn-new { padding: 0.5rem 1rem; font-size: 0.8rem; }
+    }
 </style>
 {% endblock %}
 
 {% block body %}
 <div class="page-hero">
-  <div class="container">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-      <div>
-        <div class="hero-title">
-          <div class="hero-icon">📚</div>
-          Carnets éducatifs
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <div class="hero-title">
+                    <div class="hero-icon">📚</div>
+                    Carnets éducatifs
+                </div>
+                <div class="hero-sub">Suivez et analysez vos sessions d'apprentissage</div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{{ path('app_commentaire_index') }}" class="btn-new btn-new-info">💬 Commentaires</a>
+                <a href="{{ path('app_carnet_educatif_new') }}" class="btn-new">➕ Nouveau carnet</a>
+                <a href="{{ path('app_objectif_index') }}" class="btn-new btn-new-warning">🎯 Objectifs</a>
+                <a href="{{ path('app_trello_index') }}" class="btn-new btn-new-purple">📋 Tâches</a>
+            </div>
         </div>
-        <div class="hero-sub">Suivez et analysez vos sessions d'apprentissage</div>
-      </div>
-
-      <div class="d-flex gap-2">
-        <a href="{{ path('app_commentaire_index') }}" class="btn-new" style="background: linear-gradient(135deg, var(--info), #1484c0);">💬 Tous les commentaires</a>
-        <a href="{{ path('app_carnet_educatif_new') }}" class="btn-new">➕ Nouveau carnet</a>
-       <a href="{{ path('app_objectif_index') }}" class="btn btn-success">
-    🎯 Gérer mes objectifs
-</a>
-<a href="{{ path('app_trello_index') }}" class="btn-new" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-          📋 Tableau des tâches
-        </a>
-      </div>
     </div>
-  </div>
 </div>
 
 <div class="container py-5">
-
-  {# Barre de filtre #}
-  <div class="card shadow-sm border-0 rounded-4 mb-4">
-    <div class="card-body p-4">
-      <form method="get" action="{{ path('app_carnet_educatif_index') }}" class="row g-3">
-        <div class="col-md-4">
-          <label class="form-label fw-bold">🔍 Recherche</label>
-          <input type="text" name="search" class="form-control" placeholder="Matière, lieu, activité..." value="{{ search|default('') }}">
+    {# Barre de filtre #}
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body p-4">
+            <form method="get" action="{{ path('app_carnet_educatif_index') }}" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">🔍 Recherche</label>
+                    <input type="text" name="search" class="form-control" placeholder="Matière, lieu..." value="{{ search|default('') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">📚 Matière</label>
+                    <select name="matiere" class="form-select">
+                        <option value="">Toutes</option>
+                        {% for m in matieres|default([]) %}
+                            <option value="{{ m }}" {% if selected_matiere == m %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">✅ Statut</label>
+                    <select name="travail_termine" class="form-select">
+                        <option value="">Tous</option>
+                        <option value="1" {% if selected_travail_termine == '1' %}selected{% endif %}>Terminé</option>
+                        <option value="0" {% if selected_travail_termine == '0' %}selected{% endif %}>Non terminé</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                    <a href="{{ path('app_carnet_educatif_index') }}" class="btn btn-outline-secondary w-100">Reset</a>
+                </div>
+            </form>
         </div>
-        <div class="col-md-3">
-          <label class="form-label fw-bold">📚 Matière</label>
-          <select name="matiere" class="form-select">
-            <option value="">Toutes</option>
-            {% for m in matieres|default([]) %}
-              <option value="{{ m }}" {% if selected_matiere == m %}selected{% endif %}>{{ m }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label fw-bold">✅ Travail </label>
-          <select name="travail_termine" class="form-select">
-            <option value="">Tous</option>
-            <option value="1" {% if selected_travail_termine == '1' %}selected{% endif %}>Terminé</option>
-            <option value="0" {% if selected_travail_termine == '0' %}selected{% endif %}>Non terminé</option>
-          </select>
-        </div>
-        <div class="col-md-2 d-flex align-items-end gap-2">
-          <button type="submit" class="btn btn-primary w-100">Filtrer</button>
-          <a href="{{ path('app_carnet_educatif_index') }}" class="btn btn-outline-secondary w-100">Réinitialiser</a>
-        </div>
-      </form>
     </div>
-  </div>
 
-  {% if carnet_educatifs|length > 0 %}
-  <div class="table-card">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Date</th>
-          <th>Matière</th>
-          <th>Durée</th>
-          <th>Concentration</th>
-          <th>Travail terminé</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for carnet in carnet_educatifs %}
-        <tr style="animation-delay:{{ loop.index * 0.05 }}s">
-          <td><span class="id-chip">{{ carnet.id }}</span></td>
-          <td><strong>{{ carnet.dateEtude ? carnet.dateEtude|date('d/m/Y') : '—' }}</strong></td>
-          <td><span class="subject-tag">{{ carnet.matiere }}</span></td>
-          <td><span class="duration-tag">⏱ {{ carnet.dureeTotale }} min</span></td>
-          <td>
-            <div class="conc-wrap">
-              <span class="conc-num">{{ carnet.niveauConcentration }}</span>
-              <div class="conc-track">
-                <div class="conc-fill" style="width:{{ carnet.niveauConcentration * 10 }}%"></div>
-              </div>
-            </div>
-          </td>
-          <td>
-            {% if carnet.travailTermine %}
-              <span class="badge-status yes">✅ Terminé</span>
-            {% else %}
-              <span class="badge-status no">⏳ Non terminé</span>
-            {% endif %}
-          </td>
-          <td>
-            <div class="d-flex gap-2">
-              <a href="{{ path('app_carnet_educatif_show', {'id': carnet.id}) }}" class="btn-sm-see">👁 Voir</a>
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% else %}
-  <div class="empty-wrap">
-    <span class="empty-icon">📭</span>
-    <p style="color:var(--muted);font-size:1.05rem">Aucun carnet trouvé.<br>Créez votre première session d'étude !</p>
-  </div>
-  {% endif %}
+    {# Tableau des carnets #}
+    {% if carnet_educatifs|length > 0 %}
+    <div class="table-card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Matière</th>
+                    <th>Durée</th>
+                    <th>Concentration</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for carnet in carnet_educatifs %}
+                    <tr style="animation-delay:{{ loop.index * 0.05 }}s">
+                        <td><strong>{{ carnet.dateEtude ? carnet.dateEtude|date('d/m/Y') : '—' }}</strong></td>
+                        <td><span class="subject-tag">{{ carnet.matiere }}</span></td>
+                        <td><span class="duration-tag">⏱ {{ carnet.dureeTotale }} min</span></td>
+                        <td>
+                            <div class="conc-wrap">
+                                <span class="conc-num">{{ carnet.niveauConcentration }}</span>
+                                <div class="conc-track">
+                                    <div class="conc-fill" style="width:{{ carnet.niveauConcentration * 20 }}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if carnet.travailTermine %}
+                                <span class="badge-status yes">✅ Terminé</span>
+                            {% else %}
+                                <span class="badge-status no">⏳ Non terminé</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a href="{{ path('app_carnet_educatif_show', {'id': carnet.id}) }}" class="btn-sm-see">
+                                    <i class="fas fa-eye me-1"></i>Voir
+                                </a>
+                                
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-wrap">
+        <span class="empty-icon">📭</span>
+        <p class="text-muted">Aucun carnet trouvé.<br>Créez votre première session d'étude !</p>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

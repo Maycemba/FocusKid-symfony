@@ -11,7 +11,7 @@
             {{ form_errors(form.heure_seule) }}
         </div>
     </div>
-     <div class="mb-4">
+    <div class="mb-4">
         {{ form_label(form.type_commentaire, '🏷️ Type', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
         {{ form_widget(form.type_commentaire, {'attr': {'class': 'form-select form-select-lg rounded-3'}}) }}
         {{ form_errors(form.type_commentaire) }}
@@ -22,9 +22,29 @@
         {{ form_errors(form.texte_commentaire) }}
     </div>
 
-   
-
     <div class="d-grid gap-2 mt-4">
-        <button class="btn btn-primary btn-lg rounded-pill shadow-sm">{{ button_label|default('Enregistrer') }}</button>
+        <button class="btn btn-primary-custom btn-lg rounded-pill shadow-sm">{{ button_label|default('Enregistrer') }}</button>
     </div>
 {{ form_end(form) }}
+
+<style>
+.btn-primary-custom {
+    background: linear-gradient(135deg, #FF6B35, #4A90E2);
+    border: none;
+    border-radius: 50px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    color: white;
+}
+.btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255,107,53,0.4);
+    color: white;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #FF6B35;
+    box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
+    outline: none;
+}
+</style>
