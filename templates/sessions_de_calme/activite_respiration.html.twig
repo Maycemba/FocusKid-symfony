@@ -1,0 +1,947 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Session de calme — Respiration{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  * {
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body.breathing-active > *:not(.breathing-universe) {
+    display: none !important;
+  }
+
+  .breathing-universe {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Nunito', sans-serif;
+    overflow: hidden;
+    transition: background 8s ease;
+    background: #0a1628;
+  }
+
+  .breathing-universe.phase-inspire {
+    background: radial-gradient(ellipse at center, #0d2137 0%, #0a1628 40%, #061020 100%);
+  }
+  .breathing-universe.phase-hold {
+    background: radial-gradient(ellipse at center, #0d3025 0%, #0a2010 40%, #061015 100%);
+  }
+  .breathing-universe.phase-expire {
+    background: radial-gradient(ellipse at center, #071525 0%, #050f1e 40%, #030a15 100%);
+  }
+
+  #particleCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  .orb-wrapper {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+
+  .orb-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(100, 200, 180, 0.15);
+    animation: ringPulse 4s ease-in-out infinite;
+  }
+
+  .orb-ring:nth-child(1) { width: 340px; height: 340px; animation-delay: 0s; }
+  .orb-ring:nth-child(2) { width: 400px; height: 400px; animation-delay: 0.5s; border-color: rgba(100,200,180,0.08); }
+  .orb-ring:nth-child(3) { width: 460px; height: 460px; animation-delay: 1s; border-color: rgba(100,200,180,0.04); }
+
+  @keyframes ringPulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.08); opacity: 0.2; }
+  }
+
+  .orb {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%,
+      rgba(100, 220, 200, 0.9),
+      rgba(30, 120, 160, 0.85) 40%,
+      rgba(10, 60, 120, 0.9) 100%
+    );
+    box-shadow: 0 0 80px rgba(50, 180, 180, 0.4), 0 0 160px rgba(30, 120, 160, 0.2);
+    transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1), background 4s ease, box-shadow 4s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+    cursor: default;
+  }
+
+  .orb.expand {
+    transform: scale(1.55);
+    background: radial-gradient(circle at 35% 35%,
+      rgba(140, 255, 220, 0.95),
+      rgba(50, 180, 160, 0.9) 40%,
+      rgba(20, 100, 140, 0.9) 100%
+    );
+    box-shadow: 0 0 120px rgba(80, 220, 200, 0.6), 0 0 240px rgba(50, 180, 160, 0.3);
+  }
+
+  .orb.hold {
+    transform: scale(1.55);
+    background: radial-gradient(circle at 35% 35%,
+      rgba(120, 240, 160, 0.95),
+      rgba(50, 160, 100, 0.9) 40%,
+      rgba(20, 80, 60, 0.9) 100%
+    );
+    box-shadow: 0 0 120px rgba(80, 200, 120, 0.6), 0 0 240px rgba(50, 180, 100, 0.3);
+  }
+
+  .orb.contract {
+    transform: scale(0.75);
+    background: radial-gradient(circle at 35% 35%,
+      rgba(80, 140, 200, 0.9),
+      rgba(30, 80, 160, 0.85) 40%,
+      rgba(10, 30, 80, 0.9) 100%
+    );
+    box-shadow: 0 0 60px rgba(50, 120, 200, 0.3), 0 0 120px rgba(30, 80, 160, 0.15);
+  }
+
+  .orb-text {
+    color: rgba(255,255,255,0.92);
+    font-size: 1.1rem;
+    font-weight: 300;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-align: center;
+    text-shadow: 0 1px 10px rgba(0,0,0,0.5);
+    line-height: 1;
+  }
+
+  .orb-count {
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.95);
+    line-height: 1;
+    margin-top: 6px;
+    text-shadow: 0 0 20px rgba(150,255,240,0.5);
+  }
+
+  .breath-guide {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .breath-instruction {
+    font-size: 1.2rem;
+    color: rgba(150, 220, 210, 0.8);
+    font-weight: 300;
+    letter-spacing: 2px;
+    min-height: 1.6em;
+  }
+
+  .cycle-display {
+    font-size: 0.78rem;
+    color: rgba(100, 180, 180, 0.5);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .progress-ring-container {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 32px;
+  }
+
+  .progress-ring {
+    transform: rotate(-90deg);
+  }
+
+  .progress-ring-bg {
+    fill: none;
+    stroke: rgba(100, 180, 180, 0.1);
+    stroke-width: 3;
+  }
+
+  .progress-ring-fill {
+    fill: none;
+    stroke: rgba(80, 200, 180, 0.7);
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+  }
+
+  .ring-timer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  .ring-timer-digits {
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: rgba(150, 220, 210, 0.9);
+    line-height: 1;
+  }
+
+  .ring-timer-label {
+    font-size: 0.65rem;
+    color: rgba(100, 180, 180, 0.5);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .breath-controls {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .breath-btn {
+    padding: 12px 32px;
+    border-radius: 50px;
+    border: 1px solid rgba(80, 200, 180, 0.35);
+    background: rgba(80, 200, 180, 0.06);
+    color: rgba(150, 220, 210, 0.9);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.4s;
+    letter-spacing: 1px;
+    backdrop-filter: blur(8px);
+  }
+
+  .breath-btn:hover {
+    background: rgba(80, 200, 180, 0.15);
+    border-color: rgba(80, 200, 180, 0.6);
+    transform: translateY(-2px);
+  }
+
+  .breath-btn-stop {
+    border-color: rgba(240, 100, 100, 0.35);
+    color: rgba(240, 150, 150, 0.8);
+    background: rgba(240, 100, 100, 0.05);
+  }
+
+  .breath-btn-stop:hover {
+    background: rgba(240, 100, 100, 0.12);
+    border-color: rgba(240, 100, 100, 0.5);
+    color: rgba(240, 150, 150, 1);
+  }
+
+  .sound-picker {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    justify-content: center;
+  }
+
+  .sound-chip {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(80, 200, 180, 0.2);
+    background: transparent;
+    color: rgba(100, 180, 180, 0.6);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .sound-chip:hover, .sound-chip.active {
+    border-color: rgba(80, 200, 180, 0.6);
+    color: rgba(150, 220, 210, 0.9);
+    background: rgba(80, 200, 180, 0.08);
+  }
+
+  .feedback-layer {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(10, 22, 40, 0.96);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .feedback-card {
+    background: linear-gradient(135deg, rgba(20, 40, 60, 0.98), rgba(10, 25, 45, 0.98));
+    border: 1px solid rgba(80, 200, 180, 0.2);
+    border-radius: 20px;
+    padding: 48px 40px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    animation: fadeUp 0.5s ease;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.6);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .feedback-card h2 {
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: rgba(150, 220, 210, 0.9);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  .feedback-card p {
+    color: rgba(100, 160, 160, 0.7);
+    margin-bottom: 28px;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+  }
+
+  .star-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .star-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 2rem;
+    transition: transform 0.2s;
+    color: rgba(100, 150, 160, 0.4);
+  }
+
+  .star-btn.lit { color: rgba(80, 220, 180, 0.9); transform: scale(1.15); }
+  .star-btn:hover { transform: scale(1.2); }
+
+  .note-field {
+    width: 100%;
+    background: rgba(10, 22, 40, 0.6);
+    border: 1px solid rgba(80, 200, 180, 0.2);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: rgba(200, 230, 230, 0.9);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    resize: none;
+    margin-bottom: 20px;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .note-field:focus { border-color: rgba(80, 200, 180, 0.5); }
+
+  .submit-btn {
+    padding: 12px 36px;
+    background: linear-gradient(135deg, rgba(50, 180, 160, 0.9), rgba(30, 120, 160, 0.9));
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(50, 180, 160, 0.3);
+  }
+
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(50, 180, 160, 0.4);
+  }
+
+  .entry-page {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 60px 20px;
+    font-family: 'Nunito', sans-serif;
+    color: #555;
+  }
+
+  .entry-orb-preview {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #64dcc8, #1e78a0 40%, #0a3c78 100%);
+    margin: 0 auto 32px;
+    box-shadow: 0 0 60px rgba(50,180,180,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.3s;
+    animation: gentlePulse 3s ease-in-out infinite;
+  }
+
+  @keyframes gentlePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  .entry-orb-preview:hover { transform: scale(1.08); }
+
+  .entry-title {
+    font-size: 2rem;
+    font-weight: 300;
+    color: #103741;
+    margin-bottom: 8px;
+  }
+
+  .entry-desc {
+    color: #6b7280;
+    margin-bottom: 32px;
+    line-height: 1.7;
+  }
+
+  .pattern-selector {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .pattern-btn {
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 2px solid #e5e7eb;
+    background: white;
+    color: #6b7280;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .pattern-btn.active {
+    border-color: #1e78a0;
+    color: #1e78a0;
+    background: rgba(30,120,160,0.06);
+  }
+
+  .start-immersive-btn {
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #40c9a2, #1e78a0);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(30,120,160,0.3);
+  }
+
+  .start-immersive-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 30px rgba(30,120,160,0.4);
+  }
+
+  @media (max-width: 768px) {
+    .orb { width: 160px; height: 160px; }
+    .orb.expand { transform: scale(1.4); }
+    .orb.contract { transform: scale(0.7); }
+    .breath-btn { padding: 8px 20px; font-size: 0.85rem; }
+    .sound-chip { font-size: 0.7rem; }
+    .feedback-card { margin: 20px; padding: 32px 24px; }
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="entry-page" id="entryPage">
+  <div class="entry-orb-preview">
+    <span style="font-size:2.5rem; color:rgba(255,255,255,0.8)">🌬️</span>
+  </div>
+  <h2 class="entry-title">Respiration guidée</h2>
+  <p class="entry-desc">Une expérience immersive pour apprendre à respirer et à te calmer. Suis la lumière qui respire avec toi.</p>
+
+  <div style="margin-bottom:16px; font-size:0.8rem; color:#9ca3af; text-transform:uppercase; letter-spacing:2px;">Choisir un rythme</div>
+  <div class="pattern-selector">
+    <button class="pattern-btn active" data-in="4" data-hold="4" data-out="4">⬡ Carré · 4-4-4</button>
+    <button class="pattern-btn" data-in="4" data-hold="7" data-out="8">🌙 4-7-8</button>
+    <button class="pattern-btn" data-in="5" data-hold="0" data-out="5">🌊 Vague · 5-5</button>
+    <button class="pattern-btn" data-in="3" data-hold="0" data-out="3">⚡ Rapide · 3-3</button>
+  </div>
+
+  <button class="start-immersive-btn">Commencer l'expérience</button>
+</div>
+
+<div class="breathing-universe" id="breathingUniverse" style="display:none;">
+  <canvas id="particleCanvas"></canvas>
+
+  <div class="orb-wrapper">
+    <div class="orb-ring"></div>
+    <div class="orb-ring"></div>
+    <div class="orb-ring"></div>
+    <div class="orb" id="breathOrb">
+      <div class="orb-text" id="orbLabel">Inspire</div>
+      <div class="orb-count" id="orbCount">4</div>
+    </div>
+  </div>
+
+  <div class="breath-guide">
+    <div class="breath-instruction" id="breathInstruction">Respire par le nez, doucement</div>
+    <div class="cycle-display" id="cycleDisplay">Cycle 0 · 0 respirations</div>
+  </div>
+
+  <div class="progress-ring-container">
+    <svg class="progress-ring" width="100" height="100" viewBox="0 0 100 100">
+      <circle class="progress-ring-bg" cx="50" cy="50" r="44" />
+      <circle class="progress-ring-fill" id="progressRing" cx="50" cy="50" r="44"
+        stroke-dasharray="276.5" stroke-dashoffset="276.5" />
+    </svg>
+    <div class="ring-timer">
+      <div class="ring-timer-digits" id="ringTimer">5:00</div>
+      <div class="ring-timer-label">Restant</div>
+    </div>
+  </div>
+
+  <div class="sound-picker">
+    <button class="sound-chip active" data-sound="none">🔇 Silence</button>
+    <button class="sound-chip" data-sound="rain">🌧️ Pluie</button>
+    <button class="sound-chip" data-sound="wind">🍃 Vent</button>
+    <button class="sound-chip" data-sound="forest">🌿 Forêt</button>
+  </div>
+
+  <div class="breath-controls">
+    <button class="breath-btn breath-btn-stop" id="stopBreathBtn">⏹ Terminer la session</button>
+  </div>
+</div>
+
+<div class="feedback-layer" id="feedbackLayer">
+  <div class="feedback-card">
+    <h2>Bien respiré ✨</h2>
+    <p>COMMENT TE SENS-TU MAINTENANT ?</p>
+
+    <form method="post" action="{{ path('app_session_calme_save') }}" id="feedbackForm">
+      <input type="hidden" name="type_activite" value="respiration">
+      <input type="hidden" name="duree_reelle" id="fDuree">
+      <input type="hidden" name="feedback_enfant" id="fFeedback">
+
+      <div class="star-row">
+        {% for i in 1..5 %}
+        <button type="button" class="star-btn" data-val="{{ i }}">◯</button>
+        {% endfor %}
+      </div>
+
+      <textarea class="note-field" name="note_parent" rows="3" placeholder="Un message pour tes parents... 💬"></textarea>
+
+      <button type="submit" class="submit-btn">Sauvegarder ✓</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// Configuration
+let pattern = { in: 4, hold: 4, out: 4 };
+let sessionDuration = 5 * 60;
+let sessionStart = null;
+let sessionTimer = null;
+let breathingRunner = null;
+let currentPhaseInterval = null;
+let cycleCount = 0;
+let totalBreaths = 0;
+let audioCtx = null;
+let noiseSource = null;
+let animationFrame = null;
+let isRunning = false;
+
+// DOM Elements
+const entryPage = document.getElementById('entryPage');
+const breathingUniverse = document.getElementById('breathingUniverse');
+const feedbackLayer = document.getElementById('feedbackLayer');
+const breathOrb = document.getElementById('breathOrb');
+const orbLabel = document.getElementById('orbLabel');
+const orbCount = document.getElementById('orbCount');
+const breathInstruction = document.getElementById('breathInstruction');
+const cycleDisplay = document.getElementById('cycleDisplay');
+const ringTimer = document.getElementById('ringTimer');
+const progressRing = document.getElementById('progressRing');
+const stopBtn = document.getElementById('stopBreathBtn');
+const startBtn = document.querySelector('.start-immersive-btn');
+const patternBtns = document.querySelectorAll('.pattern-btn');
+const soundChips = document.querySelectorAll('.sound-chip');
+const starBtns = document.querySelectorAll('.star-btn');
+const feedbackForm = document.getElementById('feedbackForm');
+const fDuree = document.getElementById('fDuree');
+const fFeedback = document.getElementById('fFeedback');
+
+const circumference = 2 * Math.PI * 44;
+
+// Pattern selection
+patternBtns.forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    patternBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    pattern = {
+      in: parseInt(btn.dataset.in),
+      hold: parseInt(btn.dataset.hold),
+      out: parseInt(btn.dataset.out)
+    };
+  });
+});
+
+// Start session
+function launchImmersive() {
+  if (isRunning) return;
+  
+  entryPage.style.display = 'none';
+  breathingUniverse.style.display = 'flex';
+  document.body.classList.add('breathing-active');
+  
+  initParticles();
+  startParticleAnimation();
+  
+  sessionStart = Date.now();
+  let timeLeft = sessionDuration;
+  
+  // Update timer every second
+  sessionTimer = setInterval(() => {
+    if (!isRunning) return;
+    timeLeft--;
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    ringTimer.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+    
+    const progress = 1 - (timeLeft / sessionDuration);
+    const offset = circumference * (1 - progress);
+    progressRing.style.strokeDashoffset = offset;
+    
+    if (timeLeft <= 0) {
+      clearInterval(sessionTimer);
+      stopImmersive();
+    }
+  }, 1000);
+  
+  isRunning = true;
+  runBreathingCycle();
+}
+
+// Breathing cycle
+function runBreathingCycle() {
+  if (!isRunning) return;
+  
+  totalBreaths++;
+  cycleCount = (totalBreaths + 1) / 2;
+  cycleDisplay.textContent = `Cycle ${Math.floor(cycleCount)} · ${totalBreaths} respiration${totalBreaths > 1 ? 's' : ''}`;
+  
+  animatePhase('Inspire', pattern.in, 'expand', 'Inspire doucement par le nez...', () => {
+    if (pattern.hold > 0) {
+      animatePhase('Retiens', pattern.hold, 'hold', 'Retiens ton souffle doucement...', () => {
+        animatePhase('Expire', pattern.out, 'contract', 'Expire lentement par la bouche...', runBreathingCycle);
+      });
+    } else {
+      animatePhase('Expire', pattern.out, 'contract', 'Expire lentement par la bouche...', runBreathingCycle);
+    }
+  });
+}
+
+function animatePhase(label, seconds, className, instruction, nextFn) {
+  if (!isRunning) return;
+  
+  breathOrb.className = 'orb ' + className;
+  orbLabel.textContent = label;
+  breathInstruction.textContent = instruction;
+  
+  const universe = breathingUniverse;
+  universe.className = 'breathing-universe phase-' + 
+    (className === 'expand' ? 'inspire' : className === 'hold' ? 'hold' : 'expire');
+  
+  let count = seconds;
+  orbCount.textContent = count;
+  
+  if (currentPhaseInterval) clearInterval(currentPhaseInterval);
+  
+  currentPhaseInterval = setInterval(() => {
+    if (!isRunning) {
+      clearInterval(currentPhaseInterval);
+      return;
+    }
+    count--;
+    orbCount.textContent = Math.max(0, count);
+    if (count <= 0) {
+      clearInterval(currentPhaseInterval);
+      currentPhaseInterval = null;
+      nextFn();
+    }
+  }, 1000);
+}
+
+// Stop session
+function stopImmersive() {
+  isRunning = false;
+  
+  if (sessionTimer) {
+    clearInterval(sessionTimer);
+    sessionTimer = null;
+  }
+  
+  if (currentPhaseInterval) {
+    clearInterval(currentPhaseInterval);
+    currentPhaseInterval = null;
+  }
+  
+  if (animationFrame) {
+    cancelAnimationFrame(animationFrame);
+    animationFrame = null;
+  }
+  
+  if (audioCtx) {
+    audioCtx.close().catch(console.error);
+    audioCtx = null;
+    noiseSource = null;
+  }
+  
+  breathingUniverse.style.display = 'none';
+  document.body.classList.remove('breathing-active');
+  
+   const duration = Math.max(1, Math.round((Date.now() - sessionStart) / 60000));
+  const dureeInput = document.getElementById('fDuree');
+  if (dureeInput) {
+    dureeInput.value = duration;
+  }
+  
+  entryPage.style.display = 'block';
+  feedbackLayer.style.display = 'flex';
+}
+
+// Ambient sounds
+async function setSound(soundType) {
+  if (audioCtx) {
+    await audioCtx.close();
+    audioCtx = null;
+    noiseSource = null;
+  }
+  
+  if (soundType === 'none') return;
+  
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    await audioCtx.resume();
+    
+    const bufferSize = 4096;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+    
+    noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+    noiseSource.loop = true;
+    
+    const filter = audioCtx.createBiquadFilter();
+    switch(soundType) {
+      case 'rain':
+        filter.type = 'highpass';
+        filter.frequency.value = 600;
+        break;
+      case 'wind':
+        filter.type = 'bandpass';
+        filter.frequency.value = 300;
+        filter.Q.value = 0.7;
+        break;
+      case 'forest':
+        filter.type = 'lowpass';
+        filter.frequency.value = 800;
+        break;
+    }
+    
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.05;
+    
+    noiseSource.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    noiseSource.start();
+    
+    gain.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 2);
+  } catch (err) {
+    console.warn('Audio error:', err);
+  }
+}
+
+// Sound selection
+soundChips.forEach(chip => {
+  chip.addEventListener('click', (e) => {
+    soundChips.forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    setSound(chip.dataset.sound);
+  });
+});
+
+// Particle system
+const canvas = document.getElementById('particleCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function initParticles() {
+  resizeCanvas();
+  particles = [];
+  const particleCount = Math.min(60, Math.floor(window.innerWidth / 20));
+  
+  for (let i = 0; i < particleCount; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: Math.random() * 3 + 1,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      alpha: Math.random() * 0.3 + 0.1
+    });
+  }
+}
+
+function drawParticles() {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    
+    if (p.x < 0) p.x = canvas.width;
+    if (p.x > canvas.width) p.x = 0;
+    if (p.y < 0) p.y = canvas.height;
+    if (p.y > canvas.height) p.y = 0;
+    
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(80, 200, 180, ${p.alpha})`;
+    ctx.fill();
+  });
+}
+
+function startParticleAnimation() {
+  if (animationFrame) cancelAnimationFrame(animationFrame);
+  
+  function animate() {
+    if (!breathingUniverse || breathingUniverse.style.display === 'none') return;
+    drawParticles();
+    animationFrame = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+// Star rating system
+let currentRating = 0;
+
+starBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const val = parseInt(btn.dataset.val);
+    currentRating = val;
+    fFeedback.value = val;
+    
+    starBtns.forEach((star, index) => {
+      const starVal = parseInt(star.dataset.val);
+      if (starVal <= val) {
+        star.textContent = '★';
+        star.classList.add('lit');
+      } else {
+        star.textContent = '☆';
+        star.classList.remove('lit');
+      }
+    });
+  });
+});
+
+// Form submission
+feedbackForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  if (currentRating === 0) {
+    alert('Veuillez donner une note à votre expérience 🌟');
+    return;
+  }
+  
+  const formData = new FormData(feedbackForm);
+  
+  try {
+    const response = await fetch(feedbackForm.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+    
+    if (response.ok) {
+      alert('Merci pour ton retour ! 🌟');
+      feedbackLayer.style.display = 'none';
+      window.location.reload();
+    } else {
+      alert('Une erreur est survenue, mais votre expérience a été enregistrée.');
+      window.location.reload();
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Merci pour votre session !');
+    window.location.reload();
+  }
+});
+
+// Event listeners
+startBtn.addEventListener('click', launchImmersive);
+stopBtn.addEventListener('click', stopImmersive);
+
+// Window resize handler
+window.addEventListener('resize', () => {
+  if (breathingUniverse.style.display !== 'none') {
+    initParticles();
+  }
+});
+
+// Initialize stars
+starBtns.forEach(btn => {
+  btn.textContent = '☆';
+});
+
+// Prevent accidental navigation
+window.addEventListener('beforeunload', (e) => {
+  if (isRunning) {
+    e.preventDefault();
+    e.returnValue = 'La session est en cours. Voulez-vous vraiment quitter ?';
+  }
+});
+</script>
+{% endblock %}

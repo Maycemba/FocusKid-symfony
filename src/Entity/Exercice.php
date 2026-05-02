@@ -6,7 +6,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\ExerciceRepository;
 
@@ -16,7 +15,7 @@ class Exercice
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'id_exercice' ,type: 'integer')]
     private ?int $id = null;
 
     public function getId(): ?int
@@ -50,13 +49,6 @@ private ?Utilisateur $utilisateur = null;
     // ============ CHAMPS AVEC VALIDATION ============
 
     #[ORM\Column(type: 'string', nullable: false)]
-    #[Assert\NotBlank(message: "Le titre est obligatoire")]
-    #[Assert\Length(
-        min: 3,
-        max: 255,
-        minMessage: "Le titre doit contenir au moins {{ limit }} caractères",
-        maxMessage: "Le titre ne doit pas dépasser {{ limit }} caractères"
-    )]
     private ?string $titre = null;
 
     public function getTitre(): ?string
@@ -71,11 +63,6 @@ private ?Utilisateur $utilisateur = null;
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
-    #[Assert\NotBlank(message: "Le type est obligatoire")]
-    #[Assert\Choice(
-        choices: ["MÉMOIRE", "ATTENTION", "LOGIQUE", "CHRONO"],
-        message: "Choisissez un type valide (MÉMOIRE, ATTENTION, LOGIQUE, CHRONO)"
-    )]
     private ?string $type = null;
 
     public function getType(): ?string
@@ -90,10 +77,6 @@ private ?Utilisateur $utilisateur = null;
     }
 
     #[ORM\Column(type: 'text', nullable: true)]
-    #[Assert\Length(
-        max: 500,
-        maxMessage: "La consigne ne doit pas dépasser {{ limit }} caractères"
-    )]
     private ?string $consigne = null;
 
     public function getConsigne(): ?string
@@ -108,11 +91,6 @@ private ?Utilisateur $utilisateur = null;
     }
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    #[Assert\Range(
-        min: 1,
-        max: 5,
-        notInRangeMessage: "La difficulté doit être comprise entre {{ min }} et {{ max }}"
-    )]
     private ?int $difficulte = null;
 
     public function getDifficulte(): ?int
@@ -127,12 +105,6 @@ private ?Utilisateur $utilisateur = null;
     }
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    #[Assert\Positive(message: "La durée doit être un nombre positif")]
-    #[Assert\Range(
-        min: 10,
-        max: 3600,
-        notInRangeMessage: "La durée doit être comprise entre {{ min }} et {{ max }} secondes"
-    )]
     private ?int $duree = null;
 
     public function getDuree(): ?int
@@ -189,7 +161,6 @@ private ?Utilisateur $utilisateur = null;
     }
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    #[Assert\Positive(message: "L'ID du créateur doit être positif")]
     private ?int $cree_par = null;
 
     public function getCree_par(): ?int
@@ -204,7 +175,6 @@ private ?Utilisateur $utilisateur = null;
     }
 
     #[ORM\Column(type: 'datetime', nullable: false)]
-    #[Assert\NotNull(message: "La date de création est obligatoire")]
     private ?\DateTimeInterface $date_creation = null;
 
     public function getDate_creation(): ?\DateTimeInterface
@@ -246,8 +216,6 @@ private ?Utilisateur $utilisateur = null;
         return $this;
     }
 
-    // ============ METHODES ALIAS ============
-
     public function isPourTousEnfants(): ?bool
     {
         return $this->pour_tous_enfants;
@@ -256,6 +224,7 @@ private ?Utilisateur $utilisateur = null;
     public function setPourTousEnfants(?bool $pour_tous_enfants): static
     {
         $this->pour_tous_enfants = $pour_tous_enfants;
+
         return $this;
     }
 
@@ -267,6 +236,7 @@ private ?Utilisateur $utilisateur = null;
     public function setCreePar(?int $cree_par): static
     {
         $this->cree_par = $cree_par;
+
         return $this;
     }
 
@@ -278,6 +248,8 @@ private ?Utilisateur $utilisateur = null;
     public function setDateCreation(\DateTime $date_creation): static
     {
         $this->date_creation = $date_creation;
+
         return $this;
     }
+
 }

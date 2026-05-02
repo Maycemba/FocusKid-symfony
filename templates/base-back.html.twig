@@ -2,10 +2,11 @@
 <html lang="en">
 
 <head>
-
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}FocusKids Admin - Dashboard{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('base-back/assets/images/logos/favicon.png') }}">
     <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/logo.png') }}" />
     <link rel="stylesheet" href="{{ asset('base-back/assets/css/styles.min.css') }}" />
     {% block stylesheets %}{% endblock %}
@@ -36,6 +37,59 @@
             margin-top: 0 !important;
             padding-top: 0 !important;
         }
+        
+        /* Loader AJAX */
+        #ajaxLoader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 25px 40px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        }
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px auto;
+        }
+        .loader-text {
+            color: white;
+            font-size: 14px;
+            margin: 0;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Animation transition contenu */
+        #dynamic-content {
+            min-height: 400px;
+            transition: opacity 0.2s;
+        }
+        
+        /* Lien actif dans le menu */
+        .sidebar-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            border-radius: 10px;
+        }
+        .sidebar-link.active iconify-icon {
+            color: white !important;
+        }
+        
+        .sidebar-link {
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -56,7 +110,7 @@
         <aside class="left-sidebar">
             <div>
                 <div class="brand-logo d-flex align-items-center justify-content-between px-3 py-2">
-                    <a class="text-nowrap logo-img d-flex align-items-center" href="{{ path('app_admin_dashboard') }}">
+                    <a class="text-nowrap logo-img d-flex align-items-center" href="#" id="homeLink">
                         <img src="{{ asset('base-back/assets/images/logos/logo.png') }}" alt="FocusKids" />
                         <span class="fw-bold text-primary">FocusKids</span>
                     </a>
@@ -73,7 +127,7 @@
                             <span class="hide-menu">Navigation</span>
                         </li>
                         <li class="sidebar-item">
-                            <a href="{{ path('app_admin_dashboard') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link primary-hover-bg ajax-link" data-url="{{ path('app_exercice_index') }}">
                                 <iconify-icon icon="solar:home-2-line-duotone"></iconify-icon>
                                 <span class="hide-menu">Tableau de bord</span>
                             </a>
@@ -85,7 +139,7 @@
                             <span class="hide-menu">Gestion Pédagogique</span>
                         </li>
                         <li class="sidebar-item">
-                            <a href="{{ path('app_exercice_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link primary-hover-bg ajax-link" data-url="{{ path('app_exercice_index') }}">
                                 <iconify-icon icon="solar:notebook-bookmark-line-duotone"></iconify-icon>
                                 <span class="hide-menu">Exercices</span>
                             </a>
@@ -93,7 +147,7 @@
                         
                         <!-- Module 2: JEUX -->
                         <li class="sidebar-item">
-                            <a href="{{ path('app_jeu_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link primary-hover-bg ajax-link" data-url="{{ path('app_jeu_index') }}">
                                 <iconify-icon icon="solar:gamepad-line-duotone"></iconify-icon>
                                 <span class="hide-menu">Jeux</span>
                             </a>
@@ -101,7 +155,7 @@
                         
                         <!-- Module 3: SESSIONS DE CALME -->
                         <li class="sidebar-item">
-                            <a href="{{ path('app_sessions_de_calme_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link primary-hover-bg ajax-link" data-url="{{ path('app_sessions_de_calme_index') }}">
                                 <iconify-icon icon="solar:meditation-line-duotone"></iconify-icon>
                                 <span class="hide-menu">Session calme</span>
                             </a>
@@ -109,15 +163,15 @@
                         
                         <!-- Module 4: COURS / LEÇONS -->
                         <li class="sidebar-item">
-    <a href="{{ path('app_cour_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
-        <iconify-icon icon="solar:notebook-line-duotone"></iconify-icon>
-        <span class="hide-menu">Cours</span>
-    </a>
-</li>
+                            <a href="#" class="sidebar-link primary-hover-bg ajax-link" data-url="{{ path('app_cour_index') }}">
+                                <iconify-icon icon="solar:notebook-line-duotone"></iconify-icon>
+                                <span class="hide-menu">Cours</span>
+                            </a>
+                        </li>
                         
                         <!-- Module 5: CARNET ÉDUCATIF -->
                         <li class="sidebar-item">
-                            <a href="{{ path('app_carnet_educatif_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link primary-hover-bg ajax-link" data-url="{{ path('admin_carnet_index') }}">
                                 <iconify-icon icon="solar:diploma-line-duotone"></iconify-icon>
                                 <span class="hide-menu">Carnet éducatif</span>
                             </a>
@@ -125,7 +179,7 @@
                         
                         <!-- Module 6: ÉMOTIONS -->
                         <li class="sidebar-item">
-                            <a href="{{ path('app_emotion_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link primary-hover-bg ajax-link" data-url="{{ path('app_emotion_index') }}">
                                 <iconify-icon icon="solar:emoji-funny-square-line-duotone"></iconify-icon>
                                 <span class="hide-menu">Émotions</span>
                             </a>
@@ -133,19 +187,19 @@
                         
                         <!-- Module 7: SCÉNARIOS -->
                         <li class="sidebar-item">
-                            <a href="{{ path('app_scenario_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
-                             <iconify-icon icon="solar:clapperboard-line-duotone"></iconify-icon>
+                            <a href="#" class="sidebar-link primary-hover-bg ajax-link" data-url="{{ path('app_scenario_index') }}">
+                                <iconify-icon icon="solar:clapperboard-line-duotone"></iconify-icon>
                                 <span class="hide-menu">Scénarios</span>
                             </a>
                         </li>
                         
-<!-- Module 8: HUMEUR JOURNALIÈRE -->
-<li class="sidebar-item">
-    <a href="{{ path('app_humeur_journaliere_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
-        <iconify-icon icon="solar:smile-circle-line-duotone"></iconify-icon>
-        <span class="hide-menu">Humeur journalière</span>
-    </a>
-</li>
+                        <!-- Module 8: HUMEUR JOURNALIÈRE -->
+                        <li class="sidebar-item">
+                            <a href="#" class="sidebar-link primary-hover-bg ajax-link" data-url="{{ path('app_humeur_journaliere_index') }}">
+                                <iconify-icon icon="solar:smile-circle-line-duotone"></iconify-icon>
+                                <span class="hide-menu">Humeur journalière</span>
+                            </a>
+                        </li>
                         
                         <!-- Module 9: UTILISATEURS -->
                         <li class="nav-small-cap">
@@ -153,7 +207,7 @@
                             <span class="hide-menu">Administration</span>
                         </li>
                         <li class="sidebar-item">
-                            <a href="{{ path('app_utilisateur_index') }}" class="sidebar-link primary-hover-bg" aria-expanded="false">
+                            <a href="#" class="sidebar-link primary-hover-bg ajax-link" data-url="{{ path('app_utilisateur_index') }}">
                                 <iconify-icon icon="solar:users-group-rounded-line-duotone"></iconify-icon>
                                 <span class="hide-menu">Utilisateurs</span>
                             </a>
@@ -168,6 +222,7 @@
                                 <img src="{{ asset('assets/images/backgrounds/sidebar-buynow-bg.png') }}" alt="" class="img-fluid">
                             </div>
                         </div>
+
                     </ul>
                 </nav>
             </div>
@@ -176,12 +231,57 @@
         <div class="body-wrapper">
             <div class="body-wrapper-inner">
                 <div class="container-fluid">
-                    <!-- Header complètement supprimé -->
-                    
-                    {% block body %}
-                  
-                           
-                    {% endblock %}
+ 
+                  <header class="app-header">
+                        <nav class="navbar navbar-expand-lg navbar-light">
+                            <ul class="navbar-nav">
+                                <li class="nav-item d-block d-xl-none">
+                                    <a class="nav-link sidebartoggler" id="headerCollapse" href="javascript:void(0)">
+                                        <i class="ti ti-menu-2"></i>
+                                    </a>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link" href="javascript:void(0)" id="drop1" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <iconify-icon icon="solar:bell-linear" class="fs-6"></iconify-icon>
+                                        <div class="notification bg-primary rounded-circle"></div>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-animate-up" aria-labelledby="drop1">
+                                        <div class="message-body">
+                                            <a href="javascript:void(0)" class="dropdown-item">Item 1</a>
+                                            <a href="javascript:void(0)" class="dropdown-item">Item 2</a>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
+                                <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link" href="javascript:void(0)" id="drop2" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <img src="{{ asset('assets/images/profile/user1.jpg') }}" alt="" width="35" height="35" class="rounded-circle">
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
+                                            <div class="message-body">
+                                                <a class="d-flex align-items-center gap-2 dropdown-item">
+                                                    <i class="ti ti-user fs-6"></i>
+                                                    <p class="mb-0 fs-3">Mon Profil</p>
+                                                </a>
+                                                <a class="d-flex align-items-center gap-2 dropdown-item">
+                                                    <i class="ti ti-settings fs-6"></i>
+                                                    <p class="mb-0 fs-3">Paramètres</p>
+                                                </a>
+                                                <a class="d-flex align-items-center gap-2 dropdown-item" href="/logout">
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </nav>
+                    </header>
+
+                    <!-- Zone de contenu dynamique -->
+                    <div id="dynamic-content">
+                        {% block body %}{% endblock %}
+                    </div>
 
                     <div class="py-6 px-6 text-center">
                         <p class="mb-0 fs-4">© {{ 'now'|date('Y') }} FocusKids - Plateforme éducative pour enfants</p>
@@ -191,15 +291,122 @@
         </div>
     </div>
 
-    <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('assets/js/sidebarmenu.js') }}"></script>
-    <script src="{{ asset('assets/js/app.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/apexcharts/dist/apexcharts.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/simplebar/dist/simplebar.js') }}"></script>
-    <script src="{{ asset('assets/js/dashboard.js') }}"></script>
+    <!-- Loader AJAX -->
+    <div id="ajaxLoader" style="display: none;">
+        <div class="loader-spinner"></div>
+        <p class="loader-text">Chargement en cours...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
-    {{ importmap('app') }}
+
+    <script>
+        // Navigation AJAX pure JavaScript (pas besoin de jQuery)
+        (function() {
+            console.log('🔧 Initialisation navigation AJAX');
+            
+            var contentDiv = document.getElementById('dynamic-content');
+            var loader = document.getElementById('ajaxLoader');
+            var currentUrl = window.location.pathname;
+            
+            function showLoader() {
+                if (loader) loader.style.display = 'block';
+                if (contentDiv) contentDiv.style.opacity = '0.5';
+            }
+            
+            function hideLoader() {
+                if (loader) loader.style.display = 'none';
+                if (contentDiv) contentDiv.style.opacity = '1';
+            }
+            
+            function loadContent(url) {
+                if (!url) return;
+                console.log('📥 Chargement AJAX:', url);
+                showLoader();
+                
+                fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Erreur ' + response.status);
+                    return response.text();
+                })
+                .then(function(html) {
+                    var tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    var newContent = tempDiv.querySelector('#dynamic-content');
+                    
+                    if (newContent) {
+                        contentDiv.innerHTML = newContent.innerHTML;
+                    } else {
+                        contentDiv.innerHTML = html;
+                    }
+                    
+                    // Mettre à jour l'URL
+                    window.history.pushState({url: url}, '', url);
+                    
+                    // Mettre à jour le titre
+                    var newTitle = tempDiv.querySelector('title');
+                    if (newTitle) document.title = newTitle.textContent;
+                    
+                    // Mettre à jour le menu actif
+                    var allLinks = document.querySelectorAll('.ajax-link');
+                    for (var i = 0; i < allLinks.length; i++) {
+                        allLinks[i].classList.remove('active');
+                    }
+                    var activeLink = document.querySelector('.ajax-link[data-url="' + url + '"]');
+                    if (activeLink) activeLink.classList.add('active');
+                    
+                    console.log('✅ Contenu chargé:', url);
+                    hideLoader();
+                })
+                .catch(function(error) {
+                    console.error('❌ Erreur AJAX:', error);
+                    window.location.href = url;
+                });
+            }
+            
+            // Capturer les clics sur les liens AJAX
+            var links = document.querySelectorAll('.ajax-link');
+            console.log('Liens AJAX trouvés:', links.length);
+            
+            for (var i = 0; i < links.length; i++) {
+                links[i].addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var url = this.getAttribute('data-url');
+                    if (url) loadContent(url);
+                });
+            }
+            
+            // Lien home
+            var homeLink = document.getElementById('homeLink');
+            if (homeLink) {
+                homeLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var url = "{{ path('app_exercice_index') }}";
+                    loadContent(url);
+                });
+            }
+            
+            // Bouton retour navigateur
+            window.addEventListener('popstate', function(event) {
+                if (event.state && event.state.url) {
+                    loadContent(event.state.url);
+                }
+            });
+            
+            // Activer le menu actif au chargement
+            var currentLinks = document.querySelectorAll('.ajax-link');
+            for (var i = 0; i < currentLinks.length; i++) {
+                var linkUrl = currentLinks[i].getAttribute('data-url');
+                if (linkUrl && currentUrl.includes(linkUrl)) {
+                    currentLinks[i].classList.add('active');
+                }
+            }
+        })();
+    </script>
 
     {% block javascripts %}{% endblock %}
 </body>

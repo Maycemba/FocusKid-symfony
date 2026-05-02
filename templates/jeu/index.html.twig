@@ -15,7 +15,6 @@
             <tr>
                 <th>Id</th>
                 <th>Titre</th>
-                <th>Type</th>
                 <th>Niveau</th>
                 <th>actions</th>
             </tr>
@@ -25,7 +24,6 @@
             <tr>
                 <td>{{ jeu.id }}</td>
                 <td>{{ jeu.titre }}</td>
-                <td>{{ jeu.type }}</td>
                 <td>{{ jeu.niveau }}</td>
                 <td>
                     <a href="{{ path('app_jeu_show', {'id': jeu.id}) }}" class="btn btn-info btn-sm">show</a>

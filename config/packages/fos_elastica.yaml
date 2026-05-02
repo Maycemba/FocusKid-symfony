@@ -3,7 +3,6 @@ fos_elastica:
         default:
             hosts:
                 - 'localhost:9200'
-
     indexes:
         cours:
             persistence:

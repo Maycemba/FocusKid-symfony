@@ -1,5 +1,4 @@
 <?php
-// src/Form/CommentaireType.php
 
 namespace App\Form;
 
@@ -18,36 +17,41 @@ class CommentaireType extends AbstractType
     {
         $builder
             ->add('date_seule', DateType::class, [
-                'mapped' => false,
                 'label' => '📅 Date du commentaire',
                 'widget' => 'single_text',
                 'required' => true,
-                'attr' => ['class' => 'form-control'],
+                'mapped' => false,
+                'data' => new \DateTime(),
+                'attr' => ['class' => 'form-control form-control-lg rounded-3'],
             ])
             ->add('heure_seule', TimeType::class, [
-                'mapped' => false,
-                'label' => '⏰ Heure',
+                'label' => '🕐 Heure du commentaire',
                 'widget' => 'single_text',
                 'required' => true,
-                'attr' => ['class' => 'form-control'],
-            ])
-            ->add('type_commentaire', ChoiceType::class, [
-                'label' => '🏷️ Type',
-                'required' => true,
-                'choices' => [
-                    'Observation' => 'Observation',
-                    'Problème' => 'Problème',
-                    'Suggestion' => 'Suggestion',
-                    'Amélioration' => 'Amélioration',
-                ],
-                'attr' => ['class' => 'form-select'],
+                'mapped' => false,
+                'data' => new \DateTime(),
+                'attr' => ['class' => 'form-control form-control-lg rounded-3'],
             ])
             ->add('texte_commentaire', TextareaType::class, [
-                'label' => '✏️ Votre commentaire',
+                'label' => '💬 Votre commentaire',
                 'required' => true,
-                'attr' => ['rows' => 5, 'placeholder' => 'Écrivez ici...', 'class' => 'form-control'],
+                'attr' => [
+                    'class' => 'form-control rounded-3',
+                    'rows' => 5,
+                    'placeholder' => 'Saisissez votre commentaire ici...'
+                ],
+            ])
+            ->add('type_commentaire', ChoiceType::class, [
+                'label' => '🏷️ Type de commentaire',
+                'required' => true,
+                'choices' => [
+                    '🔍 Observation' => 'Observation',
+                    '⚠️ Problème' => 'Problème',
+                    '💡 Suggestion' => 'Suggestion',
+                    '✨ Amélioration' => 'Amélioration',
+                ],
+                'attr' => ['class' => 'form-select form-select-lg rounded-3'],
             ]);
-            
     }
 
     public function configureOptions(OptionsResolver $resolver): void

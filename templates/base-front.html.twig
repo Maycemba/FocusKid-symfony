@@ -3,26 +3,281 @@
 
 <head>
     <meta charset="utf-8">
-    <title>{% block title %}FocusKid - Kids Learning Website{% endblock %}</title>
+    <title>{% block title %}FocusKid - Apprentissage ludique pour enfants{% endblock %}</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta name="description" content="Plateforme éducative pour enfants - Exercices, jeux et activités pédagogiques">
+
     <meta content="" name="keywords">
     <meta content="" name="description">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link href="{{ asset('base-front/img/logo.png') }}" rel="icon">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Inter:wght@600&family=Lobster+Two:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 
     <link href="{{ asset('base-front/lib/animate/animate.min.css') }}" rel="stylesheet">
     <link href="{{ asset('base-front/lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
 
     <link href="{{ asset('base-front/css/bootstrap.min.css') }}" rel="stylesheet">
-
     <link href="{{ asset('base-front/css/style.css') }}" rel="stylesheet">
+    
+    <style>
+        /* Variables modernes */
+        :root {
+            --primary: #FF6B35;
+            --primary-dark: #E55A2B;
+            --secondary: #4A90E2;
+            --success: #2ECC71;
+            --danger: #E74C3C;
+            --dark: #2C3E50;
+            --light: #F8F9FA;
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            --gradient-green: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fb;
+            color: var(--dark);
+        }
+        
+        /* Navbar moderne */
+        .navbar {
+            background: white !important;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.03);
+            padding: 15px 0;
+            transition: all 0.3s;
+        }
+        .navbar.sticky {
+            padding: 10px 0;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.98) !important;
+            backdrop-filter: blur(10px);
+        }
+        .navbar-brand h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav-link {
+            font-weight: 500;
+            margin: 0 8px;
+            color: var(--dark) !important;
+            transition: all 0.3s;
+            border-radius: 30px;
+            padding: 8px 18px !important;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: var(--gradient);
+            color: white !important;
+            transform: translateY(-2px);
+        }
+        .btn-primary-custom {
+            background: var(--gradient);
+            color: white;
+            border-radius: 50px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255,107,53,0.3);
+        }
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,107,53,0.4);
+            color: white;
+        }
+        
+        /* Animation de transition (sans loader) */
+        #dynamic-content {
+            min-height: 500px;
+            transition: opacity 0.2s ease;
+        }
+        
+        /* Footer moderne */
+        .footer {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #aaa;
+            margin-top: 60px;
+        }
+        .footer h3 {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+        }
+        .footer h3:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--gradient);
+            border-radius: 3px;
+        }
+        .social-btn {
+            width: 38px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            margin-right: 8px;
+            transition: all 0.3s;
+            color: white;
+        }
+        .social-btn:hover {
+            background: var(--gradient);
+            transform: translateY(-3px);
+            color: white;
+        }
+        
+        /* Scroll to top */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 45px;
+            height: 45px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 999;
+            cursor: pointer;
+        }
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            color: white;
+        }
+        
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* ========== STYLES DES EXERCICES ========== */
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        .badge-type {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-memoire { background: linear-gradient(135deg, #9C27B0, #7B1FA2); color: white; }
+        .badge-attention { background: linear-gradient(135deg, #2196F3, #1976D2); color: white; }
+        .badge-logique { background: linear-gradient(135deg, #FF9800, #F57C00); color: white; }
+        .badge-chrono { background: linear-gradient(135deg, #F44336, #D32F2F); color: white; }
+        
+        .exercice-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            border: 1px solid rgba(0,0,0,0.05);
+            height: 100%;
+            cursor: pointer;
+        }
+        .exercice-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .filter-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .btn-filter {
+            background: var(--gradient);
+            border: none;
+            color: white;
+            border-radius: 30px;
+            padding: 10px 25px;
+            font-weight: 500;
+        }
+        
+        .etoiles {
+            color: #FFC107;
+            font-size: 14px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 20px;
+        }
+    </style>
     
     {% block stylesheets %}{% endblock %}
 </head>
@@ -30,449 +285,208 @@
 <body>
     <div class="container-xxl bg-white p-0">
        
-        <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
-        </div>
 
         <nav class="navbar navbar-expand-lg bg-white navbar-light sticky-top px-4 px-lg-5 py-lg-0">
-          <a href="#" class="navbar-brand d-flex align-items-center">
-    <img src="{{ asset('base-front/img/logo.png') }}" alt="Logo" height="80" class="me-2">
-    <h1 class="m-0 text-primary">FocusKid</h1>
-</a>
+            <a href="#" id="homeLink" class="navbar-brand">
+                <img src="{{ asset('base-front/img/logo.png') }}" alt="Logo" height="45" class="me-2">
+                <h1 class="m-0">Focus<span class="text-primary">Kid</span></h1>
+            </a>
             <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav mx-auto">
-                    <a href="#" class="nav-item nav-link">Home</a>
-                    <a href="#" class="nav-item nav-link">session de calme </a>
-                    <a href="#" class="nav-item nav-link">cours</a>
-                    <a href="#" class="nav-item nav-link">exercice</a>
-                     <a href="#" class="nav-item nav-link">carnet educatif</a>
-                    <a href="{{ path('app_games_index') }}" class="nav-item nav-link">Jeu</a>
-                    <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
-                        <div class="dropdown-menu rounded-0 rounded-bottom border-0 shadow-sm m-0">
-                            <a href="#" class="dropdown-item">School Facilities</a>
-                            <a href="#" class="dropdown-item">Popular Teachers</a>
-                            <a href="#" class="dropdown-item">Become A Teachers</a>
-                            <a href="#" class="dropdown-item">Make Appointment</a>
-                            <a href="#" class="dropdown-item">Testimonial</a>
-                            <a href="#" class="dropdown-item">404 Error</a>
-                        </div>
-                    </div>
-                    <a href="#" class="nav-item nav-link">Contact Us</a>
+                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index') }}">
+                        <i class="fas fa-home me-1"></i> Accueil
+                    </a>
+                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_sessions_de_calme_front') }}">
+                        <i class="fas fa-spa me-1"></i> Calme
+                    </a>
+                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index') }}">
+                        <i class="fas fa-book me-1"></i> Cours
+                    </a>
+                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index', {'type': 'non_complete'}) }}">
+                        <i class="fas fa-puzzle-piece me-1"></i> Exercices
+                    </a>
+                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index') }}">
+                        <i class="fas fa-notebook me-1"></i> Carnet
+                    </a>
+                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_jeu_list') }}">
+                        <i class="fas fa-gamepad me-1"></i> Jeux
+                    </a>
+                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index') }}">
+                        <i class="fas fa-face-smile me-1"></i> Émotions
+                    </a>
+                    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index') }}">
+                        <i class="fas fa-users me-1"></i> Parents
+                    </a>
                 </div>
-                <a href="#" class="btn btn-primary rounded-pill px-3 d-none d-lg-block">Join Us<i class="fa fa-arrow-right ms-3"></i></a>
+                <a href="#" class="btn btn-primary-custom px-4 d-none d-lg-block ajax-link" data-url="{{ path('app_front_exercice_index') }}">
+                    <i class="fas fa-user me-2"></i>Mon compte
+                </a>
             </div>
         </nav>
       
-        {% block body %}
-    
-        <div class="container-fluid p-0 mb-5">
-            <div class="owl-carousel header-carousel position-relative">
-                {% for slide in carousel_slides|default([]) %}
-                <div class="owl-carousel-item position-relative">
-                    <img class="img-fluid" src="{{ asset(slide.image) }}" alt="{{ slide.title }}">
-                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(0, 0, 0, .2);">
-                        <div class="container">
-                            <div class="row justify-content-start">
-                                <div class="col-10 col-lg-8">
-                                    <h1 class="display-2 text-white animated slideInDown mb-4">{{ slide.title }}</h1>
-                                    <p class="fs-5 fw-medium text-white mb-4 pb-2">{{ slide.description }}</p>
-                                    <a href="{{ slide.learn_more_link|default('#') }}" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft">Learn More</a>
-                                    <a href="{{ slide.classes_link|default('#') }}" class="btn btn-dark rounded-pill py-sm-3 px-sm-5 animated slideInRight">Our Classes</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% else %}
-                <div class="owl-carousel-item position-relative">
-                    <img class="img-fluid" src="{{ asset('base-front/img/carousel-1.jpg') }}" alt="">
-                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(0, 0, 0, .2);">
-                        <div class="container">
-                            <div class="row justify-content-start">
-                                <div class="col-10 col-lg-8">
-                                    <h1 class="display-2 text-white animated slideInDown mb-4">The Best Kindergarten School For Your Child</h1>
-                                    <p class="fs-5 fw-medium text-white mb-4 pb-2">Vero elitr justo clita lorem. Ipsum dolor at sed stet sit diam no. Kasd rebum ipsum et diam justo clita et kasd rebum sea elitr.</p>
-                                    <a href="#" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft">Learn More</a>
-                                    <a href="#" class="btn btn-dark rounded-pill py-sm-3 px-sm-5 animated slideInRight">Our Classes</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="owl-carousel-item position-relative">
-                    <img class="img-fluid" src="{{ asset('base-front/img/carousel-2.jpg') }}" alt="">
-                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(0, 0, 0, .2);">
-                        <div class="container">
-                            <div class="row justify-content-start">
-                                <div class="col-10 col-lg-8">
-                                    <h1 class="display-2 text-white animated slideInDown mb-4">Make A Brighter Future For Your Child</h1>
-                                    <p class="fs-5 fw-medium text-white mb-4 pb-2">Vero elitr justo clita lorem. Ipsum dolor at sed stet sit diam no. Kasd rebum ipsum et diam justo clita et kasd rebum sea elitr.</p>
-                                    <a href="#" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft">Learn More</a>
-                                    <a href="#" class="btn btn-dark rounded-pill py-sm-3 px-sm-5 animated slideInRight">Our Classes</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+        <!-- Zone de contenu dynamique - SANS LOADER -->
+        <div id="dynamic-content">
+            {% block body %}{% endblock %}
         </div>
-       
-        <div class="container-xxl py-5">
-            <div class="container">
-                <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                    <h1 class="mb-3">School Facilities</h1>
-                    <p>Eirmod sed ipsum dolor sit rebum labore magna erat. Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam justo sed rebum vero dolor duo.</p>
-                </div>
-                <div class="row g-4">
-                    {% for facility in facilities|default([
-                        {'icon': 'fa-bus-alt', 'color': 'primary', 'title': 'School Bus', 'text': 'Eirmod sed ipsum dolor sit rebum magna erat lorem kasd vero ipsum sit'},
-                        {'icon': 'fa-futbol', 'color': 'success', 'title': 'Playground', 'text': 'Eirmod sed ipsum dolor sit rebum magna erat lorem kasd vero ipsum sit'},
-                        {'icon': 'fa-home', 'color': 'warning', 'title': 'Healthy Canteen', 'text': 'Eirmod sed ipsum dolor sit rebum magna erat lorem kasd vero ipsum sit'},
-                        {'icon': 'fa-chalkboard-teacher', 'color': 'info', 'title': 'Positive Learning', 'text': 'Eirmod sed ipsum dolor sit rebum magna erat lorem kasd vero ipsum sit'}
-                    ]) %}
-                    <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="{{ loop.index0 * 0.2 + 0.1 }}s">
-                        <div class="facility-item">
-                            <div class="facility-icon bg-{{ facility.color }}">
-                                <span class="bg-{{ facility.color }}"></span>
-                                <i class="fa {{ facility.icon }} fa-3x text-{{ facility.color }}"></i>
-                                <span class="bg-{{ facility.color }}"></span>
-                            </div>
-                            <div class="facility-text bg-{{ facility.color }}">
-                                <h3 class="text-{{ facility.color }} mb-3">{{ facility.title }}</h3>
-                                <p class="mb-0">{{ facility.text }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-      
-        <div class="container-xxl py-5">
-            <div class="container">
-                <div class="row g-5 align-items-center">
-                    <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s">
-                        <h1 class="mb-4">{{ about.title|default('Learn More About Our Work And Our Cultural Activities') }}</h1>
-                        <p>{{ about.description1|default('Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit. Aliqu diam amet diam et eos. Clita erat ipsum et lorem et sit, sed stet lorem sit clita duo justo magna dolore erat amet') }}</p>
-                        <p class="mb-4">{{ about.description2|default('Stet no et lorem dolor et diam, amet duo ut dolore vero eos. No stet est diam rebum amet diam ipsum. Clita clita labore, dolor duo nonumy clita sit at, sed sit sanctus dolor eos, ipsum labore duo duo sit no sea diam. Et dolor et kasd ea. Eirmod diam at dolor est vero nonumy magna.') }}</p>
-                        <div class="row g-4 align-items-center">
-                            <div class="col-sm-6">
-                                <a class="btn btn-primary rounded-pill py-3 px-5" href="{{ about.read_more_link|default('#') }}">Read More</a>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center">
-                                    <img class="rounded-circle flex-shrink-0" src="{{ asset(about.user_image|default('base-front/img/user.jpg')) }}" alt="" style="width: 45px; height: 45px;">
-                                    <div class="ms-3">
-                                        <h6 class="text-primary mb-1">{{ about.user_name|default('Jhon Doe') }}</h6>
-                                        <small>{{ about.user_title|default('CEO & Founder') }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-6 about-img wow fadeInUp" data-wow-delay="0.5s">
-                        <div class="row">
-                            <div class="col-12 text-center">
-                                <img class="img-fluid w-75 rounded-circle bg-light p-3" src="{{ asset(about.image1|default('base-front/img/about-1.jpg')) }}" alt="">
-                            </div>
-                            <div class="col-6 text-start" style="margin-top: -150px;">
-                                <img class="img-fluid w-100 rounded-circle bg-light p-3" src="{{ asset(about.image2|default('base-front/img/about-2.jpg')) }}" alt="">
-                            </div>
-                            <div class="col-6 text-end" style="margin-top: -150px;">
-                                <img class="img-fluid w-100 rounded-circle bg-light p-3" src="{{ asset(about.image3|default('base-front/img/about-3.jpg')) }}" alt="">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="container-xxl py-5">
-            <div class="container">
-                <div class="bg-light rounded">
-                    <div class="row g-0">
-                        <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s" style="min-height: 400px;">
-                            <div class="position-relative h-100">
-                                <img class="position-absolute w-100 h-100 rounded" src="{{ asset(call_to_action.image|default('base-front/img/call-to-action.jpg')) }}" style="object-fit: cover;">
-                            </div>
-                        </div>
-                        <div class="col-lg-6 wow fadeIn" data-wow-delay="0.5s">
-                            <div class="h-100 d-flex flex-column justify-content-center p-5">
-                                <h1 class="mb-4">{{ call_to_action.title|default('Become A Teacher') }}</h1>
-                                <p class="mb-4">{{ call_to_action.text|default('Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit. Aliqu diam amet diam et eos. Clita erat ipsum et lorem et sit, sed stet lorem sit clita duo justo magna dolore erat amet') }}</p>
-                                <a class="btn btn-primary py-3 px-5" href="{{ call_to_action.link|default('#') }}">Get Started Now<i class="fa fa-arrow-right ms-2"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-  
-        <div class="container-xxl py-5">
-            <div class="container">
-                <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                    <h1 class="mb-3">School Classes</h1>
-                    <p>Eirmod sed ipsum dolor sit rebum labore magna erat. Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam justo sed rebum vero dolor duo.</p>
-                </div>
-                <div class="row g-4">
-                    {% for class in classes|default([
-                        {'image': 'base-front/img/classes-1.jpg', 'title': 'Art & Drawing', 'teacher': 'Jhon Doe', 'price': '$99', 'age': '3-5 Years', 'time': '9-10 AM', 'capacity': '30 Kids'},
-                        {'image': 'base-front/img/classes-2.jpg', 'title': 'Color Management', 'teacher': 'Jhon Doe', 'price': '$99', 'age': '3-5 Years', 'time': '9-10 AM', 'capacity': '30 Kids'},
-                        {'image': 'base-front/img/classes-3.jpg', 'title': 'Athletic & Dance', 'teacher': 'Jhon Doe', 'price': '$99', 'age': '3-5 Years', 'time': '9-10 AM', 'capacity': '30 Kids'},
-                        {'image': 'base-front/img/classes-4.jpg', 'title': 'Language & Speaking', 'teacher': 'Jhon Doe', 'price': '$99', 'age': '3-5 Years', 'time': '9-10 AM', 'capacity': '30 Kids'},
-                        {'image': 'base-front/img/classes-5.jpg', 'title': 'Religion & History', 'teacher': 'Jhon Doe', 'price': '$99', 'age': '3-5 Years', 'time': '9-10 AM', 'capacity': '30 Kids'},
-                        {'image': 'base-front/img/classes-6.jpg', 'title': 'General Knowledge', 'teacher': 'Jhon Doe', 'price': '$99', 'age': '3-5 Years', 'time': '9-10 AM', 'capacity': '30 Kids'}
-                    ]) %}
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="{{ (loop.index0 % 3) * 0.2 + 0.1 }}s">
-                        <div class="classes-item">
-                            <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                <img class="img-fluid rounded-circle" src="{{ asset(class.image) }}" alt="">
-                            </div>
-                            <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="{{ class.link|default('#') }}">{{ class.title }}</a>
-                                <div class="d-flex align-items-center justify-content-between mb-4">
-                                    <div class="d-flex align-items-center">
-                                        <img class="rounded-circle flex-shrink-0" src="{{ asset(class.teacher_image|default('base-front/img/user.jpg')) }}" alt="" style="width: 45px; height: 45px;">
-                                        <div class="ms-3">
-                                            <h6 class="text-primary mb-1">{{ class.teacher }}</h6>
-                                            <small>Teacher</small>
-                                        </div>
-                                    </div>
-                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="">{{ class.price }}</span>
-                                </div>
-                                <div class="row g-1">
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-primary pt-2">
-                                            <h6 class="text-primary mb-1">Age:</h6>
-                                            <small>{{ class.age }}</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-success pt-2">
-                                            <h6 class="text-success mb-1">Time:</h6>
-                                            <small>{{ class.time }}</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-warning pt-2">
-                                            <h6 class="text-warning mb-1">Capacity:</h6>
-                                            <small>{{ class.capacity }}</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-       
-        <div class="container-xxl py-5">
-            <div class="container">
-                <div class="bg-light rounded">
-                    <div class="row g-0">
-                        <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
-                            <div class="h-100 d-flex flex-column justify-content-center p-5">
-                                <h1 class="mb-4">Make Appointment</h1>
-                                <form method="post" action="#">
-                                    <div class="row g-3">
-                                        <div class="col-sm-6">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control border-0" id="gname" name="guardian_name" placeholder="Guardian Name">
-                                                <label for="gname">Guardian Name</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <div class="form-floating">
-                                                <input type="email" class="form-control border-0" id="gmail" name="guardian_email" placeholder="Guardian Email">
-                                                <label for="gmail">Guardian Email</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control border-0" id="cname" name="child_name" placeholder="Child Name">
-                                                <label for="cname">Child Name</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control border-0" id="cage" name="child_age" placeholder="Child Age">
-                                                <label for="cage">Child Age</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <div class="form-floating">
-                                                <textarea class="form-control border-0" placeholder="Leave a message here" id="message" name="message" style="height: 100px"></textarea>
-                                                <label for="message">Message</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <button class="btn btn-primary w-100 py-3" type="submit">Submit</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="col-lg-6 wow fadeIn" data-wow-delay="0.5s" style="min-height: 400px;">
-                            <div class="position-relative h-100">
-                                <img class="position-absolute w-100 h-100 rounded" src="{{ asset('base-front/img/appointment.jpg') }}" style="object-fit: cover;">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="container-xxl py-5">
-            <div class="container">
-                <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                    <h1 class="mb-3">Popular Teachers</h1>
-                    <p>Eirmod sed ipsum dolor sit rebum labore magna erat. Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam justo sed rebum vero dolor duo.</p>
-                </div>
-                <div class="row g-4">
-                    {% for teacher in teachers|default([
-                        {'image': 'base-front/img/team-1.jpg', 'name': 'Full Name', 'designation': 'Designation'},
-                        {'image': 'base-front/img/team-2.jpg', 'name': 'Full Name', 'designation': 'Designation'},
-                        {'image': 'base-front/img/team-3.jpg', 'name': 'Full Name', 'designation': 'Designation'}
-                    ]) %}
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="{{ loop.index0 * 0.2 + 0.1 }}s">
-                        <div class="team-item position-relative">
-                            <img class="img-fluid rounded-circle w-75" src="{{ asset(teacher.image) }}" alt="">
-                            <div class="team-text">
-                                <h3>{{ teacher.name }}</h3>
-                                <p>{{ teacher.designation }}</p>
-                                <div class="d-flex align-items-center">
-                                    <a class="btn btn-square btn-primary mx-1" href="{{ teacher.facebook|default('#') }}"><i class="fab fa-facebook-f"></i></a>
-                                    <a class="btn btn-square btn-primary mx-1" href="{{ teacher.twitter|default('#') }}"><i class="fab fa-twitter"></i></a>
-                                    <a class="btn btn-square btn-primary mx-1" href="{{ teacher.instagram|default('#') }}"><i class="fab fa-instagram"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-     
-        <div class="container-xxl py-5">
-            <div class="container">
-                <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                    <h1 class="mb-3">Our Clients Say</h1>
-                    <p>Eirmod sed ipsum dolor sit rebum labore magna erat. Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam justo sed rebum vero dolor duo.</p>
-                </div>
-                <div class="owl-carousel testimonial-carousel wow fadeInUp" data-wow-delay="0.1s">
-                    {% for testimonial in testimonials|default([
-                        {'text': 'Tempor stet labore dolor clita stet diam amet ipsum dolor duo ipsum rebum stet dolor amet diam stet. Est stet ea lorem amet est kasd kasd erat eos', 'image': 'base-front/img/testimonial-1.jpg', 'name': 'Client Name', 'profession': 'Profession'},
-                        {'text': 'Tempor stet labore dolor clita stet diam amet ipsum dolor duo ipsum rebum stet dolor amet diam stet. Est stet ea lorem amet est kasd kasd erat eos', 'image': 'base-front/img/testimonial-2.jpg', 'name': 'Client Name', 'profession': 'Profession'},
-                        {'text': 'Tempor stet labore dolor clita stet diam amet ipsum dolor duo ipsum rebum stet dolor amet diam stet. Est stet ea lorem amet est kasd kasd erat eos', 'image': 'base-front/img/testimonial-3.jpg', 'name': 'Client Name', 'profession': 'Profession'}
-                    ]) %}
-                    <div class="testimonial-item bg-light rounded p-5">
-                        <p class="fs-5">{{ testimonial.text }}</p>
-                        <div class="d-flex align-items-center bg-white me-n5" style="border-radius: 50px 0 0 50px;">
-                            <img class="img-fluid flex-shrink-0 rounded-circle" src="{{ asset(testimonial.image) }}" style="width: 90px; height: 90px;">
-                            <div class="ps-3">
-                                <h3 class="mb-1">{{ testimonial.name }}</h3>
-                                <span>{{ testimonial.profession }}</span>
-                            </div>
-                            <i class="fa fa-quote-right fa-3x text-primary ms-auto d-none d-sm-flex"></i>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        
-        {% endblock %}
 
-       
-        <div class="container-fluid bg-dark text-white-50 footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
-            <div class="container py-5">
-                <div class="row g-5">
-                    <div class="col-lg-3 col-md-6">
-                        <h3 class="text-white mb-4">Get In Touch</h3>
-                        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>{{ contact.address|default('123 Street, New York, USA') }}</p>
-                        <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>{{ contact.phone|default('+012 345 67890') }}</p>
-                        <p class="mb-2"><i class="fa fa-envelope me-3"></i>{{ contact.email|default('info@example.com') }}</p>
-                        <div class="d-flex pt-2">
-                            <a class="btn btn-outline-light btn-social" href="{{ social.twitter|default('#') }}"><i class="fab fa-twitter"></i></a>
-                            <a class="btn btn-outline-light btn-social" href="{{ social.facebook|default('#') }}"><i class="fab fa-facebook-f"></i></a>
-                            <a class="btn btn-outline-light btn-social" href="{{ social.youtube|default('#') }}"><i class="fab fa-youtube"></i></a>
-                            <a class="btn btn-outline-light btn-social" href="{{ social.linkedin|default('#') }}"><i class="fab fa-linkedin-in"></i></a>
+        <!-- Footer moderne -->
+        <div class="footer pt-5 mt-5">
+            <div class="container py-4">
+                <div class="row g-4">
+                    <div class="col-lg-4 col-md-6">
+                        <h3 class="mb-4">Focus<span class="text-primary">Kid</span></h3>
+                        <p class="mb-3">Plateforme éducative innovante pour aider les enfants à apprendre tout en s'amusant.</p>
+                        <div class="d-flex">
+                            <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="social-btn"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <h3 class="mb-4">Liens rapides</h3>
+                        <div class="d-flex flex-column">
+                            <a href="#" class="text-decoration-none text-white-50 mb-2">À propos</a>
+                            <a href="#" class="text-decoration-none text-white-50 mb-2">Contact</a>
+                            <a href="#" class="text-decoration-none text-white-50 mb-2">FAQ</a>
+                            <a href="#" class="text-decoration-none text-white-50 mb-2">Blog</a>
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <h3 class="text-white mb-4">Quick Links</h3>
-                        <a class="btn btn-link text-white-50" href="#">About Us</a>
-                        <a class="btn btn-link text-white-50" href="#">Contact Us</a>
-                        <a class="btn btn-link text-white-50" href="#">Our Services</a>
-                        <a class="btn btn-link text-white-50" href="#">Privacy Policy</a>
-                        <a class="btn btn-link text-white-50" href="#">Terms & Condition</a>
+                        <h3 class="mb-4">Contact</h3>
+                        <p class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i>123 Rue de l'Éducation, Tunis</p>
+                        <p class="mb-2"><i class="fas fa-phone-alt me-2 text-primary"></i>+216 12 345 678</p>
+                        <p class="mb-2"><i class="fas fa-envelope me-2 text-primary"></i>contact@focuskid.com</p>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <h3 class="text-white mb-4">Photo Gallery</h3>
-                        <div class="row g-2 pt-2">
-                            {% for gallery_image in gallery_images|default([
-                                'base-front/img/classes-1.jpg', 'base-front/img/classes-2.jpg', 'base-front/img/classes-3.jpg',
-                                'img/classes-4.jpg', 'img/classes-5.jpg', 'img/classes-6.jpg'
-                            ]) %}
-                            <div class="col-4">
-                                <img class="img-fluid rounded bg-light p-1" src="{{ asset(gallery_image) }}" alt="">
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <h3 class="text-white mb-4">Newsletter</h3>
-                        <p>Dolor amet sit justo amet elitr clita ipsum elitr est.</p>
-                        <div class="position-relative mx-auto" style="max-width: 400px;">
-                            <input class="form-control bg-transparent w-100 py-3 ps-4 pe-5" type="text" placeholder="Your email">
-                            <button type="button" class="btn btn-primary py-2 position-absolute top-0 end-0 mt-2 me-2">SignUp</button>
+                        <h3 class="mb-4">Newsletter</h3>
+                        <p>Recevez nos actualités</p>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-dark border-secondary text-white" placeholder="Votre email">
+                            <button class="btn btn-primary-custom">S'abonner</button>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="container">
-                <div class="copyright">
-                    <div class="row">
-                        <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                             <a class="border-bottom" href="#">{{ site_name|default('FocusKid') }}</a>, All Right Reserved. 
-                            Designed By <a class="border-bottom" href="https://htmlcodex.com">HTML Codex</a>
-                            <br>Distributed By: <a class="border-bottom" href="https://themewagon.com" target="_blank">ThemeWagon</a>
-                        </div>
-                        <div class="col-md-6 text-center text-md-end">
-                            <div class="footer-menu">
-                                <a href="#">Home</a>
-                                <a href="#">Cookies</a>
-                                <a href="#">Help</a>
-                                <a href="#">FQAs</a>
-                            </div>
-                        </div>
-                    </div>
+                <hr class="border-secondary my-4">
+                <div class="text-center">
+                    <p class="mb-0">&copy; 2024 FocusKid. Tous droits réservés.</p>
                 </div>
             </div>
         </div>
         
-        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+        <a href="#" class="back-to-top">
+            <i class="fas fa-arrow-up"></i>
+        </a>
     </div>
+
+<<<<<<< HEAD
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+=======
+    <!-- PNJ Mascot -->
+    {% include 'components/_mascot.html.twig' %}
 
    
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+>>>>>>> jeu
     <script src="{{ asset('base-front/lib/wow/wow.min.js') }}"></script>
     <script src="{{ asset('base-front/lib/easing/easing.min.js') }}"></script>
     <script src="{{ asset('base-front/lib/waypoints/waypoints.min.js') }}"></script>
     <script src="{{ asset('base-front/lib/owlcarousel/owl.carousel.min.js') }}"></script>
+<<<<<<< HEAD
 
+    <script src="{{ asset('base-front/js/face-detection.js') }}"></script>
+    <script src="{{ asset('base-front/js/exercice-guardian.js') }}"></script>
+=======
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js">
     
+>>>>>>> session-de-calme
     <script src="{{ asset('base-front/js/main.js') }}"></script>
+
+    <script>
+        $(document).ready(function() {
+            console.log('✅ Navigation AJAX initialisée');
+            
+            // Navbar scroll effect
+            $(window).scroll(function() {
+                if ($(this).scrollTop() > 50) {
+                    $('.navbar').addClass('sticky');
+                    $('.back-to-top').addClass('show');
+                } else {
+                    $('.navbar').removeClass('sticky');
+                    $('.back-to-top').removeClass('show');
+                }
+            });
+            
+            $('.back-to-top').click(function(e) {
+                e.preventDefault();
+                $('html, body').animate({scrollTop: 0}, 500);
+            });
+            
+            var contentDiv = $('#dynamic-content');
+            var currentUrl = window.location.pathname;
+            
+            function loadContent(url) {
+                if (!url) return;
+                
+                console.log('📥 Chargement:', url);
+                
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'html',
+                    success: function(data) {
+                        var newContent = $(data).find('#dynamic-content').html();
+                        contentDiv.html(newContent || data);
+                        
+                        window.history.pushState({url: url}, '', url);
+                        
+                        var newTitle = $(data).filter('title').text();
+                        if (newTitle) document.title = newTitle;
+                        
+                        $('.nav-link').removeClass('active');
+                        $('.ajax-link[data-url="' + url + '"]').addClass('active');
+                        
+                        $('html, body').animate({scrollTop: 0}, 200);
+                        
+                        if (typeof WOW !== 'undefined') new WOW().init();
+                        
+                        console.log('✅ Contenu chargé');
+                    },
+                    error: function() {
+                        window.location.href = url;
+                    }
+                });
+            }
+            
+            $(document).on('click', '.ajax-link', function(e) {
+                e.preventDefault();
+                var url = $(this).data('url');
+                if (url) loadContent(url);
+            });
+            
+            $('#homeLink').on('click', function(e) {
+                e.preventDefault();
+                loadContent("{{ path('app_front_exercice_index') }}");
+            });
+            
+            window.addEventListener('popstate', function(event) {
+                if (event.state && event.state.url) loadContent(event.state.url);
+            });
+            
+            $('.ajax-link').each(function() {
+                if (currentUrl.includes($(this).data('url'))) {
+                    $(this).addClass('active');
+                }
+            });
+            
+            console.log('✅ Liens AJAX:', $('.ajax-link').length);
+        });
+    </script>
     
     {% block javascripts %}{% endblock %}
 </body>

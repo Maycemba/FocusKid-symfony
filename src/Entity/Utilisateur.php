@@ -100,8 +100,34 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-  
+  #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
+private ?\DateTimeInterface $createdAt = null;
 
+public function getCreatedAt(): ?\DateTimeInterface
+{
+    return $this->createdAt;
+}
+
+public function setCreatedAt(?\DateTimeInterface $createdAt): self
+{
+    $this->createdAt = $createdAt;
+    return $this;
+}
+
+#[ORM\Column(name: 'notifications_email', type: 'boolean', nullable: true)]
+private ?bool $notificationsEmail = null;
+
+// Ajoute les getter/setter
+public function getNotificationsEmail(): ?bool
+{
+    return $this->notificationsEmail;
+}
+
+public function setNotificationsEmail(?bool $notificationsEmail): self
+{
+    $this->notificationsEmail = $notificationsEmail;
+    return $this;
+}
     // #[ORM\Column(type: 'boolean', nullable: true)]
     // private ?bool $notifications_email = null;
 

@@ -6,7 +6,6 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
-  /* Styles identiques à ceux du formulaire de carnet */
   .bg-gradient-success {
     background: linear-gradient(135deg, #1CC88A, #0eae70);
   }
@@ -33,25 +32,49 @@
                     <p class="mb-0 small">Partagez votre avis sur la séance</p>
                 </div>
                 <div class="card-body p-4">
+                    {# Affichage des messages flash #}
+                    {% for label, messages in app.flashes %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                    
                     {{ form_start(form) }}
                         {{ form_errors(form) }}
+                        
+                        {# Affichage du carnet associé #}
+                        {% if carnet %}
+                            <div class="alert alert-info mb-3">
+                                📘 Commentaire pour le carnet #{{ carnet.id }} - {{ carnet.matiere }} ({{ carnet.dateEtude|date('d/m/Y') }})
+                            </div>
+                        {% endif %}
+                        
                         <div class="row g-3">
                             <div class="col-md-6">
-                                {{ form_row(form.date_seule, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_row(form.date_seule) }}
                             </div>
                             <div class="col-md-6">
-                                {{ form_row(form.heure_seule, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_row(form.heure_seule) }}
                             </div>
                             <div class="col-12">
-                                {{ form_row(form.texte_commentaire, {'attr': {'class': 'form-control', 'rows': 5}}) }}
+                                {{ form_row(form.type_commentaire) }}
                             </div>
                             <div class="col-12">
-                                {{ form_row(form.type_commentaire, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_row(form.texte_commentaire) }}
                             </div>
+                            
                         </div>
+                        
                         <div class="d-flex justify-content-between align-items-center mt-4">
-                            <a href="{{ carnet ? path('app_carnet_educatif_show', {'id': carnet.id}) : path('app_commentaire_index') }}" class="btn btn-outline-secondary rounded-pill px-4">Annuler</a>
-                            <button type="submit" class="btn btn-success rounded-pill px-4">💾 Enregistrer</button>
+                            <a href="{{ carnet ? path('app_carnet_educatif_show', {'id': carnet.id}) : path('app_commentaire_index') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                                Annuler
+                            </a>
+                            <button type="submit" class="btn btn-success rounded-pill px-4">
+                                💾 Enregistrer
+                            </button>
                         </div>
                     {{ form_end(form) }}
                 </div>

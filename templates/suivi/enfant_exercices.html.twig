@@ -1,0 +1,66 @@
+{% extends 'base-back.html.twig' %}
+
+{% block title %}Exercices - {{ enfant.username }} - FocusKids{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .back-btn { background: #FF9800; color: white; border-radius: 25px; padding: 8px 20px; text-decoration: none; display: inline-block; }
+        .back-btn:hover { background: #F57C00; color: white; }
+        .exercice-row { background: white; border-radius: 15px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .badge-reussi { background: #4CAF50; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+        .badge-echoue { background: #F44336; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{{ path('app_suivi_enfant_menu', {'id': enfant.id}) }}" class="back-btn">
+                <i class="ti ti-arrow-left"></i> Retour au menu
+            </a>
+            <h2 class="fw-bold mt-3">
+                <i class="ti ti-notes"></i> Exercices - {{ enfant.username }}
+            </h2>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Liste des exercices tentés</h5>
+        </div>
+        <div class="card-body">
+            {% if reponses|length > 0 %}
+                {% for reponse in reponses %}
+                    <div class="exercice-row">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Exercice #{{ reponse.exerciceId }}</strong>
+                                <div class="text-muted small">
+                                    Score: {{ reponse.score }} | Temps: {{ reponse.tempsPasse }}s
+                                </div>
+                                <div class="text-muted small">
+                                    Date: {{ reponse.datePassage|date('d/m/Y H:i') }}
+                                </div>
+                            </div>
+                            <div>
+                                {% if reponse.reussite %}
+                                    <span class="badge-reussi">✅ Réussi</span>
+                                {% else %}
+                                    <span class="badge-echoue">❌ Échoué</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="ti ti-notes-off" style="font-size: 48px; color: #ccc;"></i>
+                    <p class="mt-3">Aucun exercice tenté par cet enfant.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

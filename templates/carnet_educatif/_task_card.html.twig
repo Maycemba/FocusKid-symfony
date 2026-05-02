@@ -1,0 +1,51 @@
+{# templates/carnet_educatif/_task_card.html.twig #}
+
+<div class="task-card" data-id="{{ task.id }}" data-status="{{ task.status }}">
+  <div class="task-checkbox">
+    <input type="checkbox" 
+           {% if task.isChecked %}checked{% endif %} 
+           onchange="toggleCheck({{ task.id }}, this)">
+    <span class="task-title {% if task.isChecked %}completed{% endif %}">
+      {{ task.title }}
+    </span>
+  </div>
+  
+  {% if task.description %}
+    <div class="task-description">
+      {{ task.description|slice(0, 80) }}{% if task.description|length > 80 %}...{% endif %}
+    </div>
+  {% endif %}
+  
+  {% if task.dueDate %}
+    {% set dueDate = task.dueDate %}
+    {% set isLate = dueDate < date('now') %}
+    
+    <div class="task-date {% if isLate %}urgent{% endif %}">
+      {% if isLate %}
+        ⚠️ En retard: {{ task.dueDate|date('d/m/Y') }}
+      {% else %}
+        📅 {{ task.dueDate|date('d/m/Y') }}
+      {% endif %}
+    </div>
+  {% endif %}
+  
+  {# 🔥 AFFICHAGE DU FICHIER AVEC VICH #}
+  {% if task.fileName %}
+    <div class="task-attachment">
+      📎 
+      <a href="{{ vich_uploader_asset(task, 'attachmentFile') }}" target="_blank">
+        {{ task.fileName|slice(0, 25) }}{% if task.fileName|length > 25 %}...{% endif %}
+      </a>
+      <small>({{ (task.fileSize / 1024)|round }} Ko)</small>
+    </div>
+  {% endif %}
+  
+  <div class="task-actions">
+    <a href="{{ path('app_trello_edit', {'id': task.id}) }}" class="btn-edit">
+      ✏️ Modifier
+    </a>
+    <button onclick="deleteTask({{ task.id }})" class="btn-delete">
+      🗑 Supprimer
+    </button>
+  </div>
+</div>

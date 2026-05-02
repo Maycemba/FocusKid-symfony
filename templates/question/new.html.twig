@@ -1,11 +1,219 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}New Question{% endblock %}
+{% block title %}Ajouter une Question{% endblock %}
 
 {% block body %}
-    <h1>Create new Question</h1>
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">Ajouter une Question</h1>
+            {% if jeu_id %}
+                <span class="badge bg-light text-primary">Jeu ID: {{ jeu_id }}</span>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
 
-    {{ include('question/_form.html.twig') }}
+            <div class="card shadow-sm border-0 mb-4 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title mb-3 fs-6">Combien de questions voulez-vous ajouter à la fois ?</h5>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="count_selector" id="count1" value="1" checked>
+                        <label class="btn btn-outline-primary" for="count1">1 Question (Formulaire complet)</label>
 
-    <a href="{{ path('app_question_index') }}">back to list</a>
+                        <input type="radio" class="btn-check" name="count_selector" id="count3" value="3">
+                        <label class="btn btn-outline-primary" for="count3">3 Questions (Mode rapide)</label>
+
+                        <input type="radio" class="btn-check" name="count_selector" id="count5" value="5">
+                        <label class="btn btn-outline-primary" for="count5">5 Questions (Mode rapide)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="single-question-form">
+                {{ include('question/_form.html.twig') }}
+            </div>
+
+            <div id="multi-question-form" style="display: none;">
+                <form action="{{ path('app_question_new', {'jeu_id': jeu_id}) }}" method="POST">
+                    <input type="hidden" name="multi_questions" value="1">
+                    <div id="multi-questions-container">
+                        {# Le contenu sera généré par JS #}
+                    </div>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-success btn-lg shadow">
+                            <iconify-icon icon="solar:check-read-line-duotone" class="me-2"></iconify-icon>
+                            Enregistrer toutes les questions
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <template id="question-template">
+                <div class="card shadow-sm border-0 mb-4 question-block">
+                    <div class="card-header bg-primary text-white py-2 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fs-6">Question #INDEX#</h6>
+                        <div class="d-flex align-items-center">
+                            <label class="me-2 small mb-0">Traduire vers :</label>
+                            <select class="form-select form-select-sm py-0 lang-selector-multi" style="width: auto;">
+                                <option value="ar">Arabe</option>
+                                <option value="en">Anglais</option>
+                                <option value="fr">Français</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-bold small">Texte de la question</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" name="questions[#INDEX#][question_text]" class="form-control" required>
+                                    <button type="button" class="btn btn-outline-info btn-translate-multi">
+                                        <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold small">Option A</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" name="questions[#INDEX#][option_a]" class="form-control" required>
+                                    <button type="button" class="btn btn-outline-info btn-translate-multi">
+                                        <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold small">Option B</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" name="questions[#INDEX#][option_b]" class="form-control" required>
+                                    <button type="button" class="btn btn-outline-info btn-translate-multi">
+                                        <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold small">Option C</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" name="questions[#INDEX#][option_c]" class="form-control" required>
+                                    <button type="button" class="btn btn-outline-info btn-translate-multi">
+                                        <iconify-icon icon="solar:translation-line-duotone"></iconify-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small">Bonne Réponse</label>
+                                <select name="questions[#INDEX#][bonne_reponse]" class="form-select form-select-sm">
+                                    <option value="A">Option A</option>
+                                    <option value="B">Option B</option>
+                                    <option value="C">Option C</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <script>
+                // Fonction globale de traduction
+                async function translateFieldMulti(btn) {
+                    const inputGroup = btn.closest('.input-group');
+                    const input = inputGroup.querySelector('input');
+                    const card = btn.closest('.question-block');
+                    const targetLang = card.querySelector('.lang-selector-multi').value;
+                    const text = input.value;
+
+                    if (!text) return;
+
+                    console.log('Traduction multi en cours...', text, targetLang);
+                    btn.disabled = true;
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                    try {
+                        const response = await fetch(`/api/translate?text=${encodeURIComponent(text)}&target=${targetLang}`);
+                        const data = await response.json();
+                        if (data.translatedText) {
+                            input.value = data.translatedText;
+                        }
+                    } catch (error) {
+                        console.error('Erreur API Traduction:', error);
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                    }
+                }
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    const radios = document.querySelectorAll('input[name="count_selector"]');
+                    const multiContainer = document.getElementById('multi-questions-container');
+                    const templateContent = document.getElementById('question-template').innerHTML;
+
+                    radios.forEach(radio => {
+                        radio.addEventListener('change', function() {
+                            const count = parseInt(this.value);
+                            const singleForm = document.getElementById('single-question-form');
+                            const multiForm = document.getElementById('multi-question-form');
+
+                            if (count === 1) {
+                                singleForm.style.display = 'block';
+                                multiForm.style.display = 'none';
+                            } else {
+                                singleForm.style.display = 'none';
+                                multiForm.style.display = 'block';
+                                multiContainer.innerHTML = '';
+                                
+                                for (let i = 1; i <= count; i++) {
+                                    const html = templateContent.replace(/#INDEX#/g, i);
+                                    const wrapper = document.createElement('div');
+                                    wrapper.innerHTML = html;
+                                    const block = wrapper.firstElementChild;
+                                    multiContainer.appendChild(block);
+
+                                    // Event listener direct sur le sélecteur
+                                    const selector = block.querySelector('.lang-selector-multi');
+                                    selector.addEventListener('change', async function() {
+                                        const btns = block.querySelectorAll('.btn-translate-multi');
+                                        for (const b of btns) {
+                                            const inp = b.closest('.input-group').querySelector('input');
+                                            if (inp.value.trim() !== '') {
+                                                await translateFieldMulti(b);
+                                            }
+                                        }
+                                    });
+
+                                    // Event listener sur les boutons individuels
+                                    block.querySelectorAll('.btn-translate-multi').forEach(b => {
+                                        b.addEventListener('click', () => translateFieldMulti(b));
+                                    });
+                                }
+                            }
+                        });
+                    });
+                });
+            </script>
+
+
+
+            <div class="mt-4 d-flex justify-content-between">
+                <a href="{{ path('app_jeu_index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste des jeux
+                </a>
+                {% if jeu_id %}
+                    <a href="{{ path('app_jeu_index') }}" class="btn btn-success">
+                        <i class="fas fa-check"></i> Terminer l'ajout de questions
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

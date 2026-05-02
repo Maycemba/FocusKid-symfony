@@ -1,0 +1,302 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Sessions de calme - FocusKid{% endblock %}
+
+{% block body %}
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+            <h1 class="mb-3">Session de calme</h1>
+            <p>Choisis une activité pour te détendre et retrouver ton calme</p>
+        </div>
+  
+</div>
+        <div class="row g-4">
+            <!-- Musique -->
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="activity-card bg-light rounded text-center p-4 h-100">
+                    <div class="activity-icon bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 100px; height: 100px;">
+                        <i class="fas fa-music fa-4x text-white"></i>
+                    </div>
+                    <h3 class="mb-3">Musique apaisante</h3>
+                    <p class="mb-4">Écoute des mélodies douces pour te relaxer</p>
+                    <a href="{{ path('app_session_calme_activite', {type: 'musique'}) }}" class="btn btn-primary rounded-pill py-2 px-4">
+                        Lancer la session <i class="fas fa-play ms-2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Coloriage -->
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.2s">
+                <div class="activity-card bg-light rounded text-center p-4 h-100">
+                    <div class="activity-icon bg-success rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 100px; height: 100px;">
+                        <i class="fas fa-paint-brush fa-4x text-white"></i>
+                    </div>
+                    <h3 class="mb-3">Coloriage</h3>
+                    <p class="mb-4">Colorie des dessins relaxants</p>
+                    <a href="{{ path('app_session_calme_activite', {type: 'coloriage'}) }}" class="btn btn-success rounded-pill py-2 px-4">
+                        Lancer la session <i class="fas fa-play ms-2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Respiration -->
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="activity-card bg-light rounded text-center p-4 h-100">
+                    <div class="activity-icon bg-info rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 100px; height: 100px;">
+                        <i class="fas fa-lungs fa-4x text-white"></i>
+                    </div>
+                    <h3 class="mb-3">Respiration guidée</h3>
+                    <p class="mb-4">Apprends à respirer pour te calmer</p>
+                    <a href="{{ path('app_session_calme_activite', {type: 'respiration'}) }}" class="btn btn-info rounded-pill py-2 px-4 text-white">
+                        Lancer la session <i class="fas fa-play ms-2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Histoire -->
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.4s">
+                <div class="activity-card bg-light rounded text-center p-4 h-100">
+                    <div class="activity-icon bg-warning rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 100px; height: 100px;">
+                        <i class="fas fa-book-open fa-4x text-white"></i>
+                    </div>
+                    <h3 class="mb-3">Histoire de calme</h3>
+                    <p class="mb-4">Écoute une histoire apaisante</p>
+                    <a href="{{ path('app_session_calme_activite', {type: 'histoire'}) }}" class="btn btn-warning rounded-pill py-2 px-4 text-white">
+                        Lancer la session <i class="fas fa-play ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message de bienvenue -->
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <div class="bg-light rounded p-4">
+                
+                    <h4 class="text-primary mb-2">✨ Prends soin de toi ✨</h4>
+                      <div class="text-center mt-4">
+    <a href="{{ path('stress_index') }}" class="btn btn-primary rounded-pill py-2 px-4">
+        🧠 Détecter mon niveau de stress
+    </a>
+                     </div>
+            </div>
+        </div>
+    
+    <!-- Commandes vocales (optionnel, même style que front_index) -->
+        <div class="row mt-4">
+            <div class="col-lg-6 mx-auto text-center wow fadeInUp" data-wow-delay="0.4s">
+                <div class="bg-light rounded p-4">
+                    <h3 class="mb-3"><i class="fas fa-microphone-alt text-primary me-2"></i> Commande vocale</h3>
+                    <button id="micBtn" class="btn btn-warning rounded-pill py-2 px-4 text-white">
+                        <i class="fas fa-microphone me-2"></i> Démarrer
+                    </button>
+                    <div id="status" class="alert alert-info mt-3" style="display: inline-block; padding: 8px 16px;">
+                        ✅ Prêt
+                    </div>
+                    <div id="result" class="result mt-2"></div>
+                    <div class="mt-3 text-start">
+                        <p class="fw-bold mb-2">Commandes disponibles :</p>
+                        <ul class="list-unstyled small">
+                            <li><strong>🎨 Coloriage</strong> - Dites "coloriage" ou "dessin"</li>
+                            <li><strong>📖 Histoire</strong> - Dites "histoire" ou "raconte"</li>
+                            <li><strong>🧘 Respiration</strong> - Dites "respiration" ou "calme"</li>
+                            <li><strong>🎵 Musique</strong> - Dites "musique" ou "chanson"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .activity-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+    .activity-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .activity-icon {
+        transition: transform 0.3s ease;
+    }
+    .activity-card:hover .activity-icon {
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+{% block javascripts %}
+{{ parent() }}
+<script>
+        const micBtn = document.getElementById('micBtn');
+        // Correction : Définir statusDiv correctement
+        const statusDiv = document.getElementById('status');
+        const resultDiv = document.getElementById('result');
+        
+        // Les routes vers les activités
+        const routes = {
+            coloriage: '{{ path('app_session_calme_activite', {type: 'coloriage'}) }}',
+            histoire: '{{ path('app_session_calme_activite', {type: 'histoire'}) }}',
+            respiration: '{{ path('app_session_calme_activite', {type: 'respiration'}) }}',
+            musique: '{{ path('app_session_calme_activite', {type: 'musique'}) }}'
+        };
+        
+        // Les mots-clés pour chaque activité
+        const keywords = {
+            coloriage: ['coloriage', 'colorier', 'dessin', 'colorie', 'coloring'],
+            histoire: ['histoire', 'raconter', 'conte', 'story', 'lecture', 'raconte'],
+            respiration: ['respiration', 'respirer', 'calme', 'relaxation', 'meditation', 'méditation', 'souffle'],
+            musique: ['musique', 'musical', 'chanson', 'son', 'melodie', 'mélodie', 'music']
+        };
+        
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+            if (statusDiv) statusDiv.innerHTML = '❌ Reconnaissance vocale non supportée. Utilisez Chrome.';
+            if (micBtn) micBtn.disabled = true;
+        }
+        
+        let recognition = null;
+        let redirectTimeout = null;
+        
+        function showResult(message, type = 'info') {
+            if (!resultDiv) return;
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = message;
+            resultDiv.className = 'result';
+            if (type === 'error') {
+                resultDiv.classList.add('error');
+            } else if (type === 'success') {
+                resultDiv.classList.add('success');
+            } else if (type === 'warning') {
+                resultDiv.classList.add('warning');
+            }
+            
+            // Masquer après 5 secondes
+            setTimeout(() => {
+                if (resultDiv && resultDiv.style.display === 'block' && !resultDiv.innerHTML.includes('Redirection')) {
+                    resultDiv.style.display = 'none';
+                }
+            }, 5000);
+        }
+        
+        function redirectTo(activity, route) {
+            const messages = {
+                coloriage: '🎨 Ouverture de la session coloriage. Bon amusement !',
+                histoire: '📖 Ouverture de la session histoire. Préparez-vous à écouter !',
+                respiration: '🧘 Ouverture de la session respiration. Inspirez, expirez...',
+                musique: '🎵 Ouverture de la session musique. Laissez-vous emporter par les sons !'
+            };
+            
+            showResult(`${messages[activity]}<br>🔄 Redirection dans 2 secondes...`, 'success');
+            if (statusDiv) statusDiv.innerHTML = `Redirection vers ${activity}...`;
+            
+            let countdown = 2;
+            const countdownDiv = document.createElement('div');
+            countdownDiv.className = 'countdown';
+            countdownDiv.innerHTML = countdown;
+            if (resultDiv) resultDiv.appendChild(countdownDiv);
+            
+            if (redirectTimeout) clearTimeout(redirectTimeout);
+            redirectTimeout = setTimeout(() => {
+                window.location.href = route;
+            }, 2000);
+        }
+        
+        function processCommand(commande) {
+            commande = commande.toLowerCase();
+            console.log('Traitement de la commande:', commande);
+            
+            // Chercher quelle activité correspond
+            for (const [activity, words] of Object.entries(keywords)) {
+                for (const word of words) {
+                    if (commande.includes(word)) {
+                        console.log(`Match trouvé: ${word} -> ${activity}`);
+                        redirectTo(activity, routes[activity]);
+                        return;
+                    }
+                }
+            }
+            
+            // Aucune correspondance
+            showResult(`❌ Je n'ai pas compris "${commande}". Essayez : coloriage, histoire, respiration ou musique`, 'error');
+            if (statusDiv) statusDiv.innerHTML = 'Prêt - Cliquez pour réessayer';
+        }
+        
+        if (micBtn) {
+            micBtn.onclick = function() {
+                if (recognition) {
+                    recognition.stop();
+                    micBtn.classList.remove('listening');
+                    if (statusDiv) statusDiv.innerHTML = 'Reconnaissance arrêtée';
+                    recognition = null;
+                    return;
+                }
+                
+                recognition = new SpeechRecognition();
+                recognition.lang = 'fr-FR';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                
+                recognition.onstart = function() {
+                    micBtn.classList.add('listening');
+                    if (statusDiv) statusDiv.innerHTML = '🎤 Écoute... Parlez maintenant !';
+                    if (resultDiv) resultDiv.style.display = 'none';
+                };
+                
+                recognition.onresult = function(event) {
+                    const commande = event.results[0][0].transcript;
+                    const confiance = Math.round(event.results[0][0].confidence * 100);
+                    
+                    console.log('Commande reconnue:', commande, `(${confiance}%)`);
+                    if (statusDiv) statusDiv.innerHTML = `Commande reconnue : "${commande}" (${confiance}%) - Traitement...`;
+                    
+                    processCommand(commande);
+                };
+                
+                recognition.onerror = function(event) {
+                    console.error('Erreur:', event.error);
+                    let msg = '';
+                    switch(event.error) {
+                        case 'no-speech':
+                            msg = 'Aucune parole détectée. Réessayez.';
+                            break;
+                        case 'not-allowed':
+                            msg = 'Permission microphone refusée. Autorisez l\'accès.';
+                            break;
+                        case 'audio-capture':
+                            msg = 'Microphone non trouvé. Vérifiez votre microphone.';
+                            break;
+                        default:
+                            msg = `Erreur: ${event.error}`;
+                    }
+                    showResult(`❌ ${msg}`, 'error');
+                    if (statusDiv) statusDiv.innerHTML = 'Cliquez pour réessayer';
+                    micBtn.classList.remove('listening');
+                    recognition = null;
+                };
+                
+                recognition.onend = function() {
+                    micBtn.classList.remove('listening');
+                    if (statusDiv && statusDiv.innerHTML !== 'Redirection...') {
+                        statusDiv.innerHTML = 'Prêt - Cliquez pour parler';
+                    }
+                    recognition = null;
+                };
+                
+                recognition.start();
+            };
+        }
+        
+        // Message de bienvenue
+        console.log('🎤 Application vocale prête - Traitement 100% local');
+        if (statusDiv) statusDiv.innerHTML = '✅ Prêt - Cliquez sur le microphone et parlez';
+</script>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Conseil IA - FocusKid{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>
+                        Intelligence Artificielle - Conseil Personnalisé
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        L'IA analyse votre carnet et génère un conseil unique basé sur :
+                        <ul class="mt-2 mb-0">
+                            <li>Vos notes et observations</li>
+                            <li>Les émotions de l'enfant</li>
+                            <li>La progression des objectifs</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="text-center mb-4">
+                        <button id="btnGenererConseil" class="btn btn-primary btn-lg" data-carnet-id="{{ carnet.id }}">
+                            <i class="fas fa-magic me-2"></i>
+                            Générer un conseil IA
+                        </button>
+                    </div>
+                    
+                    <div id="conseilContainer" style="display: none;">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div id="conseilContent"></div>
+                                <hr>
+                                <div class="text-muted small text-end" id="conseilDate"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="loadingContainer" style="display: none;" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Analyse en cours...</span>
+                        </div>
+                        <p class="mt-2">🤔 Analyse de votre carnet et génération du conseil...</p>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ path('carnet_educatif_show', {'id': carnet.id}) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Retour au carnet
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #4E73DF 0%, #1CC88A 100%);
+    }
+    .conseil-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+    .conseil-content h3, .conseil-content strong {
+        color: #4E73DF;
+    }
+    .conseil-content ul, .conseil-content ol {
+        padding-left: 20px;
+    }
+    .conseil-content hr {
+        margin: 20px 0;
+    }
+</style>
+
+<script>
+document.getElementById('btnGenererConseil').addEventListener('click', async function() {
+    const carnetId = this.dataset.carnetId;
+    const loadingDiv = document.getElementById('loadingContainer');
+    const conseilDiv = document.getElementById('conseilContainer');
+    const conseilContent = document.getElementById('conseilContent');
+    const conseilDate = document.getElementById('conseilDate');
+    
+    // Afficher le chargement
+    loadingDiv.style.display = 'block';
+    conseilDiv.style.display = 'none';
+    this.disabled = true;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Génération en cours...';
+    
+    try {
+        const response = await fetch(`/carnet/conseil/generer/${carnetId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Formater le conseil (remplacer les sauts de ligne par des <br>)
+            let conseilHtml = data.conseil;
+            conseilHtml = conseilHtml.replace(/\n/g, '<br>');
+            conseilHtml = conseilHtml.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            conseilContent.innerHTML = `<div class="conseil-content">${conseilHtml}</div>`;
+            conseilDate.innerHTML = `<i class="fas fa-calendar-alt me-1"></i> Généré le ${data.date} via ${data.source === 'api' ? 'API externe' : 'IA locale'}`;
+            conseilDiv.style.display = 'block';
+        } else {
+            conseilContent.innerHTML = `<div class="alert alert-danger">${data.error || 'Erreur lors de la génération'}</div>`;
+            conseilDiv.style.display = 'block';
+        }
+    } catch (error) {
+        conseilContent.innerHTML = `<div class="alert alert-danger">Erreur réseau : ${error.message}</div>`;
+        conseilDiv.style.display = 'block';
+    } finally {
+        loadingDiv.style.display = 'none';
+        this.disabled = false;
+        this.innerHTML = '<i class="fas fa-magic me-2"></i> Générer un conseil IA';
+    }
+});
+</script>
+{% endblock %}

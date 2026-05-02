@@ -1,0 +1,809 @@
+{# templates/suivi/rapport_ia_avance.html.twig #}
+
+{% extends 'base-back.html.twig' %}
+
+{% block title %}Rapport IA Avancé - {{ rapport.enfant.nom }} - FocusKids{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        @media print {
+            .no-print { display: none; }
+            .print-break { page-break-before: always; }
+        }
+        .report-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .report-header {
+            background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .report-header h1 { font-size: 32px; margin-bottom: 10px; }
+        .report-header p { font-size: 16px; opacity: 0.85; }
+        .report-date { margin-top: 15px; font-size: 13px; opacity: 0.7; }
+        
+        .section {
+            padding: 30px 35px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #3498db;
+            display: inline-block;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #2c3e50;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 8px;
+        }
+        .stat-trend-up { color: #27ae60; }
+        .stat-trend-down { color: #e74c3c; }
+        
+        .progress-bar-custom {
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #3498db;
+            border-radius: 5px;
+            transition: width 0.5s;
+        }
+        
+        .badge {
+            padding: 5px 14px;
+            border-radius: 25px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        .badge-primary { background: #cfe2ff; color: #084298; }
+        
+        .recommendation-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #3498db;
+            transition: all 0.2s;
+        }
+        .recommendation-card:hover { background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+        .recommendation-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .warning-card { border-left-color: #ffc107; background: #fffef5; }
+        .danger-card { border-left-color: #dc3545; background: #fff5f5; }
+        
+        /* ========== STYLES GEMINI - DESIGN BLANC MODERNE ========== */
+        .gemini-container {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        .gemini-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px 30px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .gemini-body {
+            padding: 30px;
+        }
+        .gemini-section {
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        .gemini-section:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .gemini-section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #2c3e50;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        .gemini-section-title span {
+            font-size: 24px;
+        }
+        .gemini-content {
+            color: #495057;
+            line-height: 1.7;
+        }
+        .gemini-content p {
+            margin: 10px 0;
+        }
+        .gemini-content ul, .gemini-content ol {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        .gemini-content li {
+            margin: 10px 0;
+        }
+        .gemini-content strong {
+            color: #2c3e50;
+        }
+        .gemini-stat {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 6px 14px;
+            border-radius: 25px;
+            font-weight: 600;
+            margin: 5px 5px 5px 0;
+            color: #2c3e50;
+            font-size: 13px;
+        }
+        .gemini-stat-highlight {
+            background: #3498db;
+            color: white;
+        }
+        .gemini-stats-bar {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .gemini-footer {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        /* Section motivation spéciale */
+        .gemini-section-motivation {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+            border: 1px solid #ffc107;
+        }
+        .gemini-section-motivation .gemini-section-title {
+            border-bottom-color: #ffc107;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            background: #f1f3f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        tr:hover { background: #f8f9fa; }
+        
+        .action-plan {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 25px;
+        }
+        .plan-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.2s;
+            border: 1px solid #e9ecef;
+        }
+        .plan-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .plan-week {
+            font-size: 18px;
+            font-weight: 800;
+            color: #3498db;
+            margin-bottom: 12px;
+        }
+        .plan-objective {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #2c3e50;
+        }
+        .plan-actions {
+            text-align: left;
+            font-size: 12px;
+            padding-left: 20px;
+        }
+        .plan-actions li { margin-bottom: 8px; }
+        
+        .btn-print {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 25px;
+            cursor: pointer;
+            z-index: 1000;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+        .btn-print:hover { background: #2980b9; transform: scale(1.02); }
+        
+        /* Animation douce */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .gemini-container {
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid, .action-plan { grid-template-columns: repeat(2, 1fr); }
+            .section { padding: 20px; }
+            .gemini-body { padding: 20px; }
+            .gemini-section { padding: 15px; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<button onclick="window.print()" class="btn-print no-print">🖨️ Imprimer le rapport</button>
+
+<div class="report-container">
+    <!-- Header -->
+    <div class="report-header">
+        <h1 style="color: #eff5fc !important;">Rapport d'analyse pédagogique</h1>
+        <p style="color: #6c757d;">FocusKids - Intelligence Artificielle Éducative</p>
+        <div class="report-date">
+            📅 Généré le {{ rapport.date_rapport }}
+        </div>
+    </div>
+    
+    <!-- Profil de l'enfant -->
+    <div class="section">
+        <div class="section-title">👶 Profil de l'enfant</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.enfant.nom }}</div>
+                <div class="stat-label">👤 Enfant</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.enfant.niveau }}</div>
+                <div class="stat-label">📚 Niveau scolaire</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.enfant.age }}</div>
+                <div class="stat-label">🎂 Âge</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.enfant.date_inscription }}</div>
+                <div class="stat-label">📅 Inscrit depuis</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistiques avancées -->
+    <div class="section">
+        <div class="section-title">📊 Analyse statistique</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.statistiques.total_exercices }}</div>
+                <div class="stat-label">📝 Exercices tentés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-trend-up">{{ rapport.statistiques.reussites }}</div>
+                <div class="stat-label">✅ Exercices réussis</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-trend-down">{{ rapport.statistiques.echecs }}</div>
+                <div class="stat-label">❌ Exercices échoués</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value {% if rapport.statistiques.taux_reussite_global >= 70 %}stat-trend-up{% else %}stat-trend-down{% endif %}">
+                    {{ rapport.statistiques.taux_reussite_global }}%
+                </div>
+                <div class="stat-label">📈 Taux de réussite global</div>
+                <div class="progress-bar-custom">
+                    <div class="progress-fill" style="width: {{ rapport.statistiques.taux_reussite_global }}%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.statistiques.score_moyen }}</div>
+                <div class="stat-label">⭐ Score moyen</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.statistiques.temps_moyen }} sec</div>
+                <div class="stat-label">⏱️ Temps moyen par exercice</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.statistiques.score_max }}</div>
+                <div class="stat-label">🏆 Meilleur score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.statistiques.score_min }}</div>
+                <div class="stat-label">📉 Score le plus bas</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Performance par type -->
+    <div class="section">
+        <div class="section-title">🎯 Performance par type d'exercice</div>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Exercices</th>
+                        <th>Réussite</th>
+                        <th>Score moyen</th>
+                        <th>Temps moyen</th>
+                        <th>Taux de réussite</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for type, data in rapport.statistiques.details_par_type %}
+                    <tr>
+                        <td><strong>{% if type == 'MEMOIRE' %}🎴 Mémoire{% elseif type == 'ATTENTION' %}👁️ Attention{% elseif type == 'LOGIQUE' %}🧠 Logique{% else %}⏱️ Chrono{% endif %}</strong></td>
+                        <td>{{ data.total }}</td>
+                        <td>{{ data.reussites }}</td>
+                        <td>{{ data.score_moyen }}</td>
+                        <td>{{ data.temps_moyen }}s</td>
+                        <td style="min-width: 120px;">
+                            <div class="progress-bar-custom">
+                                <div class="progress-fill" style="width: {{ data.taux_reussite }}%; background: {% if data.taux_reussite >= 70 %}#27ae60{% elseif data.taux_reussite >= 50 %}#ffc107{% else %}#e74c3c{% endif %};"></div>
+                            </div>
+                            {{ data.taux_reussite }}%
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Progression -->
+    <div class="section">
+        <div class="section-title">📈 Évolution et progression</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value {% if rapport.statistiques.progression >= 0 %}stat-trend-up{% else %}stat-trend-down{% endif %}">
+                    {% if rapport.statistiques.progression >= 0 %}+{% endif %}{{ rapport.statistiques.progression }} pts
+                </div>
+                <div class="stat-label">📊 Progression absolue</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value {% if rapport.statistiques.progression_pourcentage >= 0 %}stat-trend-up{% else %}stat-trend-down{% endif %}">
+                    {% if rapport.statistiques.progression_pourcentage >= 0 %}+{% endif %}{{ rapport.statistiques.progression_pourcentage }}%
+                </div>
+                <div class="stat-label">📈 Progression relative</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.tendances.pente }}</div>
+                <div class="stat-label">📐 Pente de progression</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.tendances.consistance|capitalize }}</div>
+                <div class="stat-label">🎯 Consistance des performances</div>
+            </div>
+        </div>
+        <div class="alert alert-info mt-3">
+            <strong>💡 Analyse :</strong> {{ rapport.tendances.message }}
+            <br><small>📌 Stabilité : {{ rapport.tendances.stabilité }}</small>
+        </div>
+    </div>
+    
+    <!-- Meilleurs moments -->
+    <div class="section">
+        <div class="section-title">⏰ Meilleurs moments d'apprentissage</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.statistiques.meilleurs_horaires.0.heure ?? '-' }}h</div>
+                <div class="stat-label">🏆 Meilleure heure</div>
+                <small>Taux: {{ rapport.statistiques.meilleurs_horaires.0.taux ?? 0 }}%</small>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.statistiques.meilleurs_jours.0.jour ?? '-' }}</div>
+                <div class="stat-label">🏆 Meilleur jour</div>
+                <small>Taux: {{ rapport.statistiques.meilleurs_jours.0.taux ?? 0 }}%</small>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.statistiques.meilleurs_horaires.1.heure ?? '-' }}h</div>
+                <div class="stat-label">⭐ Deuxième meilleure heure</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.statistiques.meilleurs_jours.1.jour ?? '-' }}</div>
+                <div class="stat-label">⭐ Deuxième meilleur jour</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Patterns détectés -->
+    {% if rapport.patterns|length > 0 %}
+    <div class="section">
+        <div class="section-title">🔍 Patterns et tendances détectés</div>
+        {% for pattern in rapport.patterns %}
+            <div class="alert alert-{% if '⚠️' in pattern %}warning{% elseif '📉' in pattern %}danger{% elseif '✨' in pattern %}success{% else %}info{% endif %} mb-2">
+                {{ pattern|raw }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Profil d'apprentissage -->
+    <div class="section">
+        <div class="section-title">🧠 Profil d'apprentissage</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.profil_apprentissage.force_principale }}</div>
+                <div class="stat-label">🌟 Force principale</div>
+                <span class="badge badge-success mt-2">Point fort</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.profil_apprentissage.faiblesse_principale }}</div>
+                <div class="stat-label">⚠️ Axe d'amélioration</div>
+                <span class="badge badge-warning mt-2">À travailler</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.profil_apprentissage.style_apprentissage }}</div>
+                <div class="stat-label">🎯 Style d'apprentissage</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.profil_apprentissage.niveau_concentration }}</div>
+                <div class="stat-label">🧘 Niveau de concentration</div>
+            </div>
+        </div>
+        <div class="alert alert-secondary mt-3">
+            <strong>📝 Description du profil :</strong> {{ rapport.profil_apprentissage.profil_score }}
+        </div>
+    </div>
+    
+    <!-- Prédictions et objectifs -->
+    <div class="section">
+        <div class="section-title">🔮 Projections et objectifs</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.predictions.score_projete }}</div>
+                <div class="stat-label">🎯 Score projeté</div>
+                <small>vs {{ rapport.statistiques.score_moyen }} actuel</small>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rapport.predictions.taux_reussite_projete }}%</div>
+                <div class="stat-label">📊 Taux de réussite projeté</div>
+                <small>vs {{ rapport.statistiques.taux_reussite_global }}% actuel</small>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">🎯</div>
+                <div class="stat-label"><strong>{{ rapport.predictions.objectif_court_terme }}</strong></div>
+                <small>Objectif à 2-4 semaines</small>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">🏆</div>
+                <div class="stat-label"><strong>{{ rapport.predictions.objectif_long_terme }}</strong></div>
+                <small>Objectif à 2-3 mois</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ========== SECTION GEMINI - DESIGN BLANC MODERNE ========== -->
+    <div class="section">
+        <div class="gemini-container">
+            <div class="gemini-header">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="font-size: 40px;">🤖</div>
+                        <div>
+                            <div style="font-size: 11px; color: #6c757d; letter-spacing: 1px;">POWERED BY GOOGLE GEMINI AI</div>
+                            <div style="font-size: 20px; font-weight: 700; color: #2c3e50;">Analyse pédagogique personnalisée</div>
+                        </div>
+                    </div>
+                    <div class="gemini-stats-bar">
+                        <span class="gemini-stat">📊 {{ rapport.statistiques.total_exercices }} exercices</span>
+                        <span class="gemini-stat">✅ {{ rapport.statistiques.taux_reussite_global }}% réussite</span>
+                        <span class="gemini-stat">⭐ {{ rapport.statistiques.score_moyen }}/100</span>
+                    </div>
+                </div>
+            </div>
+            <div class="gemini-body">
+                {% if rapport.gemini_advice.success %}
+                    {% set adviceContent = rapport.gemini_advice.content %}
+                    
+                    {# RÉSUMÉ #}
+                    {% if '### 📊 RÉSUMÉ' in adviceContent %}
+                        {% set resumeMatch = adviceContent|split('### 📊 RÉSUMÉ')|last|split('### 💪 POINTS FORTS')|first %}
+                        <div class="gemini-section">
+                            <div class="gemini-section-title">
+                                <span>📊</span> RÉSUMÉ DES PERFORMANCES
+                            </div>
+                            <div class="gemini-content">
+                                {{ resumeMatch|trim|raw }}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {# POINTS FORTS #}
+                    {% if '### 💪 POINTS FORTS' in adviceContent %}
+                        {% set pointsFortsMatch = adviceContent|split('### 💪 POINTS FORTS')|last|split('### 🎯 AXES D\'AMÉLIORATION')|first %}
+                        <div class="gemini-section">
+                            <div class="gemini-section-title">
+                                <span>💪</span> POINTS FORTS
+                            </div>
+                            <div class="gemini-content">
+                                {{ pointsFortsMatch|trim|raw }}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {# AXES D'AMÉLIORATION #}
+                    {% if '### 🎯 AXES D\'AMÉLIORATION' in adviceContent %}
+                        {% set axesMatch = adviceContent|split('### 🎯 AXES D\'AMÉLIORATION')|last|split('### 📝 RECOMMANDATIONS')|first %}
+                        <div class="gemini-section">
+                            <div class="gemini-section-title">
+                                <span>🎯</span> AXES D'AMÉLIORATION
+                            </div>
+                            <div class="gemini-content">
+                                {{ axesMatch|trim|raw }}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {# RECOMMANDATIONS #}
+                    {% if '### 📝 RECOMMANDATIONS' in adviceContent %}
+                        {% set recommandationsMatch = adviceContent|split('### 📝 RECOMMANDATIONS')|last|split('### 🎉 MOTIVATION')|first %}
+                        <div class="gemini-section">
+                            <div class="gemini-section-title">
+                                <span>📝</span> RECOMMANDATIONS
+                            </div>
+                            <div class="gemini-content">
+                                {{ recommandationsMatch|trim|raw }}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {# MOTIVATION #}
+                    {% if '### 🎉 MOTIVATION' in adviceContent %}
+                        {% set motivationMatch = adviceContent|split('### 🎉 MOTIVATION')|last %}
+                        <div class="gemini-section gemini-section-motivation">
+                            <div class="gemini-section-title">
+                                <span>🎉</span> MOTIVATION
+                            </div>
+                            <div class="gemini-content" style="font-size: 17px; font-weight: 500; text-align: center;">
+                                {{ motivationMatch|trim|raw }}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                {% else %}
+                    <div class="gemini-section">
+                        <div class="gemini-content" style="text-align: center; padding: 20px;">
+                            <p style="font-size: 18px;">⚠️ Service Gemini temporairement indisponible</p>
+                            <p>{{ rapport.gemini_advice.content|raw }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="gemini-footer">
+                <div style="display: flex; justify-content: center; align-items: center; gap: 25px; flex-wrap: wrap;">
+                    <span>🤖 Analyse intelligente par Google Gemini AI</span>
+                    <span>📊 Basée sur {{ rapport.statistiques.total_exercices }} exercices analysés</span>
+                    <span>🎯 Recommandations personnalisées</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recommandations immédiates -->
+    <div class="section">
+        <div class="section-title">⚡ Actions prioritaires</div>
+        {% if rapport.recommandations.immediates|length > 0 %}
+            {% for rec in rapport.recommandations.immediates %}
+                {% if '🔴' in rec %}
+                    {% set cardClass = 'danger-card' %}
+                {% elseif '🟠' in rec %}
+                    {% set cardClass = 'warning-card' %}
+                {% else %}
+                    {% set cardClass = '' %}
+                {% endif %}
+                <div class="recommendation-card {{ cardClass }}">
+                    {{ rec|raw }}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-success text-center">
+                ✅ Aucune action urgente détectée. Continuez sur cette belle lancée !
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Recommandations hebdomadaires -->
+    <div class="section">
+        <div class="section-title">📅 Planning hebdomadaire recommandé</div>
+        <div class="row">
+            {% for rec in rapport.recommandations.hebdomadaires %}
+                <div class="col-md-4 mb-3">
+                    <div class="recommendation-card" style="margin-bottom: 0;">
+                        <div class="recommendation-title">
+                            {% if loop.index == 1 %}📆 Fréquence
+                            {% elseif loop.index == 2 %}⏰ Planning
+                            {% else %}🎯 Stratégie{% endif %}
+                        </div>
+                        {{ rec|raw }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Recommandations par type -->
+    {% if rapport.recommandations.specifiques_par_type|length > 0 %}
+    <div class="section">
+        <div class="section-title">🎯 Conseils par type d'exercice</div>
+        <div class="row">
+            {% for type, rec in rapport.recommandations.specifiques_par_type %}
+                <div class="col-md-6 mb-3">
+                    <div class="recommendation-card">
+                        <div class="recommendation-title">
+                            {% if type == 'MEMOIRE' %}🎴 Mémoire
+                            {% elseif type == 'ATTENTION' %}👁️ Attention
+                            {% elseif type == 'LOGIQUE' %}🧠 Logique
+                            {% else %}⏱️ Chrono{% endif %}
+                        </div>
+                        {{ rec|raw }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Plan d'action détaillé -->
+    <div class="section">
+        <div class="section-title">📋 Plan d'action personnalisé</div>
+        <div class="action-plan">
+            <div class="plan-card">
+                <div class="plan-week">📆 Semaine 1</div>
+                <div class="plan-objective">{{ rapport.plan_action.semaine_1.objectif }}</div>
+                <ul class="plan-actions">
+                    {% for action in rapport.plan_action.semaine_1.actions %}
+                        <li>{{ action }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="plan-card">
+                <div class="plan-week">📈 Semaine 2</div>
+                <div class="plan-objective">{{ rapport.plan_action.semaine_2.objectif }}</div>
+                <ul class="plan-actions">
+                    {% for action in rapport.plan_action.semaine_2.actions %}
+                        <li>{{ action }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="plan-card">
+                <div class="plan-week">🚀 Semaine 3</div>
+                <div class="plan-objective">{{ rapport.plan_action.semaine_3.objectif }}</div>
+                <ul class="plan-actions">
+                    {% for action in rapport.plan_action.semaine_3.actions %}
+                        <li>{{ action }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="plan-card">
+                <div class="plan-week">🏆 Mois 1</div>
+                <div class="plan-objective">{{ rapport.plan_action.mois_1.objectif }}</div>
+                <ul class="plan-actions">
+                    {% for action in rapport.plan_action.mois_1.actions %}
+                        <li>{{ action }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {# templates/suivi/rapport_ia_avance.html.twig #}
+{# Section QR Code corrigée #}
+
+<!-- Section QR Code -->
+<div class="section" style="background: #f8f9fa; text-align: center;">
+    <div class="section-title">📱 Version mobile</div>
+    <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; align-items: center;">
+        <div>
+            {% if rapport.qr_code is defined and rapport.qr_code %}
+                <img src="{{ rapport.qr_code }}" 
+                     alt="QR Code" 
+                     style="width: 200px; height: 200px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); background: white; padding: 10px;">
+                <p style="margin-top: 15px; color: #6c757d; font-size: 13px;">
+                    📱 Scannez avec votre téléphone
+                </p>
+            {% else %}
+                <div style="width: 200px; height: 200px; background: #e9ecef; border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                    <span style="font-size: 48px;">📱</span>
+                    <p style="font-size: 12px; margin-top: 10px;">QR Code indisponible</p>
+                </div>
+            {% endif %}
+        </div>
+        <div style="text-align: left; max-width: 300px;">
+            <h3 style="color: #2c3e50; margin-bottom: 10px;">Accédez au rapport sur mobile</h3>
+            <p style="color: #6c757d; font-size: 14px;">
+                Scannez ce QR code pour ouvrir une version mobile 
+                optimisée et très design du rapport pédagogique.
+            </p>
+            <div style="margin-top: 15px;">
+                <span class="badge badge-info">✅ Optimisé mobile</span>
+                <span class="badge badge-info">🎨 Design moderne</span>
+                <span class="badge badge-info">📤 Partage facile</span>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+    <!-- Footer -->
+    <div class="section" style="text-align: center; background: #f8f9fa;">
+        <p style="margin: 0; color: #6c757d; font-size: 12px;">
+            🤖 FocusKids - Analyse générée par intelligence artificielle<br>
+            Ce rapport est une aide pédagogique. Il ne remplace pas l'avis d'un professionnel de l'éducation.
+        </p>
+        <p style="margin-top: 10px; color: #adb5bd; font-size: 10px;">
+            FocusKids - Plateforme éducative pour enfants | Rapport généré le {{ rapport.date_rapport }}
+        </p>
+    </div>
+</div>
+{% endblock %}

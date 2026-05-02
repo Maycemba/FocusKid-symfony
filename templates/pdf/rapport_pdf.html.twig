@@ -1,0 +1,700 @@
+{# templates/pdf/rapport_pdf.html.twig #}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport pédagogique - {{ rapport.enfant.nom }}</title>
+    <style>
+        @page {
+            margin: 1.5cm;
+            size: A4;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'DejaVu Sans', 'Segoe UI', Arial, sans-serif;
+            background: white;
+            color: #2d3748;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        /* Header */
+        .header {
+            background: #1a252f;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .header .subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        
+        .header .date {
+            font-size: 10px;
+            opacity: 0.6;
+        }
+        
+        /* Container */
+        .container {
+            width: 100%;
+        }
+        
+        /* Sections */
+        .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a252f;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #3498db;
+            display: inline-block;
+        }
+        
+        /* Grille */
+        .grid-4 {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        .grid-4 .cell {
+            display: table-cell;
+            width: 25%;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .grid-2 {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        .grid-2 .cell {
+            display: table-cell;
+            width: 50%;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #2d3748;
+        }
+        
+        .stat-label {
+            font-size: 10px;
+            color: #718096;
+            margin-top: 5px;
+        }
+        
+        .text-success {
+            color: #27ae60;
+        }
+        
+        .text-warning {
+            color: #e67e22;
+        }
+        
+        .text-danger {
+            color: #e74c3c;
+        }
+        
+        /* Tableau */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 11px;
+        }
+        
+        .data-table th {
+            background: #3498db;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .data-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background: #f7fafc;
+        }
+        
+        /* Barre de progression */
+        .progress-wrapper {
+            width: 100px;
+            display: inline-block;
+        }
+        
+        .progress-bar {
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 6px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: #3498db;
+            height: 100%;
+            border-radius: 10px;
+        }
+        
+        .progress-fill-success {
+            background: #27ae60;
+        }
+        
+        .progress-fill-warning {
+            background: #e67e22;
+        }
+        
+        .progress-fill-danger {
+            background: #e74c3c;
+        }
+        
+        /* Cartes de recommandation */
+        .rec-card {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .rec-card-urgent {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+        
+        .rec-card-warning {
+            border-left-color: #e67e22;
+            background: #fffaf0;
+        }
+        
+        /* Box Gemini */
+        .gemini-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+        
+        .gemini-box h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin: 12px 0 8px 0;
+            color: white;
+        }
+        
+        .gemini-box h4:first-child {
+            margin-top: 0;
+        }
+        
+        .gemini-box ul, .gemini-box ol {
+            margin: 5px 0 10px 20px;
+        }
+        
+        .gemini-box li {
+            margin: 5px 0;
+        }
+        
+        .gemini-box p {
+            margin: 8px 0;
+        }
+        
+        /* Pattern box */
+        .pattern-box {
+            background: #e8f4fd;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+        
+        /* Info box */
+        .info-box {
+            background: #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+        
+        .badge-primary {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            font-size: 9px;
+            color: #718096;
+        }
+        
+        /* Row flex */
+        .row {
+            display: block;
+            width: 100%;
+        }
+        
+        .clearfix {
+            clear: both;
+        }
+        
+        hr {
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- En-tête -->
+    <div class="header">
+        <h1>Rapport d'analyse pédagogique</h1>
+        <div class="subtitle">FocusKids - Intelligence Artificielle Éducative</div>
+        <div class="date">Généré le {{ rapport.date_rapport }}</div>
+    </div>
+    
+    <div class="container">
+        
+        <!-- ========================================= -->
+        <!-- PROFIL DE L'ENFANT -->
+        <!-- ========================================= -->
+        <div class="section">
+            <div class="section-title">Profil de l'enfant</div>
+            <div class="grid-4">
+                <div class="cell">
+                    <div class="stat-value">{{ rapport.enfant.nom }}</div>
+                    <div class="stat-label">Nom</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value">{{ rapport.enfant.niveau }}</div>
+                    <div class="stat-label">Niveau</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value">{{ rapport.enfant.age }}</div>
+                    <div class="stat-label">Âge</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value" style="font-size: 16px;">{{ rapport.enfant.date_inscription }}</div>
+                    <div class="stat-label">Inscrit depuis</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ========================================= -->
+        <!-- STATISTIQUES GLOBALES -->
+        <!-- ========================================= -->
+        <div class="section">
+            <div class="section-title">Statistiques globales</div>
+            <div class="grid-4">
+                <div class="cell">
+                    <div class="stat-value">{{ rapport.statistiques.total_exercices }}</div>
+                    <div class="stat-label">Exercices tentés</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value text-success">{{ rapport.statistiques.reussites }}</div>
+                    <div class="stat-label">Réussites</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value text-danger">{{ rapport.statistiques.echecs }}</div>
+                    <div class="stat-label">Échecs</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value {% if rapport.statistiques.taux_reussite_global >= 70 %}text-success{% elseif rapport.statistiques.taux_reussite_global >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                        {{ rapport.statistiques.taux_reussite_global }}%
+                    </div>
+                    <div class="stat-label">Taux de réussite</div>
+                    <div class="progress-wrapper">
+                        <div class="progress-bar">
+                            <div class="progress-fill {% if rapport.statistiques.taux_reussite_global >= 70 %}progress-fill-success{% elseif rapport.statistiques.taux_reussite_global >= 50 %}progress-fill-warning{% else %}progress-fill-danger{% endif %}" style="width: {{ rapport.statistiques.taux_reussite_global }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-4">
+                <div class="cell">
+                    <div class="stat-value">{{ rapport.statistiques.score_moyen }}</div>
+                    <div class="stat-label">Score moyen /100</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value">{{ rapport.statistiques.temps_moyen }}s</div>
+                    <div class="stat-label">Temps moyen</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value">{{ rapport.statistiques.score_max }}</div>
+                    <div class="stat-label">Meilleur score</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value">{{ rapport.statistiques.score_min }}</div>
+                    <div class="stat-label">Score minimum</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ========================================= -->
+        <!-- PERFORMANCE PAR TYPE -->
+        <!-- ========================================= -->
+        <div class="section">
+            <div class="section-title">Performance par type d'exercice</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Exercices</th>
+                        <th>Réussites</th>
+                        <th>Score moyen</th>
+                        <th>Taux réussite</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if rapport.statistiques.details_par_type|length > 0 %}
+                        {% for type, data in rapport.statistiques.details_par_type %}
+                        <tr>
+                            <td>
+                                {% if type == 'MEMOIRE' %}🎴 Mémoire
+                                {% elseif type == 'ATTENTION' %}👁️ Attention
+                                {% elseif type == 'LOGIQUE' %}🧠 Logique
+                                {% else %}⏱️ Chrono
+                                {% endif %}
+                            </td>
+                            <td>{{ data.total }}</td>
+                            <td>{{ data.reussites }}</td>
+                            <td>{{ data.score_moyen }}</td>
+                            <td>
+                                <div class="progress-wrapper">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill {% if data.taux_reussite >= 70 %}progress-fill-success{% elseif data.taux_reussite >= 50 %}progress-fill-warning{% else %}progress-fill-danger{% endif %}" style="width: {{ data.taux_reussite }}%;"></div>
+                                    </div>
+                                </div>
+                                {{ data.taux_reussite }}%
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Aucune donnée disponible</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- ========================================= -->
+        <!-- ÉVOLUTION ET PROGRESSION -->
+        <!-- ========================================= -->
+        <div class="section">
+            <div class="section-title">Évolution et progression</div>
+            <div class="grid-4">
+                <div class="cell">
+                    <div class="stat-value {% if rapport.statistiques.progression >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        {% if rapport.statistiques.progression >= 0 %}+{% endif %}{{ rapport.statistiques.progression }}
+                    </div>
+                    <div class="stat-label">Progression absolue</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value {% if rapport.statistiques.progression_pourcentage >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        {% if rapport.statistiques.progression_pourcentage >= 0 %}+{% endif %}{{ rapport.statistiques.progression_pourcentage }}%
+                    </div>
+                    <div class="stat-label">Progression relative</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value">{{ rapport.tendances.pente }}</div>
+                    <div class="stat-label">Pente de progression</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value">{{ rapport.tendances.consistance|capitalize }}</div>
+                    <div class="stat-label">Consistance</div>
+                </div>
+            </div>
+            <div class="info-box">
+                <strong>📈 Analyse de progression</strong><br>
+                {{ rapport.tendances.message }}
+            </div>
+        </div>
+        
+        <!-- ========================================= -->
+        <!-- TENDANCES DÉTECTÉES -->
+        <!-- ========================================= -->
+        {% if rapport.patterns|length > 0 %}
+        <div class="section">
+            <div class="section-title">Tendances détectées</div>
+            {% for pattern in rapport.patterns %}
+                <div class="pattern-box">
+                    {{ pattern|replace({'✨': '✓', '⚠️': '⚠', '📈': '↑', '📉': '↓'})|raw }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- ========================================= -->
+        <!-- PROFIL D'APPRENTISSAGE -->
+        <!-- ========================================= -->
+        <div class="section">
+            <div class="section-title">Profil d'apprentissage</div>
+            <div class="grid-2">
+                <div class="cell">
+                    <div class="stat-value" style="font-size: 16px;">{{ rapport.profil_apprentissage.force_principale }}</div>
+                    <div class="stat-label">Force principale</div>
+                    <span class="badge badge-success">Point fort</span>
+                </div>
+                <div class="cell">
+                    <div class="stat-value" style="font-size: 16px;">{{ rapport.profil_apprentissage.faiblesse_principale }}</div>
+                    <div class="stat-label">Axe d'amélioration</div>
+                    <span class="badge badge-warning">À travailler</span>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="cell">
+                    <div class="stat-value" style="font-size: 14px;">{{ rapport.profil_apprentissage.style_apprentissage }}</div>
+                    <div class="stat-label">Style d'apprentissage</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value" style="font-size: 14px;">{{ rapport.profil_apprentissage.niveau_concentration }}</div>
+                    <div class="stat-label">Concentration</div>
+                </div>
+            </div>
+            <div class="info-box">
+                <strong>📝 Description</strong><br>
+                {{ rapport.profil_apprentissage.profil_score }}
+            </div>
+        </div>
+        
+        <!-- ========================================= -->
+        <!-- OBJECTIFS ET PROJECTIONS -->
+        <!-- ========================================= -->
+        <div class="section">
+            <div class="section-title">Objectifs pédagogiques</div>
+            <div class="grid-2">
+                <div class="cell">
+                    <div class="stat-value" style="font-size: 22px;">{{ rapport.predictions.score_projete }}</div>
+                    <div class="stat-label">Score projeté (vs {{ rapport.statistiques.score_moyen }})</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value" style="font-size: 22px;">{{ rapport.predictions.taux_reussite_projete }}%</div>
+                    <div class="stat-label">Taux réussite projeté (vs {{ rapport.statistiques.taux_reussite_global }}%)</div>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="cell">
+                    <div class="stat-value" style="font-size: 12px; font-weight: normal;">{{ rapport.predictions.objectif_court_terme }}</div>
+                    <div class="stat-label">Objectif court terme (2-4 semaines)</div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value" style="font-size: 12px; font-weight: normal;">{{ rapport.predictions.objectif_long_terme }}</div>
+                    <div class="stat-label">Objectif long terme (2-3 mois)</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ========================================= -->
+        <!-- ACTIONS PRIORITAIRES -->
+        <!-- ========================================= -->
+        <div class="section">
+            <div class="section-title">Actions prioritaires</div>
+            {% if rapport.recommandations.immediates|length > 0 %}
+                {% for rec in rapport.recommandations.immediates %}
+                    {% if '🔴' in rec %}
+                        <div class="rec-card rec-card-urgent">
+                            {{ rec|replace({'🔴': '⚠️ '})|raw }}
+                        </div>
+                    {% elseif '🟠' in rec %}
+                        <div class="rec-card rec-card-warning">
+                            {{ rec|replace({'🟠': '📌 '})|raw }}
+                        </div>
+                    {% else %}
+                        <div class="rec-card">
+                            {{ rec|raw }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="rec-card">✅ Aucune action urgente détectée</div>
+            {% endif %}
+        </div>
+        
+        <!-- ========================================= -->
+        <!-- ANALYSE IA GEMINI -->
+        <!-- ========================================= -->
+        <div class="section">
+            <div class="section-title">Analyse IA personnalisée</div>
+            <div class="gemini-box">
+                {% if rapport.gemini_advice.success %}
+                    {% set content = rapport.gemini_advice.content %}
+                    
+                    {# Extraction du résumé #}
+                    {% if 'RÉSUMÉ' in content %}
+                        {% set parts = content|split('RÉSUMÉ') %}
+                        {% if parts|length > 1 %}
+                            {% set resume = parts[1]|split('POINTS FORTS')|first %}
+                            <h4>📊 Résumé des performances</h4>
+                            <p>{{ resume|replace({'###': '', '*': ''})|trim }}</p>
+                        {% endif %}
+                    {% endif %}
+                    
+                    {# Extraction des points forts #}
+                    {% if 'POINTS FORTS' in content %}
+                        {% set parts = content|split('POINTS FORTS') %}
+                        {% if parts|length > 1 %}
+                            {% set points = parts[1]|split('AXES')|first %}
+                            <h4>💪 Points forts</h4>
+                            {{ points|replace({'###': '', '-': '•'})|trim|raw }}
+                        {% endif %}
+                    {% endif %}
+                    
+                    {# Extraction des axes d'amélioration #}
+                    {% if 'AXES' in content %}
+                        {% set parts = content|split('AXES') %}
+                        {% if parts|length > 1 %}
+                            {% set axes = parts[1]|split('RECOMMANDATIONS')|first %}
+                            <h4>🎯 Axes d'amélioration</h4>
+                            {{ axes|replace({'###': '', '-': '•', 'D\'AMÉLIORATION': ''})|trim|raw }}
+                        {% endif %}
+                    {% endif %}
+                    
+                    {# Extraction des recommandations #}
+                    {% if 'RECOMMANDATIONS' in content %}
+                        {% set parts = content|split('RECOMMANDATIONS') %}
+                        {% if parts|length > 1 %}
+                            {% set recos = parts[1]|split('MOTIVATION')|first %}
+                            <h4>📝 Recommandations</h4>
+                            {{ recos|replace({'###': '', '1.': '1.', '2.': '2.', '3.': '3.'})|trim|raw }}
+                        {% endif %}
+                    {% endif %}
+                    
+                    {# Extraction de la motivation #}
+                    {% if 'MOTIVATION' in content %}
+                        {% set parts = content|split('MOTIVATION') %}
+                        {% if parts|length > 1 %}
+                            <h4>🎉 Message de motivation</h4>
+                            <p><strong>{{ parts[1]|replace({'###': '', '*': ''})|trim }}</strong></p>
+                        {% endif %}
+                    {% endif %}
+                    
+                {% else %}
+                    <p>{{ rapport.gemini_advice.content|raw }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- ========================================= -->
+        <!-- PLAN D'ACTION -->
+        <!-- ========================================= -->
+        <div class="section">
+            <div class="section-title">Plan d'action personnalisé</div>
+            <div class="grid-4">
+                <div class="cell">
+                    <div class="stat-value" style="font-size: 14px;">📆 Semaine 1</div>
+                    <div class="stat-label">{{ rapport.plan_action.semaine_1.objectif }}</div>
+                    <hr>
+                    <div style="text-align: left; font-size: 10px;">
+                        {% for action in rapport.plan_action.semaine_1.actions %}
+                            • {{ action }}<br>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value" style="font-size: 14px;">📈 Semaine 2</div>
+                    <div class="stat-label">{{ rapport.plan_action.semaine_2.objectif }}</div>
+                    <hr>
+                    <div style="text-align: left; font-size: 10px;">
+                        {% for action in rapport.plan_action.semaine_2.actions %}
+                            • {{ action }}<br>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value" style="font-size: 14px;">🚀 Semaine 3</div>
+                    <div class="stat-label">{{ rapport.plan_action.semaine_3.objectif }}</div>
+                    <hr>
+                    <div style="text-align: left; font-size: 10px;">
+                        {% for action in rapport.plan_action.semaine_3.actions %}
+                            • {{ action }}<br>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="cell">
+                    <div class="stat-value" style="font-size: 14px;">🏆 Mois 1</div>
+                    <div class="stat-label">{{ rapport.plan_action.mois_1.objectif }}</div>
+                    <hr>
+                    <div style="text-align: left; font-size: 10px;">
+                        {% for action in rapport.plan_action.mois_1.actions %}
+                            • {{ action }}<br>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pied de page -->
+        <div class="footer">
+            FocusKids - Plateforme éducative pour enfants<br>
+            Ce rapport est une aide pédagogique générée par intelligence artificielle.<br>
+            © FocusKids - Tous droits réservés
+        </div>
+        
+    </div>
+</body>
+</html>
