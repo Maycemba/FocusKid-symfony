@@ -11,6 +11,7 @@ use App\Repository\UtilisateurRepository;
 use App\Repository\ExerciceEnfantRepository;
 use App\Service\QuestionGeneratorIA;
 use App\Service\EmailService;
+use App\Service\PredictionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,119 +33,233 @@ final class ExerciceController extends AbstractController
     }
 
   #[Route('/new', name: 'app_exercice_new', methods: ['GET', 'POST'])]
-public function new(Request $request, EntityManagerInterface $entityManager, EmailService $emailService): Response
-{if ($request->isMethod('POST')) {
-    $postData = $request->request->all();
-    $exerciceData = $postData['exercice'] ?? [];
-    $contenuJson = $postData['contenuJson'] ?? null;
-    
-    if (!$contenuJson) {
-        $contenuJson = $exerciceData['contenu'] ?? null;
-    }
-    
-    // Création de l'exercice
-    $exercice = new Exercice();
-    $exercice->setTitre($exerciceData['titre'] ?? 'Sans titre');
-    $exercice->setType($exerciceData['type'] ?? 'CHRONO');
-    $exercice->setConsigne($exerciceData['consigne'] ?? '');
-    $exercice->setDifficulte((int)($exerciceData['difficulte'] ?? 1));
-    $exercice->setDuree((int)($exerciceData['duree'] ?? 60));
-    $exercice->setActif(isset($exerciceData['actif']));
-    $exercice->setArchive(isset($exerciceData['archive']));
-    $exercice->setPourTousEnfants(isset($exerciceData['pour_tous_enfants']));
-    $exercice->setDateCreation(new \DateTime());
-    $exercice->setCreePar($this->getUser() ? $this->getUser()->getId() : 1);
-    
-    if ($contenuJson && $contenuJson !== '{}' && $contenuJson !== 'null') {
-        $exercice->setContenu($contenuJson);
-    } else {
-        $exercice->setContenu('{"dureeTotale":60,"defis":[{"question":"2 + 2 = ?","reponse":"4","points":10}]}');
-    }
-    
-    $entityManager->persist($exercice);
-    $entityManager->flush();
-    
-    // Récupération des jours
-    $joursString = $postData['jours'] ?? '';
-    if (is_array($joursString)) {
-        $joursString = implode(',', $joursString);
-    }
-    
-    // Récupérer les enfants assignés (objets pour emails)
-    $enfantsAssignes = [];
-    
-    // Gestion des enfants
-    if ($exercice->isPourTousEnfants()) {
-        $tousLesEnfants = $entityManager->getRepository(Utilisateur::class)->findBy(['role' => 'enfant']);
-        $enfantsIds = [];
-        foreach ($tousLesEnfants as $enfant) {
-            $enfantsIds[] = $enfant->getId();
-            $enfantsAssignes[] = $enfant;
-        }
-    } else {
-        $enfantsIds = $exerciceData['enfantsSelectionnes'] ?? [];
-        $enfantsIds = array_filter($enfantsIds);
+    public function new(
+        Request $request, 
+        EntityManagerInterface $entityManager, 
+        EmailService $emailService,
+        PredictionService $predictionService  // 🔥 AJOUTER CETTE DEPENDANCE
+    ): Response {
         
-        foreach ($enfantsIds as $enfantId) {
-            $enfant = $entityManager->getRepository(Utilisateur::class)->find($enfantId);
-            if ($enfant) {
-                $enfantsAssignes[] = $enfant;
+        if ($request->isMethod('POST')) {
+            $postData = $request->request->all();
+            $exerciceData = $postData['exercice'] ?? [];
+            $contenuJson = $postData['contenuJson'] ?? null;
+            
+            if (!$contenuJson) {
+                $contenuJson = $exerciceData['contenu'] ?? null;
             }
+            
+            // ========== 1. CRÉATION DE L'EXERCICE ==========
+            $exercice = new Exercice();
+            $exercice->setTitre($exerciceData['titre'] ?? 'Sans titre');
+            $exercice->setType($exerciceData['type'] ?? 'CHRONO');
+            $exercice->setConsigne($exerciceData['consigne'] ?? '');
+            $exercice->setDifficulte((int)($exerciceData['difficulte'] ?? 1));
+            $exercice->setDuree((int)($exerciceData['duree'] ?? 60));
+            $exercice->setActif(isset($exerciceData['actif']));
+            $exercice->setArchive(isset($exerciceData['archive']));
+            $exercice->setPourTousEnfants(isset($exerciceData['pour_tous_enfants']));
+            $exercice->setDateCreation(new \DateTime());
+            $exercice->setCreePar($this->getUser() ? $this->getUser()->getId() : 1);
+            
+            if ($contenuJson && $contenuJson !== '{}' && $contenuJson !== 'null') {
+                $exercice->setContenu($contenuJson);
+            } else {
+                $exercice->setContenu('{"dureeTotale":60,"defis":[{"question":"2 + 2 = ?","reponse":"4","points":10}]}');
+            }
+            
+            $entityManager->persist($exercice);
+            $entityManager->flush();
+            
+            // ========== 2. RÉCUPÉRATION DES JOURS ==========
+            $joursString = $postData['jours'] ?? '';
+            if (is_array($joursString)) {
+                $joursString = implode(',', $joursString);
+            }
+            
+            // ========== 3. RÉCUPÉRATION DES ENFANTS ASSIGNÉS ==========
+            $enfantsAssignes = [];
+            $tousLesStats = [];  // Pour stocker toutes les prédictions
+            
+            if ($exercice->isPourTousEnfants()) {
+                $tousLesEnfants = $entityManager->getRepository(Utilisateur::class)->findBy(['role' => 'enfant']);
+                $enfantsIds = [];
+                foreach ($tousLesEnfants as $enfant) {
+                    $enfantsIds[] = $enfant->getId();
+                    $enfantsAssignes[] = $enfant;
+                }
+            } else {
+                $enfantsIds = $exerciceData['enfantsSelectionnes'] ?? [];
+                $enfantsIds = array_filter($enfantsIds);
+                
+                foreach ($enfantsIds as $enfantId) {
+                    $enfant = $entityManager->getRepository(Utilisateur::class)->find($enfantId);
+                    if ($enfant) {
+                        $enfantsAssignes[] = $enfant;
+                    }
+                }
+            }
+            
+            // ========== 4. 🔥 PRÉDICTION POUR CHAQUE ENFANT ==========
+            $typeCode = $predictionService->getTypeCode($exercice->getType());
+            $statsTousEnfants = $this->getStatsTousEnfants($entityManager, $enfantsIds);
+            
+            $predictions = [];
+            foreach ($enfantsAssignes as $enfant) {
+                $stats = $statsTousEnfants[$enfant->getId()] ?? [
+                    'score_moyen' => 10,      // Score par défaut (moyenne)
+                    'temps_moyen' => 60,      // Temps par défaut (60s)
+                    'nb_exercices' => 0
+                ];
+                
+                try {
+                    $prediction = $predictionService->predire(
+                        $exercice->getDifficulte(),
+                        $typeCode,
+                        $stats['score_moyen'],
+                        $stats['temps_moyen']
+                    );
+                    
+                    $predictions[$enfant->getId()] = $prediction;
+                    
+                    // Log pour debug
+                    $this->addFlash('info', sprintf(
+                        '🔮 Prédiction pour %s : %s (%.1f%%)',
+                        $enfant->getUsername(),
+                        $prediction['reussite'] ? '✅ Réussite' : '❌ Échec',
+                        $prediction['probabilite']
+                    ));
+                    
+                } catch (\Exception $e) {
+                    // En cas d'erreur, prédiction par défaut
+                    $predictions[$enfant->getId()] = [
+                        'reussite' => $stats['score_moyen'] >= 10,
+                        'probabilite' => $stats['score_moyen'] * 5,
+                        'success' => false
+                    ];
+                }
+            }
+            
+            // ========== 5. CRÉATION DES ASSIGNATIONS AVEC PRÉDICTIONS ==========
+            if (!empty($enfantsIds)) {
+                $emailCount = 0;
+                $reussiteCount = 0;
+                $echecCount = 0;
+                
+                foreach ($enfantsIds as $enfantId) {
+                    $enfant = $entityManager->getRepository(Utilisateur::class)->find($enfantId);
+                    if ($enfant) {
+                        $exerciceEnfant = new ExerciceEnfant();
+                        $exerciceEnfant->setExerciceId($exercice->getId());
+                        $exerciceEnfant->setEnfantId($enfant->getId());
+                        $exerciceEnfant->setDateAttribution(new \DateTime());
+                        $exerciceEnfant->setJours($joursString);
+                        
+                        // 🔥 STOCKER LES PRÉDICTIONS DANS LA BASE
+                        $prediction = $predictions[$enfantId] ?? null;
+                        if ($prediction) {
+                            $exerciceEnfant->setPredictionReussite($prediction['reussite']);
+                            $exerciceEnfant->setPredictionProbabilite($prediction['probabilite']);
+                            $exerciceEnfant->setPredictionDate(new \DateTime());
+                            
+                            if ($prediction['reussite']) {
+                                $reussiteCount++;
+                            } else {
+                                $echecCount++;
+                            }
+                        }
+                        
+                        $entityManager->persist($exerciceEnfant);
+                        
+                        // Envoyer email
+                        $emailSent = $emailService->sendNewExerciseNotification(
+                            $enfant->getEmail(),
+                            $enfant->getUsername(),
+                            $exercice->getTitre(),
+                            $exercice->getType(),
+                            $exercice->getConsigne(),
+                            (new \DateTime())->format('d/m/Y à H:i'),
+                            $joursString ?: 'Non spécifiés'
+                        );
+                        if ($emailSent) {
+                            $emailCount++;
+                        }
+                    }
+                }
+                $entityManager->flush();
+                
+                // ========== 6. AFFICHAGE RÉCAPITULATIF ==========
+                $this->addFlash('success', sprintf(
+                    '✅ Exercice "%s" créé ! %d enfant(s) assigné(s).',
+                    $exercice->getTitre(),
+                    count($enfantsIds)
+                ));
+                
+                $this->addFlash('info', sprintf(
+                    '🔮 Résumé des prédictions : %d réussite(s) attendue(s), %d échec(s) prévu(s)',
+                    $reussiteCount,
+                    $echecCount
+                ));
+                
+                $this->addFlash('success', sprintf('📧 %d email(s) envoyé(s) aux enfants.', $emailCount));
+                
+            } else {
+                $this->addFlash('success', '✅ Exercice créé avec succès ! (aucun enfant assigné)');
+            }
+            
+            return $this->redirectToRoute('app_exercice_index');
         }
+        
+        $exercice = new Exercice();
+        $form = $this->createForm(ExerciceType::class, $exercice);
+        
+        // 🔥 Récupérer tous les enfants pour le formulaire
+        $enfants = $entityManager->getRepository(Utilisateur::class)->findBy(['role' => 'enfant']);
+        
+        return $this->render('exercice/new.html.twig', [
+            'exercice' => $exercice,
+            'form' => $form->createView(),
+            'enfants' => $enfants,  // Pour la sélection dans le formulaire
+        ]);
     }
     
-    // Création des assignations
-    if (!empty($enfantsIds)) {
-        foreach ($enfantsIds as $enfantId) {
-            $enfant = $entityManager->getRepository(Utilisateur::class)->find($enfantId);
-            if ($enfant) {
-                $exerciceEnfant = new ExerciceEnfant();
-                $exerciceEnfant->setExerciceId($exercice->getId());
-                $exerciceEnfant->setEnfantId($enfant->getId());
-                $exerciceEnfant->setDateAttribution(new \DateTime());
-                $exerciceEnfant->setJours($joursString);
-                $entityManager->persist($exerciceEnfant);
-            }
-        }
-        $entityManager->flush();
-        
-        // 🔥 ENVOI DES EMAILS AUX ENFANTS ASSIGNÉS
-        $dateAttribution = (new \DateTime())->format('d/m/Y à H:i');
-        $joursAffichage = $joursString ?: 'Non spécifiés';
-        
-        $emailCount = 0;
-        foreach ($enfantsAssignes as $enfant) {
-            $emailSent = $emailService->sendNewExerciseNotification(
-                $enfant->getEmail(),
-                $enfant->getUsername(),
-                $exercice->getTitre(),
-                $exercice->getType(),
-                $exercice->getConsigne(),
-                $dateAttribution,
-                $joursAffichage
-            );
-            if ($emailSent) {
-                $emailCount++;
-                $this->addFlash('info', 'Email envoyé à ' . $enfant->getUsername());
-            }
+    /**
+     * 🔥 MÉTHODE POUR RÉCUPÉRER LES STATS DE TOUS LES ENFANTS
+     */
+    private function getStatsTousEnfants(EntityManagerInterface $em, array $enfantsIds): array
+    {
+        if (empty($enfantsIds)) {
+            return [];
         }
         
-        $this->addFlash('success', sprintf('✅ Exercice créé ! %d email(s) envoyé(s).', $emailCount));
-    } else {
-        $this->addFlash('success', '✅ Exercice créé avec succès !');
+        $conn = $em->getConnection();
+        $placeholders = implode(',', array_fill(0, count($enfantsIds), '?'));
+        
+        $sql = "
+            SELECT 
+                enfant_id,
+                AVG(score) as score_moyen,
+                AVG(temps_passe) as temps_moyen,
+                COUNT(*) as nb_exercices
+            FROM reponse_exercice
+            WHERE enfant_id IN ($placeholders)
+            GROUP BY enfant_id
+        ";
+        
+        $stmt = $conn->prepare($sql);
+        $result = $stmt->executeQuery($enfantsIds);
+        
+        $stats = [];
+        while ($row = $result->fetchAssociative()) {
+            $stats[$row['enfant_id']] = [
+                'score_moyen' => round($row['score_moyen'], 1),
+                'temps_moyen' => round($row['temps_moyen']),
+                'nb_exercices' => $row['nb_exercices']
+            ];
+        }
+        
+        return $stats;
     }
-    
-    return $this->redirectToRoute('app_exercice_index');
-}
-    
-    $exercice = new Exercice();
-    $form = $this->createForm(ExerciceType::class, $exercice);
-    
-    return $this->render('exercice/new.html.twig', [
-        'exercice' => $exercice,
-        'form' => $form->createView(),
-    ]);
-}
 
     // Ajoute cette méthode pour assigner à tous les enfants
     private function assignToAllChildren(Exercice $exercice, EntityManagerInterface $em): void
@@ -322,7 +437,29 @@ public function edit(Request $request, Exercice $exercice, EntityManagerInterfac
         
         return $this->json(['success' => true, 'contenu' => $contenu]);
     }
+// ========== API POUR LES STATISTIQUES ENFANT ==========
 
+#[Route('/api/enfant-stats/{id}', name: 'api_enfant_stats', methods: ['GET'])]
+public function getEnfantStats(int $id, EntityManagerInterface $em): JsonResponse
+{
+    $conn = $em->getConnection();
+    $sql = "
+        SELECT 
+            COALESCE(AVG(score), 10) as score_moyen,
+            COALESCE(AVG(temps_passe), 60) as temps_moyen,
+            COUNT(*) as nb_exercices
+        FROM reponse_exercice
+        WHERE enfant_id = :enfant_id
+    ";
+    
+    $result = $conn->executeQuery($sql, ['enfant_id' => $id])->fetchAssociative();
+    
+    return $this->json([
+        'score_moyen' => round($result['score_moyen'], 1),
+        'temps_moyen' => round($result['temps_moyen']),
+        'nb_exercices' => $result['nb_exercices']
+    ]);
+}
     // ========== FRONT OFFICE (ENFANT) - NOUVELLES ROUTES ==========
     
     // ========== FRONT OFFICE (ENFANT) ==========

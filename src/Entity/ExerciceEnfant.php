@@ -82,6 +82,23 @@ class ExerciceEnfant
     private ?\DateTimeInterface $date_completion = null;
     #[ORM\Column(type: 'string', nullable: true)]
 private ?string $jours = null;
+// src/Entity/ExerciceEnfant.php - Ajoute ces propriétés
+
+/**
+ * @ORM\Column(type="boolean", nullable=true)
+ */
+private $predictionReussite;
+
+/**
+ * @ORM\Column(type="float", nullable=true)
+ */
+private $predictionProbabilite;
+
+/**
+ * @ORM\Column(type="datetime", nullable=true)
+ */
+private $predictionDate;
+
     // Getters et setters pour les nouvelles propriétés
     
 
