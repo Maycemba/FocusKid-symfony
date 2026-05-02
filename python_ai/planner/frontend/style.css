@@ -1,0 +1,257 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid #667eea;
+}
+
+header h1 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.section {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-left: 5px solid #667eea;
+}
+
+.section h2 {
+    color: #667eea;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.form-row label {
+    width: 200px;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-row input, .form-row select {
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.form-row input[type="range"] {
+    flex: 1;
+    max-width: 300px;
+}
+
+.school-hours {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.school-hours div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.school-hours label {
+    width: 80px;
+    font-weight: bold;
+}
+
+.therapy-item, .activity-item, .task-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.therapy-item input, .activity-item input, .task-item input,
+.therapy-item select, .activity-item select, .task-item select {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.therapy-item input:first-child, .activity-item input:first-child {
+    width: 100px;
+}
+
+.task-title {
+    flex: 2;
+    min-width: 150px;
+}
+
+.task-duration {
+    width: 100px;
+}
+
+button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+button:hover {
+    background: #5a67d8;
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.btn-secondary {
+    background: #48bb78;
+}
+
+.btn-secondary:hover {
+    background: #38a169;
+}
+
+.btn-small {
+    background: #4299e1;
+    padding: 5px 12px;
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+.actions {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin: 30px 0;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#planning-content {
+    margin-top: 20px;
+}
+
+.planning-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.planning-table th {
+    background: #667eea;
+    color: white;
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.planning-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    vertical-align: top;
+    background: white;
+}
+
+.slot {
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.slot:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.slot-ecole { background: #e3f2fd; border-left: 4px solid #2196f3; }
+.slot-tache_difficile { background: #ffebee; border-left: 4px solid #f44336; }
+.slot-pause { background: #e8f5e9; border-left: 4px solid #4caf50; }
+.slot-activite_calme { background: #f3e5f5; border-left: 4px solid #9c27b0; }
+.slot-activite_physique { background: #fff3e0; border-left: 4px solid #ff9800; }
+.slot-routine { background: #e0f7fa; border-left: 4px solid #00bcd4; }
+
+.tooltip {
+    position: fixed;
+    background: #333;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 1000;
+    max-width: 300px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .planning-table {
+        font-size: 12px;
+    }
+    
+    .slot {
+        font-size: 11px;
+    }
+}

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planificateur IA - Enfants TDAH</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 Planificateur IA pour Enfant TDAH</h1>
+            <p>Générez un planning personnalisé adapté au profil de votre enfant</p>
+        </header>
+
+        <!-- Section: Profil de l'enfant -->
+        <div class="section">
+            <h2>👤 Profil de l'enfant</h2>
+            <div class="profile-form">
+                <div class="form-row">
+                    <label>Âge:</label>
+                    <input type="number" id="age" min="4" max="18" value="8">
+                </div>
+                <div class="form-row">
+                    <label>Niveau de concentration (1-5):</label>
+                    <input type="range" id="concentration" min="1" max="5" step="0.5" value="3">
+                    <span id="concentrationValue">3</span>
+                </div>
+                <div class="form-row">
+                    <label>Niveau d'agitation (1-5):</label>
+                    <input type="range" id="agitation" min="1" max="5" step="0.5" value="2.5">
+                    <span id="agitationValue">2.5</span>
+                </div>
+                <div class="form-row">
+                    <label>Heure de pic d'attention:</label>
+                    <input type="time" id="pic_debut" value="08:00"> à
+                    <input type="time" id="pic_fin" value="11:00">
+                </div>
+                <div class="form-row">
+                    <label>Meilleure matière:</label>
+                    <input type="text" id="meilleure_matiere" placeholder="Ex: Lecture" value="Lecture">
+                </div>
+                <div class="form-row">
+                    <label>Matières difficiles:</label>
+                    <input type="text" id="matieres_difficiles" placeholder="Maths, Écriture...">
+                </div>
+                <button onclick="loadProfileFromCarnets()" class="btn-secondary">📊 Charger depuis les carnets</button>
+                <button onclick="saveProfile()" class="btn-secondary">💾 Sauvegarder ce profil</button>
+            </div>
+        </div>
+
+        <!-- Section: Contraintes de la semaine -->
+        <div class="section">
+            <h2>📅 Contraintes fixes</h2>
+            <div class="constraints">
+                <h3>École</h3>
+                <div class="school-hours">
+                    <div><label>Lundi:</label> <input type="text" placeholder="08:30-16:00" id="ecole_lundi"></div>
+                    <div><label>Mardi:</label> <input type="text" placeholder="08:30-16:00" id="ecole_mardi"></div>
+                    <div><label>Mercredi:</label> <input type="text" placeholder="08:30-12:00" id="ecole_mercredi"></div>
+                    <div><label>Jeudi:</label> <input type="text" placeholder="08:30-16:00" id="ecole_jeudi"></div>
+                    <div><label>Vendredi:</label> <input type="text" placeholder="08:30-16:00" id="ecole_vendredi"></div>
+                    <div><label>Samedi:</label> <input type="text" placeholder=" (pas école)" id="ecole_samedi"></div>
+                    <div><label>Dimanche:</label> <input type="text" placeholder=" (pas école)" id="ecole_dimanche"></div>
+                </div>
+
+                <h3>📝 Thérapies / Rendez-vous</h3>
+                <div id="therapies-list">
+                    <div class="therapy-item">
+                        <input type="text" placeholder="Jour (Lundi, Mardi...)" class="therapy-day">
+                        <input type="text" placeholder="Horaire (ex: 17:00-18:00)" class="therapy-time">
+                        <input type="text" placeholder="Description" class="therapy-desc">
+                        <button onclick="removeTherapy(this)">❌</button>
+                    </div>
+                </div>
+                <button onclick="addTherapy()" class="btn-small">+ Ajouter un rendez-vous</button>
+
+                <h3>⚽ Activités extrascolaires</h3>
+                <div id="activities-list">
+                    <div class="activity-item">
+                        <input type="text" placeholder="Jour" class="activity-day">
+                        <input type="text" placeholder="Horaire (ex: 14:00-15:30)" class="activity-time">
+                        <input type="text" placeholder="Activité" class="activity-desc">
+                        <button onclick="removeActivity(this)">❌</button>
+                    </div>
+                </div>
+                <button onclick="addActivity()" class="btn-small">+ Ajouter une activité</button>
+            </div>
+        </div>
+
+        <!-- Section: Tâches à programmer -->
+        <div class="section">
+            <h2>✅ Tâches à accomplir</h2>
+            <div id="tasks-list">
+                <div class="task-item">
+                    <input type="text" placeholder="Titre de la tâche" class="task-title">
+                    <input type="number" placeholder="Durée (min)" class="task-duration" value="30">
+                    <select class="task-difficulty">
+                        <option value="facile">Facile</option>
+                        <option value="moyen">Moyen</option>
+                        <option value="difficile">Difficile</option>
+                    </select>
+                    <button onclick="removeTask(this)">❌</button>
+                </div>
+            </div>
+            <button onclick="addTask()" class="btn-small">+ Ajouter une tâche</button>
+        </div>
+
+        <!-- Bouton génération -->
+        <div class="actions">
+            <button onclick="generatePlanning()" class="btn-primary">🤖 GÉNÉRER LE PLANNING</button>
+            <button onclick="downloadPDF()" class="btn-secondary">📄 Télécharger PDF</button>
+        </div>
+
+        <!-- Section: Résultat du planning -->
+        <div class="section" id="planning-result" style="display: none;">
+            <h2>📋 Planning généré</h2>
+            <div id="planning-content"></div>
+            <div id="planning-text"></div>
+        </div>
+
+        <div id="loading" style="display: none;" class="loading">
+            <div class="spinner"></div>
+            <p>L'IA analyse le profil et les contraintes...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

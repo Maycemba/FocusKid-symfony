@@ -1,0 +1,327 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Planificateur IA - Enfants TDAH{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .ia-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem;
+    }
+    
+    .ia-card {
+        background: white;
+        border-radius: 28px;
+        padding: 2rem;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        margin-bottom: 2rem;
+    }
+    
+    .ia-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .ia-header h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .planning-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    
+    .planning-table th {
+        background: #667eea;
+        color: white;
+        padding: 12px;
+        text-align: center;
+    }
+    
+    .planning-table td {
+        border: 1px solid #e5e7eb;
+        padding: 10px;
+        vertical-align: top;
+    }
+    
+    .slot {
+        margin: 5px 0;
+        padding: 8px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .slot:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .slot-ecole { background: #e3f2fd; border-left: 4px solid #2196f3; }
+    .slot-tache_difficile { background: #ffebee; border-left: 4px solid #f44336; }
+    .slot-pause { background: #e8f5e9; border-left: 4px solid #4caf50; }
+    
+    .btn-ia-generate {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .btn-ia-generate:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(102,126,234,0.4);
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 40px;
+    }
+    
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .tooltip-ia {
+        position: fixed;
+        background: #333;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 10px;
+        font-size: 14px;
+        z-index: 1000;
+        max-width: 300px;
+        pointer-events: none;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .status-online {
+        background: #10b981;
+        color: white;
+    }
+    
+    .status-offline {
+        background: #ef4444;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="ia-container">
+    <div class="ia-card">
+        <div class="ia-header">
+            <h1>🤖 Planificateur IA pour enfant TDAH</h1>
+            <p>Générez un planning personnalisé adapté au profil de votre enfant</p>
+            {% if ia_available %}
+                <span class="status-badge status-online">✅ IA connectée</span>
+            {% else %}
+                <span class="status-badge status-offline">⚠️ IA non disponible - Vérifiez que le serveur Flask est lancé</span>
+            {% endif %}
+        </div>
+        
+        <!-- Formulaire de contraintes -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label>📚 Pic d'attention (début)</label>
+                    <input type="time" id="pic_debut" class="form-control" value="08:00">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label>📚 Pic d'attention (fin)</label>
+                    <input type="time" id="pic_fin" class="form-control" value="11:00">
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label>🎯 Niveau de concentration (1-5)</label>
+                    <input type="range" id="concentration" min="1" max="5" step="0.5" value="3" class="form-range">
+                    <span id="concentrationValue">3</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label>⚡ Niveau d'agitation (1-5)</label>
+                    <input type="range" id="agitation" min="1" max="5" step="0.5" value="2.5" class="form-range">
+                    <span id="agitationValue">2.5</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group mb-3">
+            <label>📝 Tâches à programmer (une par ligne)</label>
+            <textarea id="taches" class="form-control" rows="3" placeholder="Mathématiques&#10;Lecture&#10;Pause active"></textarea>
+        </div>
+        
+        <div class="text-center">
+            <button onclick="generatePlanning()" class="btn-ia-generate">
+                🤖 GÉNÉRER LE PLANNING
+            </button>
+        </div>
+        
+        <div id="loading" style="display: none;" class="loading">
+            <div class="spinner"></div>
+            <p class="mt-3">L'IA analyse le profil et génère le planning...</p>
+        </div>
+        
+        <div id="planning-result" style="display: none; margin-top: 30px;">
+            <h3>📋 Planning généré par l'IA</h3>
+            <div id="planning-content"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API_URL = 'http://localhost:5000/api';
+
+document.getElementById('concentration').addEventListener('input', (e) => {
+    document.getElementById('concentrationValue').textContent = e.target.value;
+});
+document.getElementById('agitation').addEventListener('input', (e) => {
+    document.getElementById('agitationValue').textContent = e.target.value;
+});
+
+async function generatePlanning() {
+    const profil = {
+        age: 8,
+        niveau_concentration_moyen: parseFloat(document.getElementById('concentration').value),
+        niveau_agitation_moyen: parseFloat(document.getElementById('agitation').value),
+        pic_attention_debut: document.getElementById('pic_debut').value,
+        pic_attention_fin: document.getElementById('pic_fin').value,
+        meilleure_matiere: "Lecture"
+    };
+    
+    const tachesTexte = document.getElementById('taches').value;
+    const taches = tachesTexte.split('\n').filter(t => t.trim()).map(t => ({
+        titre: t.trim(),
+        duree_estimee: 30,
+        difficulte: "moyen"
+    }));
+    
+    if (taches.length === 0) {
+        alert('⚠️ Veuillez ajouter au moins une tâche.');
+        return;
+    }
+    
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('planning-result').style.display = 'none';
+    
+    try {
+        const response = await fetch(`${API_URL}/generate_plan`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                profil_enfant: profil,
+                contraintes: {},
+                taches: taches
+            })
+        });
+        
+        const data = await response.json();
+        
+        document.getElementById('loading').style.display = 'none';
+        
+        if (data.success) {
+            displayPlanning(data.planning);
+            document.getElementById('planning-result').style.display = 'block';
+        } else {
+            alert('❌ Erreur: ' + data.error);
+        }
+    } catch (error) {
+        document.getElementById('loading').style.display = 'none';
+        alert('❌ Impossible de contacter l\'IA. Vérifiez que le serveur Flask est lancé sur http://localhost:5000');
+    }
+}
+
+function displayPlanning(planning) {
+    const container = document.getElementById('planning-content');
+    
+    if (!planning || !planning.semaine) {
+        container.innerHTML = '<p>Erreur: Planning invalide</p>';
+        return;
+    }
+    
+    let html = '<table class="planning-table"><thead><tr>';
+    
+    planning.semaine.forEach(day => {
+        html += `<th>${day.jour}<br><small>${day.date || ''}</small></th>`;
+    });
+    html += '</tr></thead><tbody><tr>';
+    
+    planning.semaine.forEach(day => {
+        html += '<td>';
+        if (day.creneaux && day.creneaux.length > 0) {
+            day.creneaux.forEach(slot => {
+                const typeClass = `slot-${slot.type.replace(/_/g, '-')}`;
+                html += `
+                    <div class="slot ${typeClass}" onclick="showTooltip(this, '${slot.conseil_ia || 'Pas de conseil'}')">
+                        <strong>${slot.heure}</strong><br>
+                        ${slot.titre}<br>
+                        <small>${slot.duree_min} min</small>
+                    </div>
+                `;
+            });
+        } else {
+            html += '<em>Aucun créneau</em>';
+        }
+        html += '</td>';
+    });
+    
+    html += '</tr></tbody></table>';
+    container.innerHTML = html;
+}
+
+function showTooltip(element, message) {
+    const existing = document.querySelector('.tooltip-ia');
+    if (existing) existing.remove();
+    
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip-ia';
+    tooltip.textContent = message;
+    document.body.appendChild(tooltip);
+    
+    const rect = element.getBoundingClientRect();
+    tooltip.style.left = rect.left + 'px';
+    tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
+    
+    setTimeout(() => tooltip.remove(), 3000);
+}
+</script>
+{% endblock %}

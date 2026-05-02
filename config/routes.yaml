@@ -12,3 +12,7 @@ process_voice_command:
     path: /api/process-voice-command
     controller: App\Controller\VoiceCommandController::processVoiceCommand
     methods: POST
+# config/routes.yaml
+app_ia_planner:
+    path: /ia/planner
+    controller: App\Controller\IAPlannerController::index
