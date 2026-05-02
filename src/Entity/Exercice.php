@@ -15,7 +15,7 @@ class Exercice
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'id_exercice' ,type: 'integer')]
     private ?int $id = null;
 
     public function getId(): ?int
