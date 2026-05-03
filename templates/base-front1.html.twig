@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}FocusKid - Apprentissage ludique pour enfants{% endblock %}</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta name="description" content="Plateforme éducative pour enfants - Exercices, jeux et activités pédagogiques">
+
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link href="{{ asset('base-front/img/logo.png') }}" rel="icon">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <link href="{{ asset('base-front/lib/animate/animate.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('base-front/lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+
+    <link href="{{ asset('base-front/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('base-front/css/style.css') }}" rel="stylesheet">
+    
+    <style>
+        /* Variables modernes */
+        :root {
+            --primary: #FF6B35;
+            --primary-dark: #E55A2B;
+            --secondary: #4A90E2;
+            --success: #2ECC71;
+            --danger: #E74C3C;
+            --dark: #2C3E50;
+            --light: #F8F9FA;
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            --gradient-green: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fb;
+            color: var(--dark);
+        }
+        
+        /* Navbar moderne */
+        .navbar {
+            background: white !important;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.03);
+            padding: 15px 0;
+            transition: all 0.3s;
+        }
+        .navbar.sticky {
+            padding: 10px 0;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.98) !important;
+            backdrop-filter: blur(10px);
+        }
+        .navbar-brand h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav-link {
+            font-weight: 500;
+            margin: 0 8px;
+            color: var(--dark) !important;
+            transition: all 0.3s;
+            border-radius: 30px;
+            padding: 8px 18px !important;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: var(--gradient);
+            color: white !important;
+            transform: translateY(-2px);
+        }
+        .btn-primary-custom {
+            background: var(--gradient);
+            color: white;
+            border-radius: 50px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255,107,53,0.3);
+        }
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,107,53,0.4);
+            color: white;
+        }
+        
+        /* Animation de transition (sans loader) */
+        #dynamic-content {
+            min-height: 500px;
+            transition: opacity 0.2s ease;
+        }
+        
+        /* Footer moderne */
+        .footer {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #aaa;
+            margin-top: 60px;
+        }
+        .footer h3 {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+        }
+        .footer h3:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--gradient);
+            border-radius: 3px;
+        }
+        .social-btn {
+            width: 38px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            margin-right: 8px;
+            transition: all 0.3s;
+            color: white;
+        }
+        .social-btn:hover {
+            background: var(--gradient);
+            transform: translateY(-3px);
+            color: white;
+        }
+        
+        /* Scroll to top */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 45px;
+            height: 45px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 999;
+            cursor: pointer;
+        }
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            color: white;
+        }
+        
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* ========== STYLES DES EXERCICES ========== */
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        .badge-type {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-memoire { background: linear-gradient(135deg, #9C27B0, #7B1FA2); color: white; }
+        .badge-attention { background: linear-gradient(135deg, #2196F3, #1976D2); color: white; }
+        .badge-logique { background: linear-gradient(135deg, #FF9800, #F57C00); color: white; }
+        .badge-chrono { background: linear-gradient(135deg, #F44336, #D32F2F); color: white; }
+        
+        .exercice-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            border: 1px solid rgba(0,0,0,0.05);
+            height: 100%;
+            cursor: pointer;
+        }
+        .exercice-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .filter-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .btn-filter {
+            background: var(--gradient);
+            border: none;
+            color: white;
+            border-radius: 30px;
+            padding: 10px 25px;
+            font-weight: 500;
+        }
+        
+        .etoiles {
+            color: #FFC107;
+            font-size: 14px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 20px;
+        }
+    </style>
+    
+    {% block stylesheets %}{% endblock %}
+</head>
+
+<body>
+    <div class="container-xxl bg-white p-0">
+       
+
+        <nav class="navbar navbar-expand-lg bg-white navbar-light sticky-top px-4 px-lg-5 py-lg-0">
+            <a href="#" id="homeLink" class="navbar-brand">
+                <img src="{{ asset('base-front/img/logo.png') }}" alt="Logo" height="45" class="me-2">
+                <h1 class="m-0">Focus<span class="text-primary">Kid</span></h1>
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <div class="navbar-nav mx-auto">
+
+    <!-- Menu principal avec les bonnes routes -->
+   <!-- APRÈS : pointe vers app_home (page d'accueil) -->
+<a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_index') }}">
+    <i class="fas fa-home me-1"></i> Accueil
+</a>
+    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_sessions_de_calme_front') }}">
+        <i class="fas fa-spa me-1"></i> Session de calme
+    </a>
+    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_enfant_cours') }}">
+        <i class="fas fa-book me-1"></i> Cours
+    </a>
+    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index', {'type': 'non_complete'}) }}">
+        <i class="fas fa-puzzle-piece me-1"></i> Exercices
+    </a>
+    <!-- ✅ CORRECTION ICI : le lien "Carnet" pointe vers app_carnet_educatif_index -->
+    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_carnet_educatif_index') }}">
+        <i class="fas fa-notebook me-1"></i> Carnet éducatif
+    </a>
+    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_jeu_list') }}">
+        <i class="fas fa-gamepad me-1"></i> Jeux
+    </a>
+    <a href="{{ path('app_emotion_index') }}" class="nav-item nav-link">
+    <i class="fas fa-face-smile me-1"></i> Mes Émotions
+</a>
+    <a href="#" class="nav-item nav-link ajax-link" data-url="#">
+        <i class="fas fa-users me-1"></i> Espace Parent
+    </a>
+</div>
+                <a href="#" class="btn btn-primary-custom px-4 d-none d-lg-block ajax-link" data-url="{{ path('app_front_exercice_index') }}">
+                    <i class="fas fa-user me-2"></i>Mon compte
+                </a>
+            </div>
+        </nav>
+      
+        <!-- Zone de contenu dynamique - SANS LOADER -->
+        <div id="dynamic-content">
+            {% block body %}{% endblock %}
+        </div>
+
+        <!-- Footer moderne -->
+        <div class="footer pt-5 mt-5">
+            <div class="container py-4">
+                <div class="row g-4">
+                    <div class="col-lg-4 col-md-6">
+                        <h3 class="mb-4">Focus<span class="text-primary">Kid</span></h3>
+                        <p class="mb-3">Plateforme éducative innovante pour aider les enfants à apprendre tout en s'amusant.</p>
+                        <div class="d-flex">
+                            <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="social-btn"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <h3 class="mb-4">Liens rapides</h3>
+                        <div class="d-flex flex-column">
+                            <a href="#" class="text-decoration-none text-white-50 mb-2">À propos</a>
+                            <a href="#" class="text-decoration-none text-white-50 mb-2">Contact</a>
+                            <a href="#" class="text-decoration-none text-white-50 mb-2">FAQ</a>
+                            <a href="#" class="text-decoration-none text-white-50 mb-2">Blog</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <h3 class="mb-4">Contact</h3>
+                        <p class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i>123 Rue de l'Éducation, Tunis</p>
+                        <p class="mb-2"><i class="fas fa-phone-alt me-2 text-primary"></i>+216 12 345 678</p>
+                        <p class="mb-2"><i class="fas fa-envelope me-2 text-primary"></i>contact@focuskid.com</p>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <h3 class="mb-4">Newsletter</h3>
+                        <p>Recevez nos actualités</p>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-dark border-secondary text-white" placeholder="Votre email">
+                            <button class="btn btn-primary-custom">S'abonner</button>
+                        </div>
+                    </div>
+                </div>
+                <hr class="border-secondary my-4">
+                <div class="text-center">
+                    <p class="mb-0">&copy; 2024 FocusKid. Tous droits réservés.</p>
+                </div>
+            </div>
+        </div>
+        
+        <a href="#" class="back-to-top">
+            <i class="fas fa-arrow-up"></i>
+        </a>
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- PNJ Mascot -->
+    {% include 'components/_mascot.html.twig' %}
+
+   
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="{{ asset('base-front/lib/wow/wow.min.js') }}"></script>
+    <script src="{{ asset('base-front/lib/easing/easing.min.js') }}"></script>
+    <script src="{{ asset('base-front/lib/waypoints/waypoints.min.js') }}"></script>
+    <script src="{{ asset('base-front/lib/owlcarousel/owl.carousel.min.js') }}"></script>
+
+
+    <script src="{{ asset('base-front/js/face-detection.js') }}"></script>
+    <script src="{{ asset('base-front/js/exercice-guardian.js') }}"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js">
+    
+
+    <script src="{{ asset('base-front/js/main.js') }}"></script>
+
+    <script>
+        $(document).ready(function() {
+            console.log('✅ Navigation AJAX initialisée');
+            
+            // Navbar scroll effect
+            $(window).scroll(function() {
+                if ($(this).scrollTop() > 50) {
+                    $('.navbar').addClass('sticky');
+                    $('.back-to-top').addClass('show');
+                } else {
+                    $('.navbar').removeClass('sticky');
+                    $('.back-to-top').removeClass('show');
+                }
+            });
+            
+            $('.back-to-top').click(function(e) {
+                e.preventDefault();
+                $('html, body').animate({scrollTop: 0}, 500);
+            });
+            
+            var contentDiv = $('#dynamic-content');
+            var currentUrl = window.location.pathname;
+            
+            function loadContent(url) {
+                if (!url) return;
+                
+                console.log('📥 Chargement:', url);
+                
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'html',
+                    success: function(data) {
+                        var newContent = $(data).find('#dynamic-content').html();
+                        contentDiv.html(newContent || data);
+                        
+                        window.history.pushState({url: url}, '', url);
+                        
+                        var newTitle = $(data).filter('title').text();
+                        if (newTitle) document.title = newTitle;
+                        
+                        $('.nav-link').removeClass('active');
+                        $('.ajax-link[data-url="' + url + '"]').addClass('active');
+                        
+                        $('html, body').animate({scrollTop: 0}, 200);
+                        
+                        if (typeof WOW !== 'undefined') new WOW().init();
+                        
+                        console.log('✅ Contenu chargé');
+                    },
+                    error: function() {
+                        window.location.href = url;
+                    }
+                });
+            }
+            
+            $(document).on('click', '.ajax-link', function(e) {
+                e.preventDefault();
+                var url = $(this).data('url');
+                if (url) loadContent(url);
+            });
+            
+            $('#homeLink').on('click', function(e) {
+                e.preventDefault();
+                loadContent("{{ path('app_front_exercice_index') }}");
+            });
+            
+            window.addEventListener('popstate', function(event) {
+                if (event.state && event.state.url) loadContent(event.state.url);
+            });
+            
+            $('.ajax-link').each(function() {
+                if (currentUrl.includes($(this).data('url'))) {
+                    $(this).addClass('active');
+                }
+            });
+            
+            console.log('✅ Liens AJAX:', $('.ajax-link').length);
+        });
+    </script>
+    
+    {% block javascripts %}{% endblock %}
+</body>
+
+</html>
