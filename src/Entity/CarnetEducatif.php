@@ -1,4 +1,5 @@
 <?php
+// src/Entity/CarnetEducatif.php
 
 namespace App\Entity;
 
@@ -18,10 +19,10 @@ class CarnetEducatif
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    // Supprimez complètement cette section :
-    // #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'carnetEducatifs')]
-    // #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id', nullable: true)]
-    // private ?Utilisateur $utilisateur = null;
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'carnetEducatifs')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
+    #[Assert\NotNull(message: 'L\'utilisateur est obligatoire.')]
+    private ?Utilisateur $utilisateur = null;
 
     #[ORM\Column(type: 'date', nullable: false)]
     #[Assert\NotNull(message: 'La date d\'étude est obligatoire.')]
@@ -34,6 +35,7 @@ class CarnetEducatif
 
     #[ORM\Column(type: 'time', nullable: false)]
     #[Assert\NotNull(message: 'L\'heure de fin est obligatoire.')]
+    #[Assert\GreaterThan(propertyPath: 'heure_debut', message: 'L\'heure de fin doit être postérieure à l\'heure de début.')]
     private ?\DateTimeInterface $heure_fin = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
@@ -109,118 +111,234 @@ class CarnetEducatif
     public function __construct()
     {
         $this->commentaires = new ArrayCollection();
-        $this->created_at = new \DateTime();
     }
 
-    // --- Getters et setters (sans utilisateur) ---
+    // --- Getters & Setters ---
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getDateEtude(): ?\DateTimeInterface { return $this->date_etude; }
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
+        return $this;
+    }
+
+    public function getDateEtude(): ?\DateTimeInterface
+    {
+        return $this->date_etude;
+    }
+
     public function setDateEtude(?\DateTimeInterface $date_etude): self
-    { $this->date_etude = $date_etude; return $this; }
+    {
+        $this->date_etude = $date_etude;
+        return $this;
+    }
 
-    public function getHeureDebut(): ?\DateTimeInterface { return $this->heure_debut; }
+    public function getHeureDebut(): ?\DateTimeInterface
+    {
+        return $this->heure_debut;
+    }
+
     public function setHeureDebut(?\DateTimeInterface $heure_debut): self
-    { $this->heure_debut = $heure_debut; return $this; }
+    {
+        $this->heure_debut = $heure_debut;
+        return $this;
+    }
 
-    public function getHeureFin(): ?\DateTimeInterface { return $this->heure_fin; }
+    public function getHeureFin(): ?\DateTimeInterface
+    {
+        return $this->heure_fin;
+    }
+
     public function setHeureFin(?\DateTimeInterface $heure_fin): self
-    { $this->heure_fin = $heure_fin; return $this; }
+    {
+        $this->heure_fin = $heure_fin;
+        return $this;
+    }
 
-    public function getDureeTotale(): ?int { return $this->duree_totale; }
+    public function getDureeTotale(): ?int
+    {
+        return $this->duree_totale;
+    }
+
     public function setDureeTotale(?int $duree_totale): self
-    { $this->duree_totale = $duree_totale; return $this; }
+    {
+        $this->duree_totale = $duree_totale;
+        return $this;
+    }
 
-    public function getLieu(): ?string { return $this->lieu; }
+    public function getLieu(): ?string
+    {
+        return $this->lieu;
+    }
+
     public function setLieu(?string $lieu): self
-    { $this->lieu = $lieu; return $this; }
+    {
+        $this->lieu = $lieu;
+        return $this;
+    }
 
-    public function getMatiere(): ?string { return $this->matiere; }
+    public function getMatiere(): ?string
+    {
+        return $this->matiere;
+    }
+
     public function setMatiere(?string $matiere): self
-    { $this->matiere = $matiere; return $this; }
+    {
+        $this->matiere = $matiere;
+        return $this;
+    }
 
-    public function getTypeActivite(): ?string { return $this->type_activite; }
+    public function getTypeActivite(): ?string
+    {
+        return $this->type_activite;
+    }
+
     public function setTypeActivite(?string $type_activite): self
-    { $this->type_activite = $type_activite; return $this; }
+    {
+        $this->type_activite = $type_activite;
+        return $this;
+    }
 
-    public function getNiveauDifficulte(): ?string { return $this->niveau_difficulte; }
+    public function getNiveauDifficulte(): ?string
+    {
+        return $this->niveau_difficulte;
+    }
+
     public function setNiveauDifficulte(?string $niveau_difficulte): self
-    { $this->niveau_difficulte = $niveau_difficulte; return $this; }
+    {
+        $this->niveau_difficulte = $niveau_difficulte;
+        return $this;
+    }
 
-    public function getNiveauConcentration(): ?int { return $this->niveau_concentration; }
+    public function getNiveauConcentration(): ?int
+    {
+        return $this->niveau_concentration;
+    }
+
     public function setNiveauConcentration(?int $niveau_concentration): self
-    { $this->niveau_concentration = $niveau_concentration; return $this; }
+    {
+        $this->niveau_concentration = $niveau_concentration;
+        return $this;
+    }
 
-    public function getNiveauAgitation(): ?int { return $this->niveau_agitation; }
+    public function getNiveauAgitation(): ?int
+    {
+        return $this->niveau_agitation;
+    }
+
     public function setNiveauAgitation(?int $niveau_agitation): self
-    { $this->niveau_agitation = $niveau_agitation; return $this; }
+    {
+        $this->niveau_agitation = $niveau_agitation;
+        return $this;
+    }
 
-    public function getNombreInterruptions(): ?int { return $this->nombre_interruptions; }
+    public function getNombreInterruptions(): ?int
+    {
+        return $this->nombre_interruptions;
+    }
+
     public function setNombreInterruptions(?int $nombre_interruptions): self
-    { $this->nombre_interruptions = $nombre_interruptions; return $this; }
+    {
+        $this->nombre_interruptions = $nombre_interruptions;
+        return $this;
+    }
 
-    public function getTempsAvantPerteConcentration(): ?int { return $this->temps_avant_perte_concentration; }
+    public function getTempsAvantPerteConcentration(): ?int
+    {
+        return $this->temps_avant_perte_concentration;
+    }
+
     public function setTempsAvantPerteConcentration(?int $temps_avant_perte_concentration): self
-    { $this->temps_avant_perte_concentration = $temps_avant_perte_concentration; return $this; }
+    {
+        $this->temps_avant_perte_concentration = $temps_avant_perte_concentration;
+        return $this;
+    }
 
-    public function isTravailleSeul(): ?bool { return $this->travaille_seul; }
+    public function isTravailleSeul(): ?bool
+    {
+        return $this->travaille_seul;
+    }
+
     public function setTravailleSeul(?bool $travaille_seul): self
-    { $this->travaille_seul = $travaille_seul; return $this; }
+    {
+        $this->travaille_seul = $travaille_seul;
+        return $this;
+    }
 
-    public function isDemandeAide(): ?bool { return $this->demande_aide; }
+    public function isDemandeAide(): ?bool
+    {
+        return $this->demande_aide;
+    }
+
     public function setDemandeAide(?bool $demande_aide): self
-    { $this->demande_aide = $demande_aide; return $this; }
+    {
+        $this->demande_aide = $demande_aide;
+        return $this;
+    }
 
-    public function getNiveauAutonomie(): ?int { return $this->niveau_autonomie; }
+    public function getNiveauAutonomie(): ?int
+    {
+        return $this->niveau_autonomie;
+    }
+
     public function setNiveauAutonomie(?int $niveau_autonomie): self
-    { $this->niveau_autonomie = $niveau_autonomie; return $this; }
+    {
+        $this->niveau_autonomie = $niveau_autonomie;
+        return $this;
+    }
 
-    public function isTravailTermine(): ?bool { return $this->travail_termine; }
+    public function isTravailTermine(): ?bool
+    {
+        return $this->travail_termine;
+    }
+
     public function setTravailTermine(?bool $travail_termine): self
-    { $this->travail_termine = $travail_termine; return $this; }
+    {
+        $this->travail_termine = $travail_termine;
+        return $this;
+    }
 
-    public function getDifficultes(): ?string { return $this->difficultes; }
+    public function getDifficultes(): ?string
+    {
+        return $this->difficultes;
+    }
+
     public function setDifficultes(?string $difficultes): self
-    { $this->difficultes = $difficultes; return $this; }
+    {
+        $this->difficultes = $difficultes;
+        return $this;
+    }
 
-    public function getPointsPositifs(): ?string { return $this->points_positifs; }
+    public function getPointsPositifs(): ?string
+    {
+        return $this->points_positifs;
+    }
+
     public function setPointsPositifs(?string $points_positifs): self
-    { $this->points_positifs = $points_positifs; return $this; }
+    {
+        $this->points_positifs = $points_positifs;
+        return $this;
+    }
 
-    public function getCreatedAt(): ?\DateTimeInterface { return $this->created_at; }
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->created_at;
+    }
+
     public function setCreatedAt(\DateTimeInterface $created_at): self
-    { $this->created_at = $created_at; return $this; }
-
-    // --- Callbacks ---
-
-    #[ORM\PrePersist]
-    #[ORM\PreUpdate]
-    public function calculateDureeTotale(): void
     {
-        if ($this->heure_debut && $this->heure_fin) {
-            $debut = clone $this->heure_debut;
-            $fin = clone $this->heure_fin;
-            
-            if ($fin < $debut) {
-                $fin->modify('+1 day');
-            }
-            
-            $interval = $debut->diff($fin);
-            $minutes = ($interval->h * 60) + $interval->i;
-            $this->duree_totale = $minutes;
-        }
+        $this->created_at = $created_at;
+        return $this;
     }
-
-    #[ORM\PrePersist]
-    public function setCreatedAtValue(): void
-    {
-        if ($this->created_at === null) {
-            $this->created_at = new \DateTime();
-        }
-    }
-
-    // --- Relations ---
 
     public function getCommentaires(): Collection
     {
@@ -238,11 +356,29 @@ class CarnetEducatif
 
     public function removeCommentaire(Commentaire $commentaire): self
     {
-        if ($this->commentaires->removeElement($commentaire)) {
-            if ($commentaire->getCarnetEducatif() === $this) {
-                $commentaire->setCarnetEducatif(null);
+        $this->commentaires->removeElement($commentaire);
+        return $this;
+    }
+
+    // --- Lifecycle Callbacks ---
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function calculateDureeTotale(): void
+    {
+        if ($this->heure_debut && $this->heure_fin) {
+            $diff = $this->heure_debut->diff($this->heure_fin);
+            if ($diff->invert === 1) {
+                $this->duree_totale = 0;
+            } else {
+                $this->duree_totale = $diff->h * 60 + $diff->i;
             }
         }
-        return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        $this->created_at = new \DateTime();
     }
 }

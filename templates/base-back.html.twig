@@ -310,6 +310,44 @@
             var contentDiv = document.getElementById('dynamic-content');
             var loader = document.getElementById('ajaxLoader');
             var currentUrl = window.location.pathname;
+
+            function isSharedStylesheet(node) {
+                if (!node || node.tagName !== 'LINK') {
+                    return false;
+                }
+
+                var href = node.getAttribute('href') || '';
+                return href.indexOf('base-back/assets/css/styles.min.css') !== -1;
+            }
+
+            function clearDynamicStyles() {
+                var existing = document.querySelectorAll('[data-dynamic-page-style="1"]');
+                for (var i = 0; i < existing.length; i++) {
+                    existing[i].remove();
+                }
+            }
+
+            function syncPageStyles(sourceDoc) {
+                if (!sourceDoc || !sourceDoc.head) {
+                    return;
+                }
+
+                clearDynamicStyles();
+
+                var nodes = sourceDoc.head.querySelectorAll('style, link[rel="stylesheet"]');
+                for (var i = 0; i < nodes.length; i++) {
+                    var node = nodes[i];
+                    if (isSharedStylesheet(node)) {
+                        continue;
+                    }
+
+                    var clone = node.cloneNode(true);
+                    clone.setAttribute('data-dynamic-page-style', '1');
+                    document.head.appendChild(clone);
+                }
+            }
+
+            syncPageStyles(document);
             
             function showLoader() {
                 if (loader) loader.style.display = 'block';
@@ -334,9 +372,10 @@
                     return response.text();
                 })
                 .then(function(html) {
-                    var tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = html;
-                    var newContent = tempDiv.querySelector('#dynamic-content');
+                    var tempDoc = new DOMParser().parseFromString(html, 'text/html');
+                    var newContent = tempDoc.querySelector('#dynamic-content');
+
+                    syncPageStyles(tempDoc);
                     
                     if (newContent) {
                         contentDiv.innerHTML = newContent.innerHTML;
@@ -348,7 +387,7 @@
                     window.history.pushState({url: url}, '', url);
                     
                     // Mettre à jour le titre
-                    var newTitle = tempDiv.querySelector('title');
+                    var newTitle = tempDoc.querySelector('title');
                     if (newTitle) document.title = newTitle.textContent;
                     
                     // Mettre à jour le menu actif

@@ -68,7 +68,10 @@
             "branch": "main",
             "version": "5.0",
             "ref": "46c9cd2c1e07f0fcfd97e96f12b03b2e0845c4cd"
-        }
+        },
+        "files": [
+            "./config/packages/fos_elastica.yaml"
+        ]
     },
     "knplabs/knp-paginator-bundle": {
         "version": "v6.10.0"

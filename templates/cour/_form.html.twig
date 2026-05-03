@@ -1,41 +1,59 @@
-{{ form_start(form) }}
+{{ form_start(form, {'attr': {'id': 'courForm', 'novalidate': 'novalidate'}}) }}
+
     {{ form_errors(form) }}
 
-    <div class="education-form-grid">
-        <div class="education-form-row">
-            {{ form_label(form.titre) }}
-            {{ form_widget(form.titre) }}
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.titre, 'Titre du cours', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Alphabet et lecture'}}) }}
             {{ form_errors(form.titre) }}
         </div>
 
-        <div class="education-form-row">
-            {{ form_label(form.niveau) }}
-            {{ form_widget(form.niveau) }}
+        <div class="col-md-3 mb-3">
+            {{ form_label(form.niveau, 'Niveau', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.niveau, {'attr': {'class': 'form-select'}}) }}
             {{ form_errors(form.niveau) }}
         </div>
 
-        <div class="education-form-row">
-            {{ form_label(form.description) }}
-            {{ form_widget(form.description) }}
-            {{ form_errors(form.description) }}
+        <div class="col-md-3 mb-3">
+            {{ form_label(form.statut, 'Statut', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.statut, {'attr': {'class': 'form-select', 'id': 'cour_statut'}}) }}
+            {{ form_errors(form.statut) }}
         </div>
+    </div>
 
-        <div class="education-form-row">
-            {{ form_label(form.formateur) }}
-            {{ form_widget(form.formateur) }}
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.formateur, 'Formateur', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.formateur, {'attr': {'class': 'form-control', 'placeholder': 'Nom du formateur'}}) }}
             {{ form_errors(form.formateur) }}
         </div>
 
-        <div class="education-form-row">
-            {{ form_label(form.statut) }}
-            {{ form_widget(form.statut) }}
-            {{ form_errors(form.statut) }}
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Aperçu statut</label>
+            <div>
+                <span id="statutBadge" class="badge-type badge-brouillon">BROUILLON</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Décrivez le contenu du cours...'}}) }}
+            {{ form_errors(form.description) }}
+            <small class="text-muted" id="charCount">0/500 caractères</small>
         </div>
     </div>
 
     {{ form_rest(form) }}
 
-    <div class="education-form-actions">
-        <button class="education-btn-primary" type="submit">{{ button_label|default('Enregistrer le cours') }}</button>
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <button class="btn btn-primary px-5" type="submit">
+                <i class="ti ti-device-floppy"></i> {{ button_label|default('Enregistrer le cours') }}
+            </button>
+        </div>
     </div>
+
 {{ form_end(form) }}
