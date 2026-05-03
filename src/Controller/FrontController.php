@@ -139,7 +139,7 @@ final class FrontController extends AbstractController
             'locale'          => $locale,
         ]);
  
-
+    }
     // ─────────────────────────────────────────────────────────────────────────
     // Téléchargement PDF du cours (DomPDF)
     // ─────────────────────────────────────────────────────────────────────────
