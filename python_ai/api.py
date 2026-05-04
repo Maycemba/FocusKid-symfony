@@ -1,8 +1,5 @@
 """
-PARTIE 4 : API FLASK LOCALE
-Endpoint POST /predict → reçoit une image → retourne {emotion, stress, probabilities}
-CORRIGÉ : Utilise le grayscale comme le modèle
-Lance avec : python api.py
+ 
 """
 
 import os, json, base64, io, logging, time

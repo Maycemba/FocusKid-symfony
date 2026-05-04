@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
- 
 
 final class FrontController extends AbstractController
 {
@@ -21,26 +20,27 @@ final class FrontController extends AbstractController
         return $this->render('public/base-front/index.html');
     }
 
-    #[Route('/enfant', name: 'app_enfant_cours', methods: ['GET'])]
-    public function listeCours(
-        Request $request,
-        CourRepository $courRepository,
-        PaginatorInterface $paginator
-    ): Response {
+// Version de test sans pagination complexe
+#[Route('/enfant', name: 'app_enfant_cours', methods: ['GET'])]
+public function listeCours(
+    Request $request,
+    CourRepository $courRepository
+): Response {
+    try {
         $search = trim($request->query->get('search', ''));
         $niveau = trim($request->query->get('niveau', ''));
-        $sort   = trim($request->query->get('sort', ''));
+        $sort   = trim($request->query->get('sort', 'az'));
 
         $qb = $courRepository->createQueryBuilder('c');
 
         if ($search !== '') {
-            $qb->andWhere('LOWER(c.titre) LIKE :search OR LOWER(COALESCE(c.formateur, \'\')) LIKE :search OR LOWER(COALESCE(c.description, \'\')) LIKE :search')
+            $qb->andWhere('LOWER(c.titre) LIKE :search')
                 ->setParameter('search', '%' . mb_strtolower($search) . '%');
         }
 
         if ($niveau !== '') {
             $qb->andWhere('c.niveau = :niveau')
-                ->setParameter('niveau', $niveau);
+                ->setParameter('niveau', (int)$niveau);
         }
 
         if ($sort === 'za') {
@@ -49,18 +49,11 @@ final class FrontController extends AbstractController
             $qb->orderBy('c.titre', 'ASC');
         }
 
-        $query = $qb->getQuery();
-
-        $pagination = $paginator->paginate(
-            $query,
-            $request->query->getInt('page', 1),
-            6
-        );
+        $cours = $qb->getQuery()->getResult();
 
         if ($request->isXmlHttpRequest()) {
             $items = [];
-
-            foreach ($pagination as $cour) {
+            foreach ($cours as $cour) {
                 $items[] = [
                     'id'          => $cour->getIdCours(),
                     'titre'       => $cour->getTitre(),
@@ -70,36 +63,38 @@ final class FrontController extends AbstractController
                     'lecons'      => $cour->getLecons()->count(),
                     'urlLecons'   => $this->generateUrl('app_enfant_lecons', [
                         'id_cours' => $cour->getIdCours(),
+                        '_locale' => $request->getLocale(),
                     ]),
                 ];
             }
 
-            return new JsonResponse([
-                'cours'    => $items,
-                'total'    => $pagination->getTotalItemCount(),
-                'page'     => $pagination->getCurrentPageNumber(),
-                'perPage'  => $pagination->getItemNumberPerPage(),
-                'pages'    => (int) ceil($pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()),
-                'search'   => $search,
-                'niveau'   => $niveau,
-                'sort'     => $sort,
+            return $this->json([
+                'cours' => $items,
+                'total' => count($items),
+                'page' => 1,
+                'pages' => 1
             ]);
         }
 
         return $this->render('front/cours.html.twig', [
-            'cours'  => $pagination,
+            'cours' => $cours,
             'search' => $search,
             'niveau' => $niveau,
-            'sort'   => $sort,
+            'sort' => $sort,
         ]);
+    } catch (\Exception $e) {
+        if ($request->isXmlHttpRequest()) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+        throw $e;
     }
-
+}
     #[Route(
         '/enfant/cours/{id_cours}/{_locale}',
         name: 'app_enfant_lecons',
         methods: ['GET'],
         defaults: ['_locale' => 'fr'],
-        requirements: ['_locale' => 'fr|en|ar']
+        requirements: ['_locale' => 'fr|en|ar', 'id_cours' => '\d+']
     )]
     public function listeLecons(
         int $id_cours,
@@ -117,7 +112,7 @@ final class FrontController extends AbstractController
         $locale = $_locale;
         $request->setLocale($locale);
 
-        $lecons          = $cour->getLecons();
+        $lecons = $cour->getLecons();
         $leconsTraduites = [];
 
         foreach ($lecons as $lecon) {
@@ -138,11 +133,8 @@ final class FrontController extends AbstractController
             'leconsTraduites' => $leconsTraduites,
             'locale'          => $locale,
         ]);
- 
     }
-    // ─────────────────────────────────────────────────────────────────────────
-    // Téléchargement PDF du cours (DomPDF)
-    // ─────────────────────────────────────────────────────────────────────────
+
     #[Route(
         '/enfant/cours/{id_cours}/pdf/{_locale}',
         name: 'app_enfant_cours_pdf',
@@ -154,15 +146,16 @@ final class FrontController extends AbstractController
         int $id_cours,
         string $_locale,
         CourRepository $courRepository,
-        TranslationService $translationService): Response {
+        TranslationService $translationService
+    ): Response {
         $cour = $courRepository->find($id_cours);
 
         if (!$cour) {
             throw $this->createNotFoundException('Cours introuvable');
         }
 
-        $locale          = $_locale;
-        $lecons          = $cour->getLecons();
+        $locale = $_locale;
+        $lecons = $cour->getLecons();
         $leconsTraduites = [];
 
         foreach ($lecons as $lecon) {
@@ -202,8 +195,8 @@ final class FrontController extends AbstractController
             200,
             [
                 'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $nomFichier . '"'
             ]
         );
     }
- 
 }

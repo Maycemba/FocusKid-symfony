@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controller;
-
+use App\Service\CoursIAService;
 use App\Entity\Cour;
 use App\Form\CourType;
 use App\Repository\CourRepository;
@@ -178,4 +178,22 @@ final class CourController extends AbstractController
 
         return $this->redirectToRoute('app_cour_index', [], Response::HTTP_SEE_OTHER);
     }
+    
+#[Route('/api/generate-course', name: 'app_cour_api_generate', methods: ['POST'])]
+public function generateCourseWithAI(Request $request, CoursIAService $coursIAService): Response
+{
+    $data = json_decode($request->getContent(), true);
+    $message = $data['message'] ?? '';
+    $context = $data['context'] ?? [];
+    $forceLocal = $data['force_local'] ?? false;
+    
+    try {
+        // Appeler votre service IA existant
+        $reply = $coursIAService->genererPackCours($message, $context);
+        
+        return $this->json(['reply' => $reply]);
+    } catch (\Exception $e) {
+        return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
 }

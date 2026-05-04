@@ -166,5 +166,168 @@
         "difficulte": "moyen"
       }
     ]
+  },
+  {
+    "date_generation": "2026-05-03T20:27:30.765853",
+    "planning": {
+      "semaine": [
+        {
+          "jour": "Lundi",
+          "date": "2025-01-01",
+          "creneaux": [
+            {
+              "heure": "08:00",
+              "duree_min": 45,
+              "type": "tache_difficile",
+              "titre": "Session Lecture",
+              "conseil_ia": "Moment idéal selon son profil (pic d'attention). Utilisez des techniques de pomodoro."
+            },
+            {
+              "heure": "10:00",
+              "duree_min": 15,
+              "type": "pause",
+              "titre": "Pause active",
+              "conseil_ia": "Laissez-le bouger, faire des étirements ou boire de l'eau."
+            }
+          ]
+        },
+        {
+          "jour": "Mardi",
+          "date": "2025-01-01",
+          "creneaux": [
+            {
+              "heure": "08:00",
+              "duree_min": 45,
+              "type": "tache_difficile",
+              "titre": "Session Lecture",
+              "conseil_ia": "Moment idéal selon son profil (pic d'attention). Utilisez des techniques de pomodoro."
+            },
+            {
+              "heure": "10:00",
+              "duree_min": 15,
+              "type": "pause",
+              "titre": "Pause active",
+              "conseil_ia": "Laissez-le bouger, faire des étirements ou boire de l'eau."
+            }
+          ]
+        },
+        {
+          "jour": "Mercredi",
+          "date": "2025-01-01",
+          "creneaux": [
+            {
+              "heure": "08:00",
+              "duree_min": 45,
+              "type": "tache_difficile",
+              "titre": "Session Lecture",
+              "conseil_ia": "Moment idéal selon son profil (pic d'attention). Utilisez des techniques de pomodoro."
+            },
+            {
+              "heure": "10:00",
+              "duree_min": 15,
+              "type": "pause",
+              "titre": "Pause active",
+              "conseil_ia": "Laissez-le bouger, faire des étirements ou boire de l'eau."
+            }
+          ]
+        },
+        {
+          "jour": "Jeudi",
+          "date": "2025-01-01",
+          "creneaux": [
+            {
+              "heure": "08:00",
+              "duree_min": 45,
+              "type": "tache_difficile",
+              "titre": "Session Lecture",
+              "conseil_ia": "Moment idéal selon son profil (pic d'attention). Utilisez des techniques de pomodoro."
+            },
+            {
+              "heure": "10:00",
+              "duree_min": 15,
+              "type": "pause",
+              "titre": "Pause active",
+              "conseil_ia": "Laissez-le bouger, faire des étirements ou boire de l'eau."
+            }
+          ]
+        },
+        {
+          "jour": "Vendredi",
+          "date": "2025-01-01",
+          "creneaux": [
+            {
+              "heure": "08:00",
+              "duree_min": 45,
+              "type": "tache_difficile",
+              "titre": "Session Lecture",
+              "conseil_ia": "Moment idéal selon son profil (pic d'attention). Utilisez des techniques de pomodoro."
+            },
+            {
+              "heure": "10:00",
+              "duree_min": 15,
+              "type": "pause",
+              "titre": "Pause active",
+              "conseil_ia": "Laissez-le bouger, faire des étirements ou boire de l'eau."
+            }
+          ]
+        },
+        {
+          "jour": "Samedi",
+          "date": "2025-01-01",
+          "creneaux": [
+            {
+              "heure": "08:00",
+              "duree_min": 45,
+              "type": "tache_difficile",
+              "titre": "Session Lecture",
+              "conseil_ia": "Moment idéal selon son profil (pic d'attention). Utilisez des techniques de pomodoro."
+            },
+            {
+              "heure": "10:00",
+              "duree_min": 15,
+              "type": "pause",
+              "titre": "Pause active",
+              "conseil_ia": "Laissez-le bouger, faire des étirements ou boire de l'eau."
+            }
+          ]
+        },
+        {
+          "jour": "Dimanche",
+          "date": "2025-01-01",
+          "creneaux": [
+            {
+              "heure": "08:00",
+              "duree_min": 45,
+              "type": "tache_difficile",
+              "titre": "Session Lecture",
+              "conseil_ia": "Moment idéal selon son profil (pic d'attention). Utilisez des techniques de pomodoro."
+            },
+            {
+              "heure": "10:00",
+              "duree_min": 15,
+              "type": "pause",
+              "titre": "Pause active",
+              "conseil_ia": "Laissez-le bouger, faire des étirements ou boire de l'eau."
+            }
+          ]
+        }
+      ]
+    },
+    "profil_utilise": {
+      "age": 8,
+      "niveau_concentration_moyen": 3,
+      "niveau_agitation_moyen": 2.5,
+      "pic_attention_debut": "08:00",
+      "pic_attention_fin": "11:00",
+      "meilleure_matiere": "Lecture"
+    },
+    "contraintes": {},
+    "taches": [
+      {
+        "titre": "math",
+        "duree_estimee": 30,
+        "difficulte": "moyen"
+      }
+    ]
   }
 ]

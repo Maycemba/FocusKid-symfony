@@ -31,126 +31,130 @@ final class ExerciceController extends AbstractController
         ]);
     }
 
-  #[Route('/new', name: 'app_exercice_new', methods: ['GET', 'POST'])]
-public function new(Request $request, EntityManagerInterface $entityManager, EmailService $emailService): Response
-{if ($request->isMethod('POST')) {
-    $postData = $request->request->all();
-    $exerciceData = $postData['exercice'] ?? [];
-    $contenuJson = $postData['contenuJson'] ?? null;
-    
-    if (!$contenuJson) {
-        $contenuJson = $exerciceData['contenu'] ?? null;
-    }
-    
-    // Création de l'exercice
-    $exercice = new Exercice();
-    $exercice->setTitre($exerciceData['titre'] ?? 'Sans titre');
-    $exercice->setType($exerciceData['type'] ?? 'CHRONO');
-    $exercice->setConsigne($exerciceData['consigne'] ?? '');
-    $exercice->setDifficulte((int)($exerciceData['difficulte'] ?? 1));
-    $exercice->setDuree((int)($exerciceData['duree'] ?? 60));
-    $exercice->setActif(isset($exerciceData['actif']));
-    $exercice->setArchive(isset($exerciceData['archive']));
-    $exercice->setPourTousEnfants(isset($exerciceData['pour_tous_enfants']));
-    $exercice->setDateCreation(new \DateTime());
-    $exercice->setCreePar($this->getUser() ? $this->getUser()->getId() : 1);
-    
-    if ($contenuJson && $contenuJson !== '{}' && $contenuJson !== 'null') {
-        $exercice->setContenu($contenuJson);
-    } else {
-        $exercice->setContenu('{"dureeTotale":60,"defis":[{"question":"2 + 2 = ?","reponse":"4","points":10}]}');
-    }
-    
-    $entityManager->persist($exercice);
-    $entityManager->flush();
-    
-    // Récupération des jours
-    $joursString = $postData['jours'] ?? '';
-    if (is_array($joursString)) {
-        $joursString = implode(',', $joursString);
-    }
-    
-    // Récupérer les enfants assignés (objets pour emails)
-    $enfantsAssignes = [];
-    
-    // Gestion des enfants
-    if ($exercice->isPourTousEnfants()) {
-        $tousLesEnfants = $entityManager->getRepository(Utilisateur::class)->findBy(['role' => 'enfant']);
-        $enfantsIds = [];
-        foreach ($tousLesEnfants as $enfant) {
-            $enfantsIds[] = $enfant->getId();
-            $enfantsAssignes[] = $enfant;
-        }
-    } else {
-        $enfantsIds = $exerciceData['enfantsSelectionnes'] ?? [];
-        $enfantsIds = array_filter($enfantsIds);
-        
-        foreach ($enfantsIds as $enfantId) {
-            $enfant = $entityManager->getRepository(Utilisateur::class)->find($enfantId);
-            if ($enfant) {
-                $enfantsAssignes[] = $enfant;
+    #[Route('/new', name: 'app_exercice_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager, EmailService $emailService): Response
+    {
+        if ($request->isMethod('POST')) {
+            $postData = $request->request->all();
+            $exerciceData = $postData['exercice'] ?? [];
+            $contenuJson = $postData['contenuJson'] ?? null;
+            
+            if (!$contenuJson) {
+                $contenuJson = $exerciceData['contenu'] ?? null;
             }
-        }
-    }
-    
-    // Création des assignations
-    if (!empty($enfantsIds)) {
-        foreach ($enfantsIds as $enfantId) {
-            $enfant = $entityManager->getRepository(Utilisateur::class)->find($enfantId);
-            if ($enfant) {
-                $exerciceEnfant = new ExerciceEnfant();
-                $exerciceEnfant->setExerciceId($exercice->getId());
-                $exerciceEnfant->setEnfantId($enfant->getId());
-                $exerciceEnfant->setDateAttribution(new \DateTime());
-                $exerciceEnfant->setJours($joursString);
-                $entityManager->persist($exerciceEnfant);
+            
+            // Création de l'exercice
+            $exercice = new Exercice();
+            $exercice->setTitre($exerciceData['titre'] ?? 'Sans titre');
+            $exercice->setType($exerciceData['type'] ?? 'CHRONO');
+            $exercice->setConsigne($exerciceData['consigne'] ?? '');
+            $exercice->setDifficulte((int)($exerciceData['difficulte'] ?? 1));
+            $exercice->setDuree((int)($exerciceData['duree'] ?? 60));
+            $exercice->setActif(isset($exerciceData['actif']));
+            $exercice->setArchive(isset($exerciceData['archive']));
+            $exercice->setPourTousEnfants(isset($exerciceData['pour_tous_enfants']));
+            $exercice->setDateCreation(new \DateTime());
+            
+            // 🔥 CORRECTION ICI : Vérification du type pour getId()
+            $user = $this->getUser();
+            $exercice->setCreePar($user instanceof Utilisateur ? $user->getId() : 1);
+            
+            if ($contenuJson && $contenuJson !== '{}' && $contenuJson !== 'null') {
+                $exercice->setContenu($contenuJson);
+            } else {
+                $exercice->setContenu('{"dureeTotale":60,"defis":[{"question":"2 + 2 = ?","reponse":"4","points":10}]}');
             }
-        }
-        $entityManager->flush();
-        
-        // 🔥 ENVOI DES EMAILS AUX ENFANTS ASSIGNÉS
-        $dateAttribution = (new \DateTime())->format('d/m/Y à H:i');
-        $joursAffichage = $joursString ?: 'Non spécifiés';
-        
-        $emailCount = 0;
-        foreach ($enfantsAssignes as $enfant) {
-            $emailSent = $emailService->sendNewExerciseNotification(
-                $enfant->getEmail(),
-                $enfant->getUsername(),
-                $exercice->getTitre(),
-                $exercice->getType(),
-                $exercice->getConsigne(),
-                $dateAttribution,
-                $joursAffichage
-            );
-            if ($emailSent) {
-                $emailCount++;
-                $this->addFlash('info', 'Email envoyé à ' . $enfant->getUsername());
+            
+            $entityManager->persist($exercice);
+            $entityManager->flush();
+            
+            // Récupération des jours
+            $joursString = $postData['jours'] ?? '';
+            if (is_array($joursString)) {
+                $joursString = implode(',', $joursString);
             }
+            
+            // Récupérer les enfants assignés (objets pour emails)
+            $enfantsAssignes = [];
+            
+            // Gestion des enfants
+            if ($exercice->isPourTousEnfants()) {
+                $tousLesEnfants = $entityManager->getRepository(Utilisateur::class)->findBy(['role' => 0]); // 0 = ROLE_PARENT? À ajuster selon votre logique
+                $enfantsIds = [];
+                foreach ($tousLesEnfants as $enfant) {
+                    $enfantsIds[] = $enfant->getId();
+                    $enfantsAssignes[] = $enfant;
+                }
+            } else {
+                $enfantsIds = $exerciceData['enfantsSelectionnes'] ?? [];
+                $enfantsIds = array_filter($enfantsIds);
+                
+                foreach ($enfantsIds as $enfantId) {
+                    $enfant = $entityManager->getRepository(Utilisateur::class)->find($enfantId);
+                    if ($enfant) {
+                        $enfantsAssignes[] = $enfant;
+                    }
+                }
+            }
+            
+            // Création des assignations
+            if (!empty($enfantsIds)) {
+                foreach ($enfantsIds as $enfantId) {
+                    $enfant = $entityManager->getRepository(Utilisateur::class)->find($enfantId);
+                    if ($enfant) {
+                        $exerciceEnfant = new ExerciceEnfant();
+                        $exerciceEnfant->setExerciceId($exercice->getId());
+                        $exerciceEnfant->setEnfantId($enfant->getId());
+                        $exerciceEnfant->setDateAttribution(new \DateTime());
+                        $exerciceEnfant->setJours($joursString);
+                        $entityManager->persist($exerciceEnfant);
+                    }
+                }
+                $entityManager->flush();
+                
+                // 🔥 ENVOI DES EMAILS AUX ENFANTS ASSIGNÉS
+                $dateAttribution = (new \DateTime())->format('d/m/Y à H:i');
+                $joursAffichage = $joursString ?: 'Non spécifiés';
+                
+                $emailCount = 0;
+                foreach ($enfantsAssignes as $enfant) {
+                    $emailSent = $emailService->sendNewExerciseNotification(
+                        $enfant->getEmail(),
+                        $enfant->getUsername(),
+                        $exercice->getTitre(),
+                        $exercice->getType(),
+                        $exercice->getConsigne(),
+                        $dateAttribution,
+                        $joursAffichage
+                    );
+                    if ($emailSent) {
+                        $emailCount++;
+                        $this->addFlash('info', 'Email envoyé à ' . $enfant->getUsername());
+                    }
+                }
+                
+                $this->addFlash('success', sprintf('✅ Exercice créé ! %d email(s) envoyé(s).', $emailCount));
+            } else {
+                $this->addFlash('success', '✅ Exercice créé avec succès !');
+            }
+            
+            return $this->redirectToRoute('app_exercice_index');
         }
         
-        $this->addFlash('success', sprintf('✅ Exercice créé ! %d email(s) envoyé(s).', $emailCount));
-    } else {
-        $this->addFlash('success', '✅ Exercice créé avec succès !');
+        $exercice = new Exercice();
+        $form = $this->createForm(ExerciceType::class, $exercice);
+        
+        return $this->render('exercice/new.html.twig', [
+            'exercice' => $exercice,
+            'form' => $form->createView(),
+        ]);
     }
-    
-    return $this->redirectToRoute('app_exercice_index');
-}
-    
-    $exercice = new Exercice();
-    $form = $this->createForm(ExerciceType::class, $exercice);
-    
-    return $this->render('exercice/new.html.twig', [
-        'exercice' => $exercice,
-        'form' => $form->createView(),
-    ]);
-}
 
     // Ajoute cette méthode pour assigner à tous les enfants
     private function assignToAllChildren(Exercice $exercice, EntityManagerInterface $em): void
     {
         $enfantRepo = $em->getRepository(Utilisateur::class);
-        $enfants = $enfantRepo->findBy(['role' => 'enfant']);
+        $enfants = $enfantRepo->findBy(['role' => 0]); // 0 = ROLE_PARENT? À ajuster selon votre logique
         
         foreach ($enfants as $enfant) {
             $exists = $em->getRepository(ExerciceEnfant::class)->findOneBy([
@@ -211,42 +215,42 @@ public function new(Request $request, EntityManagerInterface $entityManager, Ema
     }
 
     #[Route('/{id}/edit', name: 'app_exercice_edit', methods: ['GET', 'POST'])]
-public function edit(Request $request, Exercice $exercice, EntityManagerInterface $entityManager): Response
-{
-    $form = $this->createForm(ExerciceType::class, $exercice);
-    $form->handleRequest($request);
+    public function edit(Request $request, Exercice $exercice, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(ExerciceType::class, $exercice);
+        $form->handleRequest($request);
 
-    if ($form->isSubmitted() && $form->isValid()) {
-        $contenuJson = $request->request->get('contenuJson');
-        
-        if (!$contenuJson) {
-            $postData = $request->request->all();
-            $contenuJson = $postData['contenuJson'] ?? null;
+        if ($form->isSubmitted() && $form->isValid()) {
+            $contenuJson = $request->request->get('contenuJson');
+            
+            if (!$contenuJson) {
+                $postData = $request->request->all();
+                $contenuJson = $postData['contenuJson'] ?? null;
+            }
+            
+            if ($contenuJson && $contenuJson !== '{}' && $contenuJson !== 'null') {
+                $exercice->setContenu($contenuJson);
+            }
+            
+            // 🔥 Mettre à jour les jours pour les assignations existantes
+            $joursSelectionnes = $request->request->get('jours') ?? [];
+            $joursString = implode(',', $joursSelectionnes);
+            
+            $exercicesEnfant = $entityManager->getRepository(ExerciceEnfant::class)->findBy(['exercice_id' => $exercice->getId()]);
+            foreach ($exercicesEnfant as $ee) {
+                $ee->setJours($joursString);
+            }
+            
+            $entityManager->flush();
+            $this->addFlash('success', 'Exercice modifié avec succès !');
+            return $this->redirectToRoute('app_exercice_index');
         }
-        
-        if ($contenuJson && $contenuJson !== '{}' && $contenuJson !== 'null') {
-            $exercice->setContenu($contenuJson);
-        }
-        
-        // 🔥 Mettre à jour les jours pour les assignations existantes
-        $joursSelectionnes = $request->request->get('jours') ?? [];
-        $joursString = implode(',', $joursSelectionnes);
-        
-        $exercicesEnfant = $entityManager->getRepository(ExerciceEnfant::class)->findBy(['exercice_id' => $exercice->getId()]);
-        foreach ($exercicesEnfant as $ee) {
-            $ee->setJours($joursString);
-        }
-        
-        $entityManager->flush();
-        $this->addFlash('success', 'Exercice modifié avec succès !');
-        return $this->redirectToRoute('app_exercice_index');
+
+        return $this->render('exercice/edit.html.twig', [
+            'exercice' => $exercice,
+            'form' => $form,
+        ]);
     }
-
-    return $this->render('exercice/edit.html.twig', [
-        'exercice' => $exercice,
-        'form' => $form,
-    ]);
-}
 
     #[Route('/{id}', name: 'app_exercice_show', methods: ['GET'])]
     public function show(Exercice $exercice, UtilisateurRepository $utilisateurRepository): Response
@@ -323,193 +327,191 @@ public function edit(Request $request, Exercice $exercice, EntityManagerInterfac
         return $this->json(['success' => true, 'contenu' => $contenu]);
     }
 
-    // ========== FRONT OFFICE (ENFANT) - NOUVELLES ROUTES ==========
-    
     // ========== FRONT OFFICE (ENFANT) ==========
 
-#[Route('/front/exercices', name: 'app_front_exercice_index', methods: ['GET'])]
-public function frontIndex(Request $request, ExerciceRepository $exerciceRepository, ExerciceEnfantRepository $exerciceEnfantRepository): Response
-{
-    $user = $this->getUser();
-    $enfantId = $user ? $user->getId() : 1;
-    
-    $type = $request->query->get('type', 'non_complete');
-    $showPlanning = $request->query->get('showPlanning', 0);
-    $view = $request->query->get('view', 'day');
-    $date = $request->query->get('date', date('Y-m-d'));
-    $currentDate = new \DateTime($date);
-    
-    // Récupérer les exercices assignés à l'enfant
-    $exercicesEnfant = $exerciceEnfantRepository->findBy(['enfant_id' => $enfantId]);
-    $exercicesIds = [];
-    $completionStatus = [];
-    $joursParExercice = [];
-    
-    foreach ($exercicesEnfant as $ee) {
-        $exercicesIds[] = $ee->getExerciceId();
-        $completionStatus[$ee->getExerciceId()] = $ee->isComplete();
-        $joursParExercice[$ee->getExerciceId()] = $ee->getJoursArray();
-    }
-    
-    $allExercices = [];
-    if (count($exercicesIds) > 0) {
-        // 🔥 FILTRER UNIQUEMENT LES EXERCICES ACTIFS ET NON ARCHIVÉS
-        $allExercices = $exerciceRepository->findBy([
-            'id' => $exercicesIds, 
-            'actif' => true,      // ← Seulement les actifs
-            'archive' => false    // ← Seulement les non archivés
+    #[Route('/front/exercices', name: 'app_front_exercice_index', methods: ['GET'])]
+    public function frontIndex(Request $request, ExerciceRepository $exerciceRepository, ExerciceEnfantRepository $exerciceEnfantRepository): Response
+    {
+        $user = $this->getUser();
+        $enfantId = $user instanceof Utilisateur ? $user->getId() : 1;
+        
+        $type = $request->query->get('type', 'non_complete');
+        $showPlanning = $request->query->get('showPlanning', 0);
+        $view = $request->query->get('view', 'day');
+        $date = $request->query->get('date', date('Y-m-d'));
+        $currentDate = new \DateTime($date);
+        
+        // Récupérer les exercices assignés à l'enfant
+        $exercicesEnfant = $exerciceEnfantRepository->findBy(['enfant_id' => $enfantId]);
+        $exercicesIds = [];
+        $completionStatus = [];
+        $joursParExercice = [];
+        
+        foreach ($exercicesEnfant as $ee) {
+            $exercicesIds[] = $ee->getExerciceId();
+            $completionStatus[$ee->getExerciceId()] = $ee->isComplete();
+            $joursParExercice[$ee->getExerciceId()] = $ee->getJoursArray();
+        }
+        
+        $allExercices = [];
+        if (count($exercicesIds) > 0) {
+            // 🔥 FILTRER UNIQUEMENT LES EXERCICES ACTIFS ET NON ARCHIVÉS
+            $allExercices = $exerciceRepository->findBy([
+                'id' => $exercicesIds, 
+                'actif' => true,
+                'archive' => false
+            ]);
+        }
+        
+        // Filtrer selon le type
+        $exercices = [];
+        foreach ($allExercices as $exo) {
+            $isComplete = $completionStatus[$exo->getId()] ?? false;
+            if ($type === 'complete' && $isComplete) {
+                $exercices[] = $exo;
+            } elseif ($type === 'non_complete' && !$isComplete) {
+                $exercices[] = $exo;
+            }
+        }
+        
+        // Compter pour les badges (sur les exercices actifs uniquement)
+        $nonCompleteCount = 0;
+        $completeCount = 0;
+        foreach ($allExercices as $exo) {
+            $isComplete = $completionStatus[$exo->getId()] ?? false;
+            if ($isComplete) {
+                $completeCount++;
+            } else {
+                $nonCompleteCount++;
+            }
+        }
+        
+        return $this->render('front/exercice/index.html.twig', [
+            'exercices' => $exercices,
+            'currentType' => $type,
+            'nonCompleteCount' => $nonCompleteCount,
+            'completeCount' => $completeCount,
+            'allExercices' => $allExercices,
+            'joursParExercice' => $joursParExercice,
+            'showPlanning' => $showPlanning,
+            'currentView' => $view,
+            'currentDate' => $currentDate,
+            'enfantId' => $enfantId,
         ]);
     }
     
-    // Filtrer selon le type
-    $exercices = [];
-    foreach ($allExercices as $exo) {
-        $isComplete = $completionStatus[$exo->getId()] ?? false;
-        if ($type === 'complete' && $isComplete) {
-            $exercices[] = $exo;
-        } elseif ($type === 'non_complete' && !$isComplete) {
-            $exercices[] = $exo;
-        }
-    }
-    
-    // Compter pour les badges (sur les exercices actifs uniquement)
-    $nonCompleteCount = 0;
-    $completeCount = 0;
-    foreach ($allExercices as $exo) {
-        $isComplete = $completionStatus[$exo->getId()] ?? false;
-        if ($isComplete) {
-            $completeCount++;
-        } else {
-            $nonCompleteCount++;
-        }
-    }
-    
-    return $this->render('front/exercice/index.html.twig', [
-        'exercices' => $exercices,
-        'currentType' => $type,
-        'nonCompleteCount' => $nonCompleteCount,
-        'completeCount' => $completeCount,
-        'allExercices' => $allExercices,
-        'joursParExercice' => $joursParExercice,
-        'showPlanning' => $showPlanning,
-        'currentView' => $view,
-        'currentDate' => $currentDate,
-        'enfantId' => $enfantId,
-    ]);
-}
-    
-   #[Route('/front/jeu/memoire/{id}', name: 'app_front_jeu_memoire', methods: ['GET'])]
-public function jeuMemoire(int $id, ExerciceRepository $exerciceRepository): Response
-{
-    $user = $this->getUser();
-    $enfantId = $user ? $user->getId() : 1;
-    
-    $exercice = $exerciceRepository->find($id);
-    
-    if (!$exercice) {
-        throw $this->createNotFoundException('Exercice non trouvé');
-    }
-    
-    $contenu = $exercice->getContenu();
-    $questions = [];
-    
-    if ($contenu) {
-        $data = json_decode($contenu, true);
+    #[Route('/front/jeu/memoire/{id}', name: 'app_front_jeu_memoire', methods: ['GET'])]
+    public function jeuMemoire(int $id, ExerciceRepository $exerciceRepository): Response
+    {
+        $user = $this->getUser();
+        $enfantId = $user instanceof Utilisateur ? $user->getId() : 1;
         
-        // Format 1: tableau simple d'images
-        if ($data && isset($data['images']) && is_array($data['images'])) {
-            $questions = $data['images'];
-        } 
-        // Format 2: tableau avec 'valeur'
-        elseif ($data && isset($data['questions']) && is_array($data['questions'])) {
-            foreach ($data['questions'] as $q) {
-                $questions[] = $q['valeur'] ?? $q['image'] ?? '?';
+        $exercice = $exerciceRepository->find($id);
+        
+        if (!$exercice) {
+            throw $this->createNotFoundException('Exercice non trouvé');
+        }
+        
+        $contenu = $exercice->getContenu();
+        $questions = [];
+        
+        if ($contenu) {
+            $data = json_decode($contenu, true);
+            
+            // Format 1: tableau simple d'images
+            if ($data && isset($data['images']) && is_array($data['images'])) {
+                $questions = $data['images'];
+            } 
+            // Format 2: tableau avec 'valeur'
+            elseif ($data && isset($data['questions']) && is_array($data['questions'])) {
+                foreach ($data['questions'] as $q) {
+                    $questions[] = $q['valeur'] ?? $q['image'] ?? '?';
+                }
+            }
+            // Format 3: avec thème
+            elseif ($data && isset($data['theme'])) {
+                $themes = [
+                    'animaux' => ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'],
+                    'fruits' => ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓'],
+                    'chiffres' => ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣']
+                ];
+                $theme = $data['theme'] ?? 'animaux';
+                $questions = $themes[$theme] ?? $themes['animaux'];
             }
         }
-        // Format 3: avec thème
-        elseif ($data && isset($data['theme'])) {
-            $themes = [
-                'animaux' => ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'],
-                'fruits' => ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓'],
-                'chiffres' => ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣']
-            ];
-            $theme = $data['theme'] ?? 'animaux';
-            $questions = $themes[$theme] ?? $themes['animaux'];
+        
+        // Si toujours vide, utiliser valeurs par défaut
+        if (empty($questions)) {
+            $questions = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
         }
+        
+        return $this->render('front/exercice/jeu_memoire.html.twig', [
+            'exercice' => $exercice,
+            'questions' => $questions,
+            'enfantId' => $enfantId,
+        ]);
     }
-    
-    // Si toujours vide, utiliser valeurs par défaut
-    if (empty($questions)) {
-        $questions = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
-    }
-    
-    return $this->render('front/exercice/jeu_memoire.html.twig', [
-        'exercice' => $exercice,
-        'questions' => $questions,
-        'enfantId' => $enfantId,
-    ]);
-}
 
-#[Route('/front/jeu/attention/{id}', name: 'app_front_jeu_attention', methods: ['GET'])]
-public function jeuAttention(int $id, ExerciceRepository $exerciceRepository): Response
-{
-    $user = $this->getUser();
-    $enfantId = $user ? $user->getId() : 1;
-    
-    $exercice = $exerciceRepository->find($id);
-    
-    if (!$exercice) {
-        throw $this->createNotFoundException('Exercice non trouvé');
-    }
-    
-    $contenu = $exercice->getContenu();
-    $questions = [];
-    
-    if ($contenu) {
-        $data = json_decode($contenu, true);
+    #[Route('/front/jeu/attention/{id}', name: 'app_front_jeu_attention', methods: ['GET'])]
+    public function jeuAttention(int $id, ExerciceRepository $exerciceRepository): Response
+    {
+        $user = $this->getUser();
+        $enfantId = $user instanceof Utilisateur ? $user->getId() : 1;
         
-        // Format pour le jeu d'intrus (ton contenu actuel)
-        if ($data && isset($data['questions']) && is_array($data['questions'])) {
-            $questions = $data['questions'];
+        $exercice = $exerciceRepository->find($id);
+        
+        if (!$exercice) {
+            throw $this->createNotFoundException('Exercice non trouvé');
         }
-        // Format simple
-        elseif ($data && isset($data['images']) && is_array($data['images'])) {
-            foreach ($data['images'] as $img) {
-                $questions[] = ['image' => $img, 'valeur' => $img];
+        
+        $contenu = $exercice->getContenu();
+        $questions = [];
+        
+        if ($contenu) {
+            $data = json_decode($contenu, true);
+            
+            // Format pour le jeu d'intrus (ton contenu actuel)
+            if ($data && isset($data['questions']) && is_array($data['questions'])) {
+                $questions = $data['questions'];
+            }
+            // Format simple
+            elseif ($data && isset($data['images']) && is_array($data['images'])) {
+                foreach ($data['images'] as $img) {
+                    $questions[] = ['image' => $img, 'valeur' => $img];
+                }
+            }
+            // Format avec thème
+            elseif ($data && isset($data['theme'])) {
+                $themes = [
+                    'emojis' => ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'],
+                    'animaux' => ['🦁','🐧','🐦','🐟','🐠','🐙','🦋','🐝'],
+                    'objets' => ['📚','✏️','🔍','💡','🔑','⌚','📱','💻']
+                ];
+                $theme = $data['theme'] ?? 'emojis';
+                foreach ($themes[$theme] as $img) {
+                    $questions[] = ['image' => $img, 'valeur' => $img];
+                }
             }
         }
-        // Format avec thème
-        elseif ($data && isset($data['theme'])) {
-            $themes = [
-                'emojis' => ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'],
-                'animaux' => ['🦁','🐧','🐦','🐟','🐠','🐙','🦋','🐝'],
-                'objets' => ['📚','✏️','🔍','💡','🔑','⌚','📱','💻']
-            ];
-            $theme = $data['theme'] ?? 'emojis';
-            foreach ($themes[$theme] as $img) {
-                $questions[] = ['image' => $img, 'valeur' => $img];
-            }
+        
+        // Si toujours vide, afficher une erreur
+        if (empty($questions)) {
+            $this->addFlash('error', 'Cet exercice ne contient pas de données valides.');
+            return $this->redirectToRoute('app_front_exercice_index');
         }
+        
+        return $this->render('front/exercice/jeu_attention.html.twig', [
+            'exercice' => $exercice,
+            'questions' => $questions,
+            'enfantId' => $enfantId,
+        ]);
     }
-    
-    // Si toujours vide, afficher une erreur
-    if (empty($questions)) {
-        $this->addFlash('error', 'Cet exercice ne contient pas de données valides.');
-        return $this->redirectToRoute('app_front_exercice_index');
-    }
-    
-    return $this->render('front/exercice/jeu_attention.html.twig', [
-        'exercice' => $exercice,
-        'questions' => $questions,
-        'enfantId' => $enfantId,
-    ]);
-}
+
     #[Route('/front/jeu/logique/{id}', name: 'app_front_jeu_logique', methods: ['GET'])]
     public function jeuLogique(int $id, ExerciceRepository $exerciceRepository): Response
     {
-        // 🔥 Récupérer l'ID de l'enfant connecté
         $user = $this->getUser();
-        $enfantId = $user ? $user->getId() : 1;
+        $enfantId = $user instanceof Utilisateur ? $user->getId() : 1;
         
         $exercice = $exerciceRepository->find($id);
         
@@ -548,9 +550,8 @@ public function jeuAttention(int $id, ExerciceRepository $exerciceRepository): R
     #[Route('/front/jeu/chrono/{id}', name: 'app_front_jeu_chrono', methods: ['GET'])]
     public function jeuChrono(int $id, ExerciceRepository $exerciceRepository): Response
     {
-        // 🔥 Récupérer l'ID de l'enfant connecté
         $user = $this->getUser();
-        $enfantId = $user ? $user->getId() : 1;
+        $enfantId = $user instanceof Utilisateur ? $user->getId() : 1;
         
         $exercice = $exerciceRepository->find($id);
         
@@ -650,75 +651,75 @@ public function jeuAttention(int $id, ExerciceRepository $exerciceRepository): R
             return $this->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()], 500);
         }
     }
-  #[Route('/api/planning/events', name: 'api_planning_events', methods: ['GET'])]
-public function planningEvents(ExerciceEnfantRepository $repo, ExerciceRepository $exerciceRepo): JsonResponse
-{
-    $user = $this->getUser();
-    $enfantId = $user ? $user->getId() : 1;
-    
-    $assignations = $repo->findBy(['enfant_id' => $enfantId, 'complete' => 0]);
-    $events = [];
-    
-    foreach ($assignations as $assignation) {
-        $exercice = $exerciceRepo->find($assignation->getExerciceId());
-        if (!$exercice) continue;
+
+    #[Route('/api/planning/events', name: 'api_planning_events', methods: ['GET'])]
+    public function planningEvents(ExerciceEnfantRepository $repo, ExerciceRepository $exerciceRepo): JsonResponse
+    {
+        $user = $this->getUser();
+        $enfantId = $user instanceof Utilisateur ? $user->getId() : 1;
         
-        $jours = $assignation->getJours() ? explode(',', $assignation->getJours()) : [];
+        $assignations = $repo->findBy(['enfant_id' => $enfantId, 'complete' => 0]);
+        $events = [];
         
-        foreach ($jours as $jour) {
-            // Calculer la prochaine date pour ce jour
-            $date = $this->getNextDateForDay($jour);
+        foreach ($assignations as $assignation) {
+            $exercice = $exerciceRepo->find($assignation->getExerciceId());
+            if (!$exercice) continue;
             
-            $events[] = [
-                'title' => $exercice->getTitre(),
-                'start' => $date->format('Y-m-d'),
-                'url' => $this->generateUrl('app_front_jeu_' . strtolower($exercice->getType()), ['id' => $exercice->getId()]),
-                'backgroundColor' => '#FF9800',
-                'borderColor' => '#FF9800',
-                'textColor' => '#ffffff',
-            ];
+            $jours = $assignation->getJours() ? explode(',', $assignation->getJours()) : [];
+            
+            foreach ($jours as $jour) {
+                // Calculer la prochaine date pour ce jour
+                $date = $this->getNextDateForDay($jour);
+                
+                $events[] = [
+                    'title' => $exercice->getTitre(),
+                    'start' => $date->format('Y-m-d'),
+                    'url' => $this->generateUrl('app_front_jeu_' . strtolower($exercice->getType()), ['id' => $exercice->getId()]),
+                    'backgroundColor' => '#FF9800',
+                    'borderColor' => '#FF9800',
+                    'textColor' => '#ffffff',
+                ];
+            }
         }
+        
+        return $this->json($events);
     }
-    
-    return $this->json($events);
-}
 
-private function getNextDateForDay(string $day): \DateTime
-{
-    $days = [
-        'Lundi' => 1, 'Mardi' => 2, 'Mercredi' => 3,
-        'Jeudi' => 4, 'Vendredi' => 5, 'Samedi' => 6, 'Dimanche' => 7
-    ];
-    
-    $today = new \DateTime();
-    $currentDay = (int)$today->format('N');
-    $targetDay = $days[$day] ?? 1;
-    
-    if ($targetDay >= $currentDay) {
-        $diff = $targetDay - $currentDay;
-    } else {
-        $diff = 7 - ($currentDay - $targetDay);
+    private function getNextDateForDay(string $day): \DateTime
+    {
+        $days = [
+            'Lundi' => 1, 'Mardi' => 2, 'Mercredi' => 3,
+            'Jeudi' => 4, 'Vendredi' => 5, 'Samedi' => 6, 'Dimanche' => 7
+        ];
+        
+        $today = new \DateTime();
+        $currentDay = (int)$today->format('N');
+        $targetDay = $days[$day] ?? 1;
+        
+        if ($targetDay >= $currentDay) {
+            $diff = $targetDay - $currentDay;
+        } else {
+            $diff = 7 - ($currentDay - $targetDay);
+        }
+        
+        if ($diff == 0) {
+            return $today;
+        }
+        
+        return (clone $today)->modify("+$diff days");
     }
-    
-    if ($diff == 0) {
-        // Si c'est aujourd'hui, on garde aujourd'hui
-        return $today;
-    }
-    
-    return (clone $today)->modify("+$diff days");
-}
-private function getFrenchDayName(int $dayNumber): string
-{
-    $days = [
-        1 => 'Lundi',
-        2 => 'Mardi',
-        3 => 'Mercredi',
-        4 => 'Jeudi',
-        5 => 'Vendredi',
-        6 => 'Samedi',
-        7 => 'Dimanche'
-    ];
-    return $days[$dayNumber];
-}
 
+    private function getFrenchDayName(int $dayNumber): string
+    {
+        $days = [
+            1 => 'Lundi',
+            2 => 'Mardi',
+            3 => 'Mercredi',
+            4 => 'Jeudi',
+            5 => 'Vendredi',
+            6 => 'Samedi',
+            7 => 'Dimanche'
+        ];
+        return $days[$dayNumber];
+    }
 }

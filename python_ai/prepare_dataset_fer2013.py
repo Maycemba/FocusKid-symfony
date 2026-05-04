@@ -1,13 +1,4 @@
-"""
-prepare_dataset_fer2013.py
-Télécharge FER2013 depuis Kaggle et organise en train/test
-─────────────────────────────────────────────────────────
-PRÉREQUIS :
-  pip install kaggle
-  Placer kaggle.json dans C:/Users/<YOU>/.kaggle/kaggle.json
-  (Obtenir sur https://www.kaggle.com/settings → API → Create New Token)
-─────────────────────────────────────────────────────────
-"""
+ 
 
 import os, zipfile, shutil, csv
 from pathlib import Path

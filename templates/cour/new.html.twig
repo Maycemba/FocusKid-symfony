@@ -393,7 +393,7 @@
                         <h4 class="card-title text-white mb-0">
                             <i class="ti ti-plus"></i> Ajouter un nouveau cours
                         </h4>
-                        <small class="text-white-50">CrÃ©ez un cours puis passez Ã  l'ajout des leÃ§ons</small>
+                        <small class="text-white-50">Creez un cours puis passez Ã  l'ajout des leçons</small>
                     </div>
                     <a href="{{ path('app_cour_index') }}" class="btn btn-light">
                         <i class="ti ti-arrow-left"></i> Retour Ã  la liste
@@ -421,7 +421,7 @@
     <div id="ia-modal">
         <div class="ia-modal-header">
             <div>
-                <h5>âœ¨ Suggestions IA pour votre cours</h5>
+                <h5> Suggestions IA pour votre cours</h5>
                 <p>Cliquez sur une suggestion pour l'utiliser dans le formulaire</p>
             </div>
             <button class="ia-modal-close" id="ia-modal-close">âœ•</button>
@@ -429,7 +429,7 @@
         <div class="ia-modal-body" id="ia-modal-body">
             <div class="ia-loading">
                 <div class="ia-spinner"></div>
-                <p>L'IA gÃ©nÃ¨re vos suggestions...</p>
+                <p>L'IA genere vos suggestions...</p>
             </div>
         </div>
     </div>
@@ -709,10 +709,10 @@ Reponds exactement dans ce format :
 - [activite 4]`;
 
                 try {
-                    const res = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: prompt, context: ctx, force_local: true }),
+                    const res = await fetch('{{ path("app_cour_api_generate") }}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: prompt, context: ctx }),
                     });
                     const data = await res.json();
 

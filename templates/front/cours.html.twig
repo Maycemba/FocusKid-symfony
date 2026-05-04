@@ -22,38 +22,33 @@
     <div class="bg-light rounded-4 p-4 mb-5 shadow-sm">
         <div class="row g-3 align-items-center">
 
-            <!-- Recherche -->
             <div class="col-lg-5 col-md-12">
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0">
                         <i class="fa fa-search text-primary"></i>
                     </span>
                     <input type="text" id="searchInput" class="form-control border-start-0"
-                           placeholder="Rechercher un cours, formateur..." value="{{ search|default('') }}">
+                           placeholder="Rechercher un cours, formateur...">
                 </div>
             </div>
 
-            <!-- Tri par niveau -->
             <div class="col-lg-3 col-md-6">
                 <select id="filterNiveau" class="form-select">
                     <option value="">🎯 Tous les niveaux</option>
-                    <option value="1" {{ niveau|default('') == '1' ? 'selected' : '' }}>Niveau 1</option>
-                    <option value="2" {{ niveau|default('') == '2' ? 'selected' : '' }}>Niveau 2</option>
-                    <option value="3" {{ niveau|default('') == '3' ? 'selected' : '' }}>Niveau 3</option>
-                    <option value="4" {{ niveau|default('') == '4' ? 'selected' : '' }}>Niveau 4</option>
+                    <option value="1">Niveau 1</option>
+                    <option value="2">Niveau 2</option>
+                    <option value="3">Niveau 3</option>
+                    <option value="4">Niveau 4</option>
                 </select>
             </div>
 
-            <!-- Tri alphabétique -->
             <div class="col-lg-3 col-md-6">
                 <select id="sortAlpha" class="form-select">
-                    <option value="">🔤 Trier par...</option>
-                    <option value="az" {{ sort|default('') == 'az' ? 'selected' : '' }}>A → Z</option>
-                    <option value="za" {{ sort|default('') == 'za' ? 'selected' : '' }}>Z → A</option>
+                    <option value="az">🔤 A → Z</option>
+                    <option value="za">Z → A</option>
                 </select>
             </div>
 
-            <!-- Bouton reset -->
             <div class="col-lg-1 col-md-12 text-center">
                 <button id="resetBtn" class="btn btn-outline-secondary rounded-pill px-3" title="Réinitialiser">
                     <i class="fa fa-times"></i>
@@ -63,79 +58,21 @@
         </div>
     </div>
 
-    <!-- Compteur résultats -->
     <div class="mb-3">
         <span id="resultCount" class="text-muted"></span>
     </div>
 
-    <!-- Liste des cours -->
     <div class="row g-4" id="coursList">
-        {% for cour in cours %}
-        <div class="col-lg-4 col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-body p-4">
-
-                    {% if cour.niveau %}
-                    <span class="badge bg-primary rounded-pill px-3 py-2 mb-3">
-                        🎯 Niveau {{ cour.niveau }}
-                    </span>
-                    {% else %}
-                    <span class="badge bg-secondary rounded-pill px-3 py-2 mb-3">
-                        Niveau non défini
-                    </span>
-                    {% endif %}
-
-                    <!-- Titre -->
-                    <h4 class="text-primary fw-bold mb-3 cours-titre">{{ cour.titre }}</h4>
-
-                    <!-- Description -->
-                    {% if cour.description %}
-                    <p class="text-muted mb-3">
-                        {{ cour.description|length > 100 ? cour.description|slice(0, 100) ~ '...' : cour.description }}
-                    </p>
-                    {% endif %}
-
-                    <!-- Formateur -->
-                    {% if cour.formateur %}
-                    <div class="d-flex align-items-center mb-3">
-                        <img class="rounded-circle flex-shrink-0"
-                             src="{{ asset('base-front/img/user.jpg') }}"
-                             alt="" style="width: 38px; height: 38px;">
-                        <div class="ms-2">
-                            <h6 class="text-primary mb-0">{{ cour.formateur }}</h6>
-                            <small class="text-muted">Formateur</small>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Nombre leçons -->
-                    <div class="d-flex align-items-center mb-4">
-                        <i class="fa fa-book-open text-primary me-2"></i>
-                        <span class="text-muted">{{ cour.lecons|length }} leçon(s)</span>
-                    </div>
-
-                    <!-- Bouton -->
-                    <a href="{{ path('app_enfant_lecons', {'id_cours': cour.idCours}) }}"
-                       class="btn btn-primary rounded-pill py-2 px-4 w-100">
-                        📖 Voir les leçons <i class="fa fa-arrow-right ms-2"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-        {% else %}
         <div class="col-12 text-center py-5">
-            <i class="fa fa-book fa-5x text-muted mb-4"></i>
-            <h4 class="text-muted">Aucun cours disponible.</h4>
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p class="text-muted mt-3">Chargement des cours...</p>
         </div>
-        {% endfor %}
     </div>
 
-    <!-- Pagination -->
-    <div class="d-flex justify-content-center mt-5" id="paginationContainer">
-        {{ knp_pagination_render(cours) }}
-    </div>
+    <div class="d-flex justify-content-center mt-5" id="paginationContainer"></div>
 
-    <!-- Message aucun résultat -->
     <div id="noResult" class="text-center py-5 d-none">
         <i class="fa fa-search fa-4x text-muted mb-3"></i>
         <h4 class="text-muted">Aucun cours trouvé.</h4>
@@ -150,6 +87,7 @@
 
 {% block javascripts %}
 <script>
+    // Éléments DOM
     const searchInput = document.getElementById('searchInput');
     const filterNiveau = document.getElementById('filterNiveau');
     const sortAlpha = document.getElementById('sortAlpha');
@@ -159,55 +97,69 @@
     const noResult = document.getElementById('noResult');
     const resultCount = document.getElementById('resultCount');
     const paginationContainer = document.getElementById('paginationContainer');
-    const coursUrl = '{{ path('app_enfant_cours') }}';
+    
+    let debounceTimer = null;
+    let currentPage = 1;
 
-    let fetchTimer = null;
+    // URL de base (sans les paramètres)
+    const baseUrl = '{{ path('app_enfant_cours') }}';
 
-    function escapeHtml(value) {
-        return String(value ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     function buildCoursCard(cour) {
-        const niveauBadge = cour.niveau
+        // Badge niveau
+        const niveauBadge = cour.niveau 
             ? `<span class="badge bg-primary rounded-pill px-3 py-2 mb-3">🎯 Niveau ${escapeHtml(cour.niveau)}</span>`
             : `<span class="badge bg-secondary rounded-pill px-3 py-2 mb-3">Niveau non défini</span>`;
-
-        const description = cour.description
-            ? `<p class="text-muted mb-3">${escapeHtml(cour.description.length > 100 ? cour.description.slice(0, 100) + '...' : cour.description)}</p>`
-            : '';
-
-        const formateur = cour.formateur
-            ? `
-                <div class="d-flex align-items-center mb-3">
-                    <img class="rounded-circle flex-shrink-0"
-                         src="{{ asset('base-front/img/user.jpg') }}"
-                         alt="" style="width: 38px; height: 38px;">
-                    <div class="ms-2">
-                        <h6 class="text-primary mb-0">${escapeHtml(cour.formateur)}</h6>
-                        <small class="text-muted">Formateur</small>
-                    </div>
+        
+        // Description (tronquée)
+        const description = cour.description 
+            ? `<p class="text-muted mb-3">${escapeHtml(cour.description.length > 100 ? cour.description.substring(0, 100) + '...' : cour.description)}</p>`
+            : '<p class="text-muted mb-3"><em>Aucune description</em></p>';
+        
+        // Formateur
+        const formateurHtml = cour.formateur ? `
+            <div class="d-flex align-items-center mb-3">
+                <img class="rounded-circle flex-shrink-0"
+                     src="/base-front/img/user.jpg"
+                     alt="${escapeHtml(cour.formateur)}" 
+                     style="width: 38px; height: 38px;">
+                <div class="ms-2">
+                    <h6 class="text-primary mb-0">${escapeHtml(cour.formateur)}</h6>
+                    <small class="text-muted">Formateur</small>
                 </div>
-            `
-            : '';
-
+            </div>
+        ` : '';
+        
+        // Leçons
+        const leconsText = cour.lecons === 0 ? 'Aucune leçon' : (cour.lecons === 1 ? '1 leçon' : `${cour.lecons} leçons`);
+        
+        // URL des leçons (gestion des locales)
+        let urlLecons = cour.urlLecons;
+        if (urlLecons && !urlLecons.includes('/fr') && !urlLecons.includes('/en') && !urlLecons.includes('/ar')) {
+            // Ajouter la locale par défaut si nécessaire
+            const locale = document.documentElement.lang || 'fr';
+            urlLecons = urlLecons + '/' + locale;
+        }
+        
         return `
             <div class="col-lg-4 col-md-6">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card border-0 shadow-sm rounded-4 h-100 transition-all hover-shadow">
                     <div class="card-body p-4">
                         ${niveauBadge}
                         <h4 class="text-primary fw-bold mb-3 cours-titre">${escapeHtml(cour.titre)}</h4>
                         ${description}
-                        ${formateur}
+                        ${formateurHtml}
                         <div class="d-flex align-items-center mb-4">
                             <i class="fa fa-book-open text-primary me-2"></i>
-                            <span class="text-muted">${cour.lecons} leçon(s)</span>
+                            <span class="text-muted">${leconsText}</span>
                         </div>
-                        <a href="${escapeHtml(cour.urlLecons)}"
+                        <a href="${escapeHtml(urlLecons)}"
                            class="btn btn-primary rounded-pill py-2 px-4 w-100">
                             📖 Voir les leçons <i class="fa fa-arrow-right ms-2"></i>
                         </a>
@@ -217,173 +169,184 @@
         `;
     }
 
-    function buildPagination(page, pages) {
-        if (!pages || pages <= 1) {
+    function buildPagination(currentPage, totalPages) {
+        if (!totalPages || totalPages <= 1) {
             return '';
         }
-
-        let html = '<nav aria-label="Pagination cours"><ul class="pagination">';
-        html += `
-            <li class="page-item ${page <= 1 ? 'disabled' : ''}">
-                <a class="page-link ajax-page" href="#" data-page="${page - 1}">Précédent</a>
-            </li>
-        `;
-
-        for (let i = 1; i <= pages; i++) {
-            html += `
-                <li class="page-item ${i === page ? 'active' : ''}">
-                    <a class="page-link ajax-page" href="#" data-page="${i}">${i}</a>
-                </li>
-            `;
+        
+        let html = '<nav><ul class="pagination justify-content-center">';
+        
+        // Précédent
+        html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage - 1}">« Précédent</a>
+        </li>`;
+        
+        // Pages
+        const maxVisible = 5;
+        let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let end = Math.min(totalPages, start + maxVisible - 1);
+        
+        if (end - start + 1 < maxVisible) {
+            start = Math.max(1, end - maxVisible + 1);
         }
-
-        html += `
-            <li class="page-item ${page >= pages ? 'disabled' : ''}">
-                <a class="page-link ajax-page" href="#" data-page="${page + 1}">Suivant</a>
-            </li>
-        `;
+        
+        if (start > 1) {
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`;
+            if (start > 2) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+        
+        for (let i = start; i <= end; i++) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>`;
+        }
+        
+        if (end < totalPages) {
+            if (end < totalPages - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`;
+        }
+        
+        // Suivant
+        html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage + 1}">Suivant »</a>
+        </li>`;
+        
         html += '</ul></nav>';
-
         return html;
     }
 
-    function getParams(page = 1) {
-        return {
-            search: searchInput.value.trim(),
-            niveau: filterNiveau.value,
-            sort: sortAlpha.value,
-            page
-        };
-    }
-
     async function loadCours(page = 1) {
-        const params = getParams(page);
-        const url = new URL(coursUrl, window.location.origin);
-
-        Object.entries(params).forEach(([key, value]) => {
-            if (value !== '') {
-                url.searchParams.set(key, value);
-            }
-        });
-
+        currentPage = page;
+        
+        // Construire l'URL avec les paramètres
+        const params = new URLSearchParams();
+        const search = searchInput.value.trim();
+        const niveau = filterNiveau.value;
+        const sort = sortAlpha.value;
+        
+        if (search) params.append('search', search);
+        if (niveau) params.append('niveau', niveau);
+        if (sort && sort !== 'az') params.append('sort', sort);
+        params.append('page', page);
+        
+        const url = `${baseUrl}?${params.toString()}`;
+        
+        // Afficher le chargement
         coursList.innerHTML = `
             <div class="col-12 text-center py-5">
-                <div class="spinner-border text-primary" role="status"></div>
+                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                </div>
+                <p class="text-muted mt-3">Chargement des cours...</p>
             </div>
         `;
         paginationContainer.innerHTML = '';
         noResult.classList.add('d-none');
-
+        resultCount.textContent = 'Recherche en cours...';
+        
         try {
-            const response = await fetch(url.toString(), {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
             });
-            const data = await response.json();
-
+            
             if (!response.ok) {
-                throw new Error(data.error || 'Erreur lors du chargement');
+                throw new Error(`Erreur HTTP ${response.status}`);
             }
-
+            
+            const data = await response.json();
+            console.log('Données reçues:', data);
+            
+            // Vérifier si on a des cours
             if (!data.cours || data.cours.length === 0) {
                 coursList.innerHTML = '';
                 noResult.classList.remove('d-none');
-                resultCount.textContent = '0 cours trouvé(s)';
+                resultCount.textContent = '0 cours trouvé';
                 paginationContainer.innerHTML = '';
                 return;
             }
-
-            coursList.innerHTML = data.cours.map(buildCoursCard).join('');
-            resultCount.textContent = `${data.total} cours trouvé(s)`;
-            paginationContainer.innerHTML = buildPagination(data.page, data.pages);
-            noResult.classList.add('d-none');
-
-            paginationContainer.querySelectorAll('.ajax-page').forEach(link => {
-                link.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    const targetPage = parseInt(link.dataset.page, 10);
-                    if (!Number.isNaN(targetPage) && targetPage > 0) {
-                        loadCours(targetPage);
-                    }
+            
+            // Afficher les cours
+            coursList.innerHTML = data.cours.map(cour => buildCoursCard(cour)).join('');
+            resultCount.textContent = `${data.total} cours trouvé${data.total > 1 ? 's' : ''}`;
+            
+            // Afficher la pagination
+            if (data.pages && data.pages > 1) {
+                paginationContainer.innerHTML = buildPagination(data.page, data.pages);
+                
+                // Attacher les événements de pagination
+                document.querySelectorAll('.page-link[data-page]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const targetPage = parseInt(link.dataset.page);
+                        if (!isNaN(targetPage) && targetPage !== currentPage) {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            loadCours(targetPage);
+                        }
+                    });
                 });
-            });
+            } else {
+                paginationContainer.innerHTML = '';
+            }
+            
         } catch (error) {
+            console.error('Erreur:', error);
             coursList.innerHTML = `
                 <div class="col-12 text-center py-5">
-                    <h4 class="text-danger">Impossible de charger les cours.</h4>
+                    <i class="fa fa-exclamation-triangle fa-4x text-danger mb-3"></i>
+                    <h4 class="text-danger">Erreur de chargement</h4>
                     <p class="text-muted">${escapeHtml(error.message)}</p>
+                    <button class="btn btn-primary rounded-pill mt-3" onclick="location.reload()">
+                        <i class="fa fa-refresh me-2"></i>Réessayer
+                    </button>
                 </div>
             `;
+            resultCount.textContent = '';
         }
     }
-
-    function filterAndSort() {
-        const search = searchInput.value.toLowerCase().trim();
-        const niveau = filterNiveau.value.toLowerCase();
-        const sort = sortAlpha.value;
-
-        let items = Array.from(document.querySelectorAll('.cours-item'));
-        let visible = [];
-
-        items.forEach(item => {
-            const titre = item.dataset.titre || '';
-            const formateur = item.dataset.formateur || '';
-            const description = item.dataset.description || '';
-            const niveauItem = item.dataset.niveau || '';
-
-            const matchSearch = !search ||
-                titre.includes(search) ||
-                formateur.includes(search) ||
-                description.includes(search);
-
-            const matchNiveau = !niveau || niveauItem.includes(niveau);
-
-            if (matchSearch && matchNiveau) {
-                item.classList.remove('d-none');
-                visible.push(item);
-            } else {
-                item.classList.add('d-none');
-            }
-        });
-
-        // Tri alphabétique
-        if (sort === 'az' || sort === 'za') {
-            visible.sort((a, b) => {
-                const ta = a.dataset.titre;
-                const tb = b.dataset.titre;
-                return sort === 'az' ? ta.localeCompare(tb) : tb.localeCompare(ta);
-            });
-            visible.forEach(item => coursList.appendChild(item));
-        }
-
-        // Résultats
-        resultCount.textContent = visible.length + ' cours trouvé(s)';
-
-        // Aucun résultat
-        if (visible.length === 0) {
-            noResult.classList.remove('d-none');
-        } else {
-            noResult.classList.add('d-none');
-        }
-    }
-
-    function reset() {
+    
+    function resetAndLoad() {
         searchInput.value = '';
         filterNiveau.value = '';
-        sortAlpha.value = '';
+        sortAlpha.value = 'az';
         loadCours(1);
     }
-
-    function scheduleLoad() {
-        clearTimeout(fetchTimer);
-        fetchTimer = setTimeout(() => loadCours(1), 250);
+    
+    function debounceLoad() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => loadCours(1), 400);
     }
-
-    searchInput.addEventListener('input', scheduleLoad);
+    
+    // Événements
+    searchInput.addEventListener('input', debounceLoad);
     filterNiveau.addEventListener('change', () => loadCours(1));
     sortAlpha.addEventListener('change', () => loadCours(1));
-    resetBtn.addEventListener('click', reset);
-    resetBtn2.addEventListener('click', reset);
-
-    loadCours({{ app.request.query.getInt('page', 1) }});
+    resetBtn.addEventListener('click', resetAndLoad);
+    if (resetBtn2) resetBtn2.addEventListener('click', resetAndLoad);
+    
+    // Chargement initial
+    loadCours(1);
+    
+    // Ajout des styles CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        .hover-shadow {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-shadow:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+        }
+        .cours-titre {
+            min-height: 3.5rem;
+            font-size: 1.25rem;
+        }
+        .card {
+            transition: all 0.3s ease;
+        }
+    `;
+    document.head.appendChild(style);
 </script>
 {% endblock %}
