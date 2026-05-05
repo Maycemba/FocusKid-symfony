@@ -45,7 +45,7 @@ class ReponseUserExercice
     }
 
     #[ORM\ManyToOne(targetEntity: Exercice::class, inversedBy: 'reponseUserExercices')]
-    #[ORM\JoinColumn(name: 'id_exercice', referencedColumnName: 'id_exercice')]
+    #[ORM\JoinColumn(name: 'id_exercice', referencedColumnName: 'id')]
     private ?Exercice $exercice = null;
 
     public function getExercice(): ?Exercice

@@ -1,377 +1,270 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="fr">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Fokuskid Admin - Dashboard{% endblock %}</title>
-    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/favicon.png') }}" />
-    <link rel="stylesheet" href="{{ asset('base-back/assets/css/styles.min.css') }}" />
+    <title>{% block title %}FocusKid Admin{% endblock %}</title>
+    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/favicon.png') }}"/>
+    <link rel="stylesheet" href="{{ asset('base-back/assets/css/styles.min.css') }}"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            background: #f0f4ff;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* ── TOP BAR ── */
+        .top-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 64px;
+            background: rgba(152, 220, 248, 0.95);
+            backdrop-filter: blur(8px);
+            border-bottom: 3px solid rgba(7, 164, 209, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            z-index: 1000;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .top-bar-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #1a1a8b, #4a4adb);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .top-bar-logo i { color: white; font-size: 20px; }
+        .top-bar-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a8b;
+            text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+        }
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .top-bar-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .top-bar-avatar {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #1a1a8b, #4a4adb);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .top-bar-username {
+            font-weight: 700;
+            color: #1a1a8b;
+            font-size: 15px;
+        }
+        .btn-logout {
+            background: #ef5350;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 7px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: opacity 0.2s;
+        }
+        .btn-logout:hover { opacity: 0.88; color: white; }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            bottom: 0;
+            width: 90px;
+            background: linear-gradient(to bottom,
+                rgba(197, 239, 197, 0.95),
+                rgba(197, 237, 188, 0.92));
+            border-right: 2px solid rgba(26,26,139,0.15);
+            border-radius: 0 30px 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 28px 8px;
+            gap: 24px;
+            box-shadow: 3px 0 16px rgba(0,0,0,0.08);
+            z-index: 999;
+        }
+        .sidebar-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            padding: 10px 8px;
+            border-radius: 16px;
+            width: 74px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            background: transparent;
+        }
+        .sidebar-btn:hover {
+            transform: scale(1.18);
+            box-shadow: 0 0 18px rgba(255, 215, 0, 0.7);
+        }
+        .sidebar-btn:active {
+            transform: scale(0.94);
+        }
+        .sidebar-btn.active {
+            background: rgba(255, 179, 43, 0.2);
+            box-shadow: 0 0 12px rgba(255, 179, 43, 0.5);
+        }
+        .sidebar-icon {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+        .sidebar-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1a1a8b;
+            text-align: center;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+            margin-top: 64px;
+            margin-left: 90px;
+            padding: 28px;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* ── WHITE BOARD ── */
+        .white-board {
+            background: rgba(255, 255, 255, 0.93);
+            border-radius: 24px;
+            border: 3px solid #ffb32b;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+            padding: 28px;
+            min-height: calc(100vh - 140px);
+        }
+    </style>
     {% block stylesheets %}{% endblock %}
 </head>
-
 <body>
-  
-    <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
-        data-sidebar-position="fixed" data-header-position="fixed">
 
-       
-        <div class="app-topstrip bg-dark py-3 px-4 w-100 d-lg-flex align-items-center justify-content-between">
-           
+    {# ── TOP BAR ── #}
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <div class="top-bar-logo">
+                <i class="ti ti-book-2"></i>
+            </div>
+            <span class="top-bar-title">FocusKid</span>
         </div>
-
-      
-        <aside class="left-sidebar">
-           
-            <div>
-                <div class="brand-logo d-flex align-items-center justify-content-between">
-                    <a  class="text-nowrap logo-img">
-                        <img src="{{ asset('base-back/assets/images/logos/logo.svg') }}" alt="" />
-                    </a>
-                    <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
-                        <i class="ti ti-x fs-8"></i>
-                    </div>
+        <div class="top-bar-right">
+            <div class="top-bar-user">
+                <div class="top-bar-avatar">
+                    {{ app.session.get('user_username')|upper|slice(0,1) }}
                 </div>
-                
-                <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
-                    <ul id="sidebarnav">
-                        <li class="nav-small-cap">
-                            <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
-                            <span class="hide-menu">Home</span>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg" aria-expanded="false">
-                                <iconify-icon icon="solar:atom-line-duotone"></iconify-icon>
-                                <span class="hide-menu">Dashboard</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg justify-content-between" href="#" aria-expanded="false">
-                                <div class="d-flex align-items-center gap-6">
-                                    <span class="d-flex">
-                                        <iconify-icon icon="solar:screencast-2-line-duotone" class=""></iconify-icon>
-                                    </span>
-                                    <span class="hide-menu">Dashboard 1</span>
-                                </div>
-                                <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg justify-content-between" href="#" aria-expanded="false">
-                                <div class="d-flex align-items-center gap-6">
-                                    <span class="d-flex">
-                                        <iconify-icon icon="solar:chart-line-duotone" class=""></iconify-icon>
-                                    </span>
-                                    <span class="hide-menu">Dashboard 2</span>
-                                </div>
-                                <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg justify-content-between has-arrow" href="javascript:void(0)" aria-expanded="false">
-                                <div class="d-flex align-items-center gap-6">
-                                    <span class="d-flex">
-                                        <iconify-icon icon="solar:home-angle-line-duotone"></iconify-icon>
-                                    </span>
-                                    <span class="hide-menu">Front Pages</span>
-                                </div>
-                            </a>
-                            <ul aria-expanded="false" class="collapse first-level">
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">Homepage</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">About Us</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">Blog</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">Blog Details</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">Contact Us</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">Portfolio</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link primary-hover-bg justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-6">
-                                            <span class="d-flex">
-                                                <span class="icon-small"></span>
-                                            </span>
-                                            <span class="hide-menu">Pricing</span>
-                                        </div>
-                                        <span class="hide-menu badge bg-secondary-subtle text-secondary fs-1 py-1 px-2 rounded-pill">Pro</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        
-                        <li class="nav-small-cap">
-                            <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
-                            <span class="hide-menu">UI</span>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg" href="#" aria-expanded="false">
-                                <iconify-icon icon="solar:layers-minimalistic-bold-duotone"></iconify-icon>
-                                <span class="hide-menu">Buttons</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg" href="#" aria-expanded="false">
-                                <iconify-icon icon="solar:danger-circle-line-duotone"></iconify-icon>
-                                <span class="hide-menu">Alerts</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg" href="#" aria-expanded="false">
-                                <iconify-icon icon="solar:bookmark-square-minimalistic-line-duotone"></iconify-icon>
-                                <span class="hide-menu">Card</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg" href="#" aria-expanded="false">
-                                <iconify-icon icon="solar:file-text-line-duotone"></iconify-icon>
-                                <span class="hide-menu">Forms</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link primary-hover-bg" href="#" aria-expanded="false">
-                                <iconify-icon icon="solar:text-field-focus-line-duotone"></iconify-icon>
-                                <span class="hide-menu">Typography</span>
-                            </a>
-                        </li>
-                        
-                        
-                        <div class="unlimited-access d-flex align-items-center hide-menu bg-secondary-subtle position-relative mb-7 mt-4 p-3 rounded-3">
-                            <div class="flex-shrink-0">
-                                <h6 class="fw-semibold fs-4 mb-6 text-dark w-75 lh-sm">Check Pro Version</h6>
-                                <a href="https://www.wrappixel.com/templates/spike-bootstrap-admin-dashboard/?ref=376#demos" target="_blank" class="btn btn-secondary fs-2 fw-semibold lh-sm">Check</a>
-                            </div>
-                            <div class="unlimited-access-img">
-                                <img src="{{ asset('assets/images/backgrounds/sidebar-buynow-bg.png') }}" alt="" class="img-fluid">
-                            </div>
-                        </div>
-                    </ul>
-                </nav>
+                <span class="top-bar-username">
+                    {{ app.session.get('user_username') }}
+                </span>
             </div>
-        </aside>
-       
-        <div class="body-wrapper">
-            <div class="body-wrapper-inner">
-                <div class="container-fluid">
-                  <header class="app-header">
-                        <nav class="navbar navbar-expand-lg navbar-light">
-                            <ul class="navbar-nav">
-                                <li class="nav-item d-block d-xl-none">
-                                    <a class="nav-link sidebartoggler" id="headerCollapse" href="javascript:void(0)">
-                                        <i class="ti ti-menu-2"></i>
-                                    </a>
-                                </li>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link" href="javascript:void(0)" id="drop1" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <iconify-icon icon="solar:bell-linear" class="fs-6"></iconify-icon>
-                                        <div class="notification bg-primary rounded-circle"></div>
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-animate-up" aria-labelledby="drop1">
-                                        <div class="message-body">
-                                            <a href="javascript:void(0)" class="dropdown-item">Item 1</a>
-                                            <a href="javascript:void(0)" class="dropdown-item">Item 2</a>
-                                        </div>
-                                    </div>
-                                </li>
-                            </ul>
-                            <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
-                                <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
-                                    <a href="https://www.wrappixel.com/templates/spike-bootstrap-admin-dashboard/?ref=376#demos" target="_blank" class="btn btn-primary">Check Pro Template</a>
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link" href="javascript:void(0)" id="drop2" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <img src="{{ asset('assets/images/profile/user1.jpg') }}" alt="" width="35" height="35" class="rounded-circle">
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
-                                            <div class="message-body">
-                                                <a  class="d-flex align-items-center gap-2 dropdown-item">
-                                                    <i class="ti ti-user fs-6"></i>
-                                                    <p class="mb-0 fs-3">My Profile</p>
-                                                </a>
-                                                <a class="d-flex align-items-center gap-2 dropdown-item">
-                                                    <i class="ti ti-mail fs-6"></i>
-                                                    <p class="mb-0 fs-3">My Account</p>
-                                                </a>
-                                                <a class="d-flex align-items-center gap-2 dropdown-item">
-                                                    <i class="ti ti-list-check fs-6"></i>
-                                                    <p class="mb-0 fs-3">My Task</p>
-                                                </a>
-                                                <a  class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </nav>
-                    </header>
-                   
-                    {% block body %}
-                    <div class="row">
-                        <div class="col-lg-8 d-flex align-items-strech">
-                            <div class="card w-100">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center justify-content-between mb-1">
-                                        <div class="">
-                                            <h5 class="card-title fw-semibold">Profit Expenses</h5>
-                                        </div>
-                                        <div class="dropdown">
-                                            <button id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" class="rounded-circle btn-transparent rounded-circle btn-sm px-1 btn shadow-none">
-                                                <i class="ti ti-dots-vertical fs-7 d-block"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton1">
-                                                <li><a class="dropdown-item" href="#">Action</a></li>
-                                                <li><a class="dropdown-item" href="#">Another action</a></li>
-                                                <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div id="profit"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="row">
-                                <div class="col-lg-12 col-sm-6">
-                                    <div class="card overflow-hidden">
-                                        <div class="card-body p-4">
-                                            <h5 class="card-title mb-10 fw-semibold">Traffic Distribution</h5>
-                                            <div class="row align-items-center">
-                                                <div class="col-7">
-                                                    <h4 class="fw-semibold mb-3">36,358</h4>
-                                                    <div class="d-flex align-items-center mb-2">
-                                                        <span class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
-                                                            <i class="ti ti-arrow-up-left text-success"></i>
-                                                        </span>
-                                                        <p class="text-dark me-1 fs-3 mb-0">+9%</p>
-                                                        <p class="fs-3 mb-0">last year</p>
-                                                    </div>
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="me-3">
-                                                            <span class="round-8 bg-primary rounded-circle me-2 d-inline-block"></span>
-                                                            <span class="fs-2">Organic</span>
-                                                        </div>
-                                                        <div>
-                                                            <span class="round-8 bg-danger rounded-circle me-2 d-inline-block"></span>
-                                                            <span class="fs-2">Referral</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-5">
-                                                    <div class="d-flex justify-content-center">
-                                                        <div id="grade"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-12 col-sm-6">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="row align-items-start">
-                                                <div class="col-8">
-                                                    <h5 class="card-title mb-10 fw-semibold">Product Sales</h5>
-                                                    <h4 class="fw-semibold mb-3">6,820</h4>
-                                                    <div class="d-flex align-items-center pb-1">
-                                                        <span class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                                                            <i class="ti ti-arrow-down-right text-danger"></i>
-                                                        </span>
-                                                        <p class="text-dark me-1 fs-3 mb-0">+9%</p>
-                                                        <p class="fs-3 mb-0">last year</p>
-                                                    </div>
-                                                </div>
-                                                <div class="col-4">
-                                                    <div class="d-flex justify-content-end">
-                                                        <div class="text-white bg-danger rounded-circle p-6 d-flex align-items-center justify-content-center">
-                                                            <i class="ti ti-currency-dollar fs-6"></i>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div id="earning"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endblock %}
+            <a href="{{ path('app_logout') }}" class="btn-logout">
+                <i class="ti ti-logout"></i> Déconnexion
+            </a>
+        </div>
+    </div>
 
-                    <div class="py-6 px-6 text-center">
-                        <p class="mb-0 fs-4">Design and Developed by <a href="https://www.wrappixel.com/" target="_blank" class="pe-1 text-primary text-decoration-underline">wrappixel.com</a></p>
-                    </div>
-                </div>
-            </div>
+    {# ── SIDEBAR ── #}
+    <div class="sidebar">
+        <a href="{{ path('app_utilisateur_new') }}"
+           class="sidebar-btn {{ app.request.get('_route') == 'app_utilisateur_new' ? 'active' : '' }}">
+            <img src="{{ asset('base-back/assets/images/sidebar/plus.png') }}"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+                 class="sidebar-icon" alt="Ajouter">
+            <span class="sidebar-icon" style="display:none;width:50px;height:50px;
+                background:#43A047;border-radius:14px;align-items:center;
+                justify-content:center;color:white;font-size:22px">
+                <i class="ti ti-plus"></i>
+            </span>
+            <span class="sidebar-label">Ajouter</span>
+        </a>
+
+        <a href="{{ path('app_utilisateur_index') }}"
+           class="sidebar-btn {{ app.request.get('_route') == 'app_utilisateur_index' ? 'active' : '' }}">
+            <span class="sidebar-icon" style="display:flex;width:50px;height:50px;
+                background:#1a1a8b;border-radius:14px;align-items:center;
+                justify-content:center;color:white;font-size:22px">
+                <i class="ti ti-list"></i>
+            </span>
+            <span class="sidebar-label">Liste</span>
+        </a>
+
+        <a href="{{ path('app_utilisateur_index') }}"
+           class="sidebar-btn">
+            <span class="sidebar-icon" style="display:flex;width:50px;height:50px;
+                background:#ffb32b;border-radius:14px;align-items:center;
+                justify-content:center;color:#1a1a8b;font-size:22px">
+                <i class="ti ti-pencil"></i>
+            </span>
+            <span class="sidebar-label">Modifier</span>
+        </a>
+
+        <a href="{{ path('app_utilisateur_index') }}"
+           class="sidebar-btn">
+            <span class="sidebar-icon" style="display:flex;width:50px;height:50px;
+                background:#ef5350;border-radius:14px;align-items:center;
+                justify-content:center;color:white;font-size:22px">
+                <i class="ti ti-trash"></i>
+            </span>
+            <span class="sidebar-label">Supprimer</span>
+        </a>
+
+        <a href="{{ path('app_security_dashboard') }}"
+           class="sidebar-btn {{ app.request.get('_route') starts with 'app_security_' ? 'active' : '' }}">
+            <span class="sidebar-icon" style="display:flex;width:50px;height:50px;
+                background:#7b1fa2;border-radius:14px;align-items:center;
+                justify-content:center;color:white;font-size:22px">
+                <i class="ti ti-shield-lock"></i>
+            </span>
+            <span class="sidebar-label">Sécurité</span>
+        </a>
+    </div>
+
+    {# ── MAIN CONTENT ── #}
+    <div class="main-content">
+        <div class="white-board">
+            {% block body %}{% endblock %}
         </div>
     </div>
 
     <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('assets/js/sidebarmenu.js') }}"></script>
     <script src="{{ asset('assets/js/app.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/apexcharts/dist/apexcharts.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/simplebar/dist/simplebar.js') }}"></script>
-    <script src="{{ asset('assets/js/dashboard.js') }}"></script>
-   <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
     {% block javascripts %}{% endblock %}
-</body>
 
+</body>
 </html>

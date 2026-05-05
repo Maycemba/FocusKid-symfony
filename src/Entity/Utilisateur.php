@@ -5,12 +5,16 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use App\Repository\UtilisateurRepository;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[ORM\Table(name: 'utilisateur')]
-class Utilisateur
+#[UniqueEntity(fields: ['username'], message: 'Ce nom d\'utilisateur est déjà utilisé.')]
+#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé.')]
+class Utilisateur implements UserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -28,7 +32,18 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(type: 'string', length: 50, nullable: false, unique: true)]
+    #[Assert\NotBlank(message: 'Le nom d\'utilisateur est obligatoire.')]
+    #[Assert\Length(
+        min: 3,
+        max: 50,
+        minMessage: 'Le nom d\'utilisateur doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le nom d\'utilisateur ne peut pas dépasser {{ limit }} caractères.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-Z0-9_]+$/',
+        message: 'Le nom d\'utilisateur ne peut contenir que des lettres, chiffres et underscores.'
+    )]
     private ?string $username = null;
 
     public function getUsername(): ?string
@@ -42,7 +57,13 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(type: 'string', length: 100, nullable: false, unique: true)]
+    #[Assert\NotBlank(message: 'L\'email est obligatoire.')]
+    #[Assert\Email(message: 'L\'adresse email « {{ value }} » n\'est pas valide.')]
+    #[Assert\Length(
+        max: 100,
+        maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $email = null;
 
     public function getEmail(): ?string
@@ -56,7 +77,14 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false, name: 'passwordHash')]
+    #[ORM\Column(type: 'string', length: 255, nullable: false, name: 'passwordHash')]
+    #[Assert\NotBlank(message: 'Le mot de passe est obligatoire.')]
+    #[Assert\Length(
+        min: 4,
+        max: 255,
+        minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le mot de passe ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $passwordHash = null;
 
     public function getPasswordHash(): ?string
@@ -70,7 +98,12 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(type: 'string', length: 100, nullable: false)]
+    #[Assert\NotBlank(message: 'Le rôle est obligatoire.')]
+    #[Assert\Choice(
+        choices: ['admin', 'enfant', 'parent'],
+        message: 'Le rôle doit être admin, enfant ou parent.'
+    )]
     private ?string $role = null;
 
     public function getRole(): ?string
@@ -84,8 +117,8 @@ class Utilisateur
         return $this;
     }
 
-   #[ORM\Column(type: 'boolean', nullable: true, name: 'isActive')]
-    private ?bool $isActive = null;
+    #[ORM\Column(type: 'boolean', nullable: true, name: 'isActive')]
+    private ?bool $isActive = true;
 
     public function isIsActive(): ?bool
     {
@@ -98,7 +131,12 @@ class Utilisateur
         return $this;
     }
 
-#[ORM\Column(type: 'datetime', nullable: true, name: 'createdAt')]
+    public function isActive(): ?bool
+    {
+        return $this->isActive;
+    }
+
+    #[ORM\Column(type: 'datetime', nullable: true, name: 'createdAt')]
     private ?\DateTimeInterface $createdAt = null;
 
     public function getCreatedAt(): ?\DateTimeInterface
@@ -113,7 +151,7 @@ class Utilisateur
     }
 
     #[ORM\Column(type: 'boolean', nullable: true)]
-    private ?bool $notifications_email = null;
+    private ?bool $notifications_email = false;
 
     public function isNotifications_email(): ?bool
     {
@@ -126,12 +164,73 @@ class Utilisateur
         return $this;
     }
 
+    public function isNotificationsEmail(): ?bool
+    {
+        return $this->notifications_email;
+    }
+
+    public function setNotificationsEmail(?bool $notifications_email): static
+    {
+        $this->notifications_email = $notifications_email;
+        return $this;
+    }
+    #[ORM\Column(type: 'string', length: 10, nullable: true)]
+private ?string $resetToken = null;
+
+public function getResetToken(): ?string
+{
+    return $this->resetToken;
+}
+
+public function setResetToken(?string $resetToken): self
+{
+    $this->resetToken = $resetToken;
+    return $this;
+}
+
+#[ORM\Column(type: 'datetime', nullable: true)]
+private ?\DateTimeInterface $resetTokenExpiry = null;
+
+public function getResetTokenExpiry(): ?\DateTimeInterface
+{
+    return $this->resetTokenExpiry;
+}
+
+public function setResetTokenExpiry(?\DateTimeInterface $resetTokenExpiry): self
+{
+    $this->resetTokenExpiry = $resetTokenExpiry;
+    return $this;
+}
+
+    // ── Relations ─────────────────────────────────────────
+
     #[ORM\OneToMany(targetEntity: CarnetEducatif::class, mappedBy: 'utilisateur')]
     private Collection $carnetEducatifs;
 
-    /**
-     * @return Collection<int, CarnetEducatif>
-     */
+    #[ORM\OneToMany(targetEntity: ReponseUserExercice::class, mappedBy: 'utilisateur')]
+    private Collection $reponseUserExercices;
+
+    #[ORM\OneToMany(targetEntity: ReponseUserQuiz::class, mappedBy: 'utilisateur')]
+    private Collection $reponseUserQuizs;
+
+    #[ORM\OneToMany(targetEntity: Score::class, mappedBy: 'utilisateur')]
+    private Collection $scores;
+
+    #[ORM\OneToMany(targetEntity: SessionsDeCalme::class, mappedBy: 'utilisateur')]
+    private Collection $sessionsDeCalmes;
+
+    public function __construct()
+    {
+        $this->carnetEducatifs      = new ArrayCollection();
+        $this->reponseUserExercices = new ArrayCollection();
+        $this->reponseUserQuizs     = new ArrayCollection();
+        $this->scores               = new ArrayCollection();
+        $this->sessionsDeCalmes     = new ArrayCollection();
+        $this->isActive             = true;
+        $this->notifications_email  = false;
+        $this->createdAt            = new \DateTime();
+    }
+
     public function getCarnetEducatifs(): Collection
     {
         if (!$this->carnetEducatifs instanceof Collection) {
@@ -154,12 +253,6 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: ReponseUserExercice::class, mappedBy: 'utilisateur')]
-    private Collection $reponseUserExercices;
-
-    /**
-     * @return Collection<int, ReponseUserExercice>
-     */
     public function getReponseUserExercices(): Collection
     {
         if (!$this->reponseUserExercices instanceof Collection) {
@@ -182,12 +275,6 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: ReponseUserQuiz::class, mappedBy: 'utilisateur')]
-    private Collection $reponseUserQuizs;
-
-    /**
-     * @return Collection<int, ReponseUserQuiz>
-     */
     public function getReponseUserQuizs(): Collection
     {
         if (!$this->reponseUserQuizs instanceof Collection) {
@@ -210,12 +297,6 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Score::class, mappedBy: 'utilisateur')]
-    private Collection $scores;
-
-    /**
-     * @return Collection<int, Score>
-     */
     public function getScores(): Collection
     {
         if (!$this->scores instanceof Collection) {
@@ -238,21 +319,6 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: SessionsDeCalme::class, mappedBy: 'utilisateur')]
-    private Collection $sessionsDeCalmes;
-
-    public function __construct()
-    {
-        $this->carnetEducatifs = new ArrayCollection();
-        $this->reponseUserExercices = new ArrayCollection();
-        $this->reponseUserQuizs = new ArrayCollection();
-        $this->scores = new ArrayCollection();
-        $this->sessionsDeCalmes = new ArrayCollection();
-    }
-
-    /**
-     * @return Collection<int, SessionsDeCalme>
-     */
     public function getSessionsDeCalmes(): Collection
     {
         if (!$this->sessionsDeCalmes instanceof Collection) {
@@ -275,21 +341,34 @@ class Utilisateur
         return $this;
     }
 
-    public function isActive(): ?bool
+    // ── UserInterface ──────────────────────────────────────
+
+    public function getUserIdentifier(): string
     {
-        return $this->isActive;
+        return (string) $this->username;
     }
 
-    public function isNotificationsEmail(): ?bool
+public function getRoles(): array
+{
+    $roles = ['ROLE_USER']; // MUST always be present
+
+    $roles[] = match($this->role) {
+        'admin'  => 'ROLE_ADMIN',
+        'parent' => 'ROLE_PARENT',
+        'enfant' => 'ROLE_ENFANT',
+        default  => 'ROLE_USER',
+    };
+
+    return array_unique($roles);
+}
+
+    public function getPassword(): ?string
     {
-        return $this->notifications_email;
+        return $this->passwordHash;
     }
 
-    public function setNotificationsEmail(?bool $notifications_email): static
+    public function eraseCredentials(): void
     {
-        $this->notifications_email = $notifications_email;
-
-        return $this;
+        // nothing sensitive stored in memory
     }
-
 }
