@@ -1,0 +1,192 @@
+{% extends 'base-back.html.twig' %}
+
+{% block title %}Sécurité — Alertes de Connexion{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+
+    {# ── Header ── #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-semibold mb-1">
+                🚨 Alertes de Sécurité — Connexions Suspectes
+            </h4>
+            <p class="text-muted mb-0">
+                Détection automatique de comportements anormaux
+            </p>
+        </div>
+    </div>
+
+    {# ── Stats Cards ── #}
+    <div class="row mb-4 g-3">
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width:52px;height:52px;background:#fff3cd;border-radius:14px;
+                                display:flex;align-items:center;justify-content:center;font-size:24px">
+                        🔢
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0" style="font-size:12px">Total alertes</p>
+                        <h4 class="fw-bold mb-0 text-dark">{{ stats.total }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width:52px;height:52px;background:#fdecea;border-radius:14px;
+                                display:flex;align-items:center;justify-content:center;font-size:24px">
+                        🔐
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0" style="font-size:12px">R1 — Trop de tentatives</p>
+                        <h4 class="fw-bold mb-0 text-danger">{{ stats.R1 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width:52px;height:52px;background:#fff8e1;border-radius:14px;
+                                display:flex;align-items:center;justify-content:center;font-size:24px">
+                        🌙
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0" style="font-size:12px">R2 — Heure inhabituelle</p>
+                        <h4 class="fw-bold mb-0 text-warning">{{ stats.R2 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width:52px;height:52px;background:#e8f5e9;border-radius:14px;
+                                display:flex;align-items:center;justify-content:center;font-size:24px">
+                        🕵️
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0" style="font-size:12px">R3 — Brute-force</p>
+                        <h4 class="fw-bold mb-0" style="color:#2e7d32">{{ stats.R3 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {# ── Rules Legend ── #}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body py-3">
+            <div class="d-flex flex-wrap gap-4">
+                <span style="font-size:13px;color:#555">
+                    <span style="display:inline-block;width:12px;height:12px;background:#e53e3e;
+                                 border-radius:3px;margin-right:6px"></span>
+                    <strong>R1</strong> — 5+ tentatives échouées depuis la même IP en 10 min
+                </span>
+                <span style="font-size:13px;color:#555">
+                    <span style="display:inline-block;width:12px;height:12px;background:#d69e2e;
+                                 border-radius:3px;margin-right:6px"></span>
+                    <strong>R2</strong> — Connexion entre 01h00 et 05h00
+                </span>
+                <span style="font-size:13px;color:#555">
+                    <span style="display:inline-block;width:12px;height:12px;background:#38a169;
+                                 border-radius:3px;margin-right:6px"></span>
+                    <strong>R3</strong> — 10+ noms d'utilisateur distincts depuis la même IP en 10 min
+                </span>
+            </div>
+        </div>
+    </div>
+
+    {# ── Anomaly Table ── #}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            {% if anomalies is empty %}
+                <div class="text-center py-5 text-muted">
+                    <div style="font-size:48px">✅</div>
+                    <p class="mt-2">Aucune alerte détectée pour le moment.</p>
+                </div>
+            {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background:#f8f9fa">
+                        <tr>
+                            <th class="ps-3" style="font-size:12px;color:#6c757d;font-weight:600">#</th>
+                            <th style="font-size:12px;color:#6c757d;font-weight:600">RÈGLE</th>
+                            <th style="font-size:12px;color:#6c757d;font-weight:600">UTILISATEUR</th>
+                            <th style="font-size:12px;color:#6c757d;font-weight:600">IP</th>
+                            <th style="font-size:12px;color:#6c757d;font-weight:600">DESCRIPTION</th>
+                            <th style="font-size:12px;color:#6c757d;font-weight:600">DÉTECTÉ LE</th>
+                            <th class="pe-3" style="font-size:12px;color:#6c757d;font-weight:600">ALERTE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for a in anomalies %}
+                        {# Determine which rule this row belongs to #}
+                        {% if 'R1' in a.reason %}
+                            {% set ruleBadge = '<span style="background:#fdecea;color:#c53030;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">R1</span>' %}
+                            {% set rowBg = '' %}
+                        {% elseif 'R2' in a.reason %}
+                            {% set ruleBadge = '<span style="background:#fff8e1;color:#b7791f;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">R2</span>' %}
+                            {% set rowBg = '' %}
+                        {% elseif 'R3' in a.reason %}
+                            {% set ruleBadge = '<span style="background:#e8f5e9;color:#276749;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">R3</span>' %}
+                            {% set rowBg = '' %}
+                        {% else %}
+                            {% set ruleBadge = '<span style="background:#eee;color:#555;padding:3px 10px;border-radius:20px;font-size:11px">?</span>' %}
+                            {% set rowBg = '' %}
+                        {% endif %}
+
+                        <tr>
+                            <td class="ps-3" style="font-size:13px;color:#aaa">{{ a.id }}</td>
+                            <td>{{ ruleBadge|raw }}</td>
+                            <td>
+                                <span style="font-size:13px;font-weight:600;color:#1a1a8b">
+                                    {{ a.username }}
+                                </span>
+                            </td>
+                            <td>
+                                <code style="background:#f1f5f9;padding:2px 8px;border-radius:6px;
+                                             font-size:12px;color:#2d3748">
+                                    {{ a.ipAddress }}
+                                </code>
+                            </td>
+                            <td style="max-width:340px">
+                                <span style="font-size:13px;color:#4a5568" title="{{ a.reason }}">
+                                    {{ a.reason|length > 80 ? a.reason|slice(0, 80) ~ '…' : a.reason }}
+                                </span>
+                            </td>
+                            <td style="font-size:12px;color:#718096;white-space:nowrap">
+                                {{ a.detectedAt|date('d/m/Y H:i:s') }}
+                            </td>
+                            <td class="pe-3">
+                                {% if a.alertSent %}
+                                    <span style="background:#e8f5e9;color:#276749;padding:3px 10px;
+                                                 border-radius:20px;font-size:11px;font-weight:600">
+                                        ✅ Envoyée
+                                    </span>
+                                {% else %}
+                                    <span style="background:#fff3e0;color:#e65100;padding:3px 10px;
+                                                 border-radius:20px;font-size:11px;font-weight:600">
+                                        ⏳ En attente
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

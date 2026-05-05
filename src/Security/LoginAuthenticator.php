@@ -4,7 +4,7 @@ namespace App\Security;
 
 use App\Entity\Utilisateur;
 use App\Repository\UtilisateurRepository;
-use App\Service\AnomalyDetector;
+use App\Service\SuspiciousLoginDetector;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,9 +22,9 @@ use Symfony\Component\Security\Http\SecurityRequestAttributes;
 class LoginAuthenticator extends AbstractAuthenticator
 {
     public function __construct(
-        private RouterInterface $router,
-        private UtilisateurRepository $userRepo,
-        private AnomalyDetector $anomalyDetector
+        private RouterInterface         $router,
+        private UtilisateurRepository   $userRepo,
+        private SuspiciousLoginDetector $detector   // ← only addition
     ) {}
 
     public function supports(Request $request): ?bool
@@ -40,7 +40,7 @@ class LoginAuthenticator extends AbstractAuthenticator
         $session  = $request->getSession();
         $ip       = $request->getClientIp() ?? '0.0.0.0';
 
-        // ── CAPTCHA ────────────────────────────────────────────────
+        // ── CAPTCHA ────────────────────────────────────────────────────────
         $expected = strtoupper(trim((string) $session->get('captcha_code', '')));
         $given    = strtoupper(trim($request->request->get('captcha', '')));
         $session->remove('captcha_code');
@@ -51,7 +51,7 @@ class LoginAuthenticator extends AbstractAuthenticator
             );
         }
 
-        // ── Rate limiting ───────────────────────────────────────────
+        // ── Rate limiting ──────────────────────────────────────────────────
         $blockedAt = $session->get('login_blocked_at', null);
         if ($blockedAt !== null) {
             $elapsed = time() - $blockedAt;
@@ -66,12 +66,13 @@ class LoginAuthenticator extends AbstractAuthenticator
 
         $session->set(SecurityRequestAttributes::LAST_USERNAME, $username);
 
-        // ── Load & verify user manually ─────────────────────────────
+        // ── Load user ──────────────────────────────────────────────────────
         $user = $this->userRepo->findOneBy(['username' => $username]);
 
         if (!$user) {
-            // ── Anomaly detection on failure ────────────────────────
-            $this->anomalyDetector->analyze($username, $ip);
+            // 🔴 Anomaly detection — runs silently, never throws
+            $this->detector->handleFailedAttempt($ip, $username);
+
             throw new CustomUserMessageAuthenticationException(
                 'Nom d\'utilisateur introuvable.'
             );
@@ -83,18 +84,16 @@ class LoginAuthenticator extends AbstractAuthenticator
             );
         }
 
+        // ── Verify password ────────────────────────────────────────────────
         $hash  = $user->getPasswordHash();
-        $valid = false;
-
-        if (str_starts_with($hash, '$2y$') || str_starts_with($hash, '$2a$')) {
-            $valid = password_verify($password, $hash);
-        } else {
-            $valid = ($password === $hash);
-        }
+        $valid = str_starts_with($hash, '$2y$') || str_starts_with($hash, '$2a$')
+            ? password_verify($password, $hash)
+            : ($password === $hash);
 
         if (!$valid) {
-            // ── Anomaly detection on failure ────────────────────────
-            $this->anomalyDetector->analyze($username, $ip);
+            // 🔴 Anomaly detection — runs silently, never throws
+            $this->detector->handleFailedAttempt($ip, $username);
+
             throw new CustomUserMessageAuthenticationException(
                 'Mot de passe incorrect.'
             );
@@ -111,8 +110,13 @@ class LoginAuthenticator extends AbstractAuthenticator
         $session->set('login_attempts', 0);
         $session->set('login_blocked_at', null);
 
+        $ip = $request->getClientIp() ?? '0.0.0.0';
+
         /** @var Utilisateur $user */
         $user = $token->getUser();
+
+        // 🟢 Check unusual-hour rule even on successful logins
+        $this->detector->handleSuccessfulLogin($ip, $user->getUsername());
 
         $url = in_array('ROLE_ADMIN', $user->getRoles())
             ? $this->router->generate('app_utilisateur_index')
@@ -120,9 +124,8 @@ class LoginAuthenticator extends AbstractAuthenticator
 
         $response = new RedirectResponse($url);
 
-        // ── Remember Me cookie ──────────────────────────────────────
-        $rememberMe = $request->request->get('remember_me');
-        if ($rememberMe) {
+        // ── Remember Me cookie ─────────────────────────────────────────────
+        if ($request->request->get('remember_me')) {
             $cookie = Cookie::create('remember_username')
                 ->withValue($user->getUsername())
                 ->withExpires(new \DateTime('+30 days'))
