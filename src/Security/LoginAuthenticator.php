@@ -9,12 +9,14 @@ use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
@@ -22,9 +24,10 @@ use Symfony\Component\Security\Http\SecurityRequestAttributes;
 class LoginAuthenticator extends AbstractAuthenticator
 {
     public function __construct(
-        private RouterInterface         $router,
-        private UtilisateurRepository   $userRepo,
-        private SuspiciousLoginDetector $detector   // ← only addition
+        private RouterInterface                    $router,
+        private UtilisateurRepository              $userRepo,
+        private SuspiciousLoginDetector            $detector,
+        private UserPasswordHasherInterface        $passwordHasher   // ← Ajouté
     ) {}
 
     public function supports(Request $request): ?bool
@@ -35,11 +38,10 @@ class LoginAuthenticator extends AbstractAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        $username = trim($request->request->get('username', ''));
-        $password = $request->request->get('password', '');
-        $session  = $request->getSession();
-        $ip       = $request->getClientIp() ?? '0.0.0.0';
-
+           $username = trim($request->request->get('username', ''));
+    $password = $request->request->get('password', '');
+    $session  = $request->getSession();
+    $ip       = $request->getClientIp() ?? '0.0.0.0';
         // ── CAPTCHA ────────────────────────────────────────────────────────
         $expected = strtoupper(trim((string) $session->get('captcha_code', '')));
         $given    = strtoupper(trim($request->request->get('captcha', '')));
@@ -66,42 +68,42 @@ class LoginAuthenticator extends AbstractAuthenticator
 
         $session->set(SecurityRequestAttributes::LAST_USERNAME, $username);
 
-        // ── Load user ──────────────────────────────────────────────────────
-        $user = $this->userRepo->findOneBy(['username' => $username]);
+       $user = $this->userRepo->findOneBy(['username' => $username]);
 
-        if (!$user) {
-            // 🔴 Anomaly detection — runs silently, never throws
-            $this->detector->handleFailedAttempt($ip, $username);
-
-            throw new CustomUserMessageAuthenticationException(
-                'Nom d\'utilisateur introuvable.'
-            );
-        }
-
-        if (!$user->isIsActive()) {
-            throw new CustomUserMessageAuthenticationException(
-                'Ce compte est désactivé.'
-            );
-        }
-
-        // ── Verify password ────────────────────────────────────────────────
-        $hash  = $user->getPasswordHash();
-        $valid = str_starts_with($hash, '$2y$') || str_starts_with($hash, '$2a$')
-            ? password_verify($password, $hash)
-            : ($password === $hash);
-
-        if (!$valid) {
-            // 🔴 Anomaly detection — runs silently, never throws
-            $this->detector->handleFailedAttempt($ip, $username);
-
-            throw new CustomUserMessageAuthenticationException(
-                'Mot de passe incorrect.'
-            );
-        }
-
-        return new SelfValidatingPassport(
-            new UserBadge($username, fn() => $user)
+    if (!$user) {
+        $this->detector->handleFailedAttempt($ip, $username);
+        throw new CustomUserMessageAuthenticationException(
+            'Nom d\'utilisateur introuvable.'
         );
+    }
+
+    if (!$user->isActive()) {
+        throw new CustomUserMessageAuthenticationException(
+            'Ce compte est désactivé.'
+        );
+    }
+
+    // ── Verify password avec password_verify (compatible avec l'existant) ──
+    $storedHash = $user->getPasswordHash();
+    
+    // Vérifier si c'est un hash bcrypt (commence par $2y$ ou $2a$)
+    if (str_starts_with($storedHash, '$2y$') || str_starts_with($storedHash, '$2a$')) {
+        $isValid = password_verify($password, $storedHash);
+    } else {
+        // Fallback pour les anciens mots de passe non hashés (à éviter)
+        $isValid = ($password === $storedHash);
+    }
+
+    if (!$isValid) {
+        $this->detector->handleFailedAttempt($ip, $username);
+        throw new CustomUserMessageAuthenticationException(
+            'Mot de passe incorrect.'
+        );
+    }
+
+    return new SelfValidatingPassport(
+        new UserBadge($username, fn() => $user)
+    );
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response

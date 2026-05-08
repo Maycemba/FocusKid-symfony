@@ -11,9 +11,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\Address;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-use App\Controller\CaptchaController;
 
 class LoginController extends AbstractController
 {
@@ -166,7 +166,8 @@ class LoginController extends AbstractController
     public function resetPassword(
         Request $request,
         UtilisateurRepository $repo,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher  // ← Ajouté
     ): Response {
         $email    = $request->getSession()->get('reset_email');
         $verified = $request->getSession()->get('reset_verified');
@@ -184,10 +185,15 @@ class LoginController extends AbstractController
                 $error = 'Les mots de passe ne correspondent pas.';
             } else {
                 $user = $repo->findOneBy(['email' => $email]);
-                $user->setPasswordHash(password_hash($password, PASSWORD_BCRYPT));
+                
+                // Hasher le nouveau mot de passe avec PasswordHasher
+                $hashedPassword = $passwordHasher->hashPassword($user, $password);
+                $user->setPasswordHash($hashedPassword);
+                
                 $user->setResetToken(null);
                 $user->setResetTokenExpiry(null);
                 $em->flush();
+                
                 $request->getSession()->remove('reset_email');
                 $request->getSession()->remove('reset_verified');
                 return $this->redirectToRoute('app_login');

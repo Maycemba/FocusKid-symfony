@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -29,10 +30,10 @@ final class UtilisateurController extends AbstractController
             $matchSearch = !$search ||
                 str_contains(strtolower($u->getUsername()), strtolower($search)) ||
                 str_contains(strtolower($u->getEmail()), strtolower($search));
-            $matchRole   = !$role   || $u->getRole() === $role;
+            $matchRole   = !$role   || $u->getRole() === (int)$role;
             $matchStatus = $status === '' || (
-                ($status === '1' && $u->isIsActive()) ||
-                ($status === '0' && !$u->isIsActive())
+                ($status === '1' && $u->isActive()) ||
+                ($status === '0' && !$u->isActive())
             );
             return $matchSearch && $matchRole && $matchStatus;
         });
@@ -51,7 +52,8 @@ final class UtilisateurController extends AbstractController
     public function new(
         Request $request,
         EntityManagerInterface $em,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        UserPasswordHasherInterface $passwordHasher  // ← Ajouté
     ): Response {
         $errors = [];
 
@@ -59,13 +61,17 @@ final class UtilisateurController extends AbstractController
             $username = trim($request->request->get('username', ''));
             $email    = trim($request->request->get('email', ''));
             $password = $request->request->get('password', '');
-            $role     = $request->request->get('role', 'enfant');
+            $role     = (int)$request->request->get('role', 2); // 2 = enfant par défaut
             $active   = $request->request->get('isActive') ? true : false;
 
             $user = new Utilisateur();
             $user->setUsername($username);
             $user->setEmail($email);
-            $user->setPasswordHash(password_hash($password, PASSWORD_BCRYPT));
+            
+            // Hasher le mot de passe avec PasswordHasher
+            $hashedPassword = $passwordHasher->hashPassword($user, $password);
+            $user->setPasswordHash($hashedPassword);
+            
             $user->setRole($role);
             $user->setIsActive($active);
 
@@ -92,7 +98,8 @@ final class UtilisateurController extends AbstractController
         Request $request,
         Utilisateur $utilisateur,
         EntityManagerInterface $em,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        UserPasswordHasherInterface $passwordHasher  // ← Ajouté
     ): Response {
         $errors = [];
 
@@ -100,15 +107,18 @@ final class UtilisateurController extends AbstractController
             $username = trim($request->request->get('username', ''));
             $email    = trim($request->request->get('email', ''));
             $password = $request->request->get('password', '');
-            $role     = $request->request->get('role', 'enfant');
+            $role     = (int)$request->request->get('role', 2);
             $active   = $request->request->get('isActive') ? true : false;
 
             $utilisateur->setUsername($username);
             $utilisateur->setEmail($email);
             $utilisateur->setRole($role);
             $utilisateur->setIsActive($active);
+            
             if ($password) {
-                $utilisateur->setPasswordHash(password_hash($password, PASSWORD_BCRYPT));
+                // Hasher le nouveau mot de passe avec PasswordHasher
+                $hashedPassword = $passwordHasher->hashPassword($utilisateur, $password);
+                $utilisateur->setPasswordHash($hashedPassword);
             }
 
             $violations = $validator->validate($utilisateur);

@@ -1,497 +1,1005 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="utf-8">
     <title>{% block title %}FocusKid - Apprentissage ludique pour enfants{% endblock %}</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta name="description" content="Plateforme éducative pour enfants - Exercices, jeux et activités pédagogiques">
+    <meta name="description" content="Plateforme éducative pour enfants TDAH - Exercices, jeux et activités pédagogiques adaptés">
+    <meta name="theme-color" content="#FF7043">
 
-    <meta content="" name="keywords">
-    <meta content="" name="description">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link href="{{ asset('base-front/img/logo.png') }}" rel="icon">
 
+    <!-- Fonts : Baloo 2 (titres ludiques) + Nunito (texte enfant-friendly) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS Libs -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 
     <link href="{{ asset('base-front/lib/animate/animate.min.css') }}" rel="stylesheet">
     <link href="{{ asset('base-front/lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
-
-    <link href="{{ asset('base-front/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('base-front/css/style.css') }}" rel="stylesheet">
-    
+
     <style>
-        /* Variables modernes */
+        /* ====================================================
+           FOCUSKID — BASE TEMPLATE TDAH-FRIENDLY
+           Design : Playful & Calm — pensé pour les enfants
+        ==================================================== */
+
         :root {
-            --primary: #FF6B35;
-            --primary-dark: #E55A2B;
-            --secondary: #4A90E2;
-            --success: #2ECC71;
-            --danger: #E74C3C;
-            --dark: #2C3E50;
-            --light: #F8F9FA;
-            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            --gradient-green: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            --gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* Palette douce mais vivante */
+            --orange:       #FF7043;
+            --orange-light: #FFB74D;
+            --blue:         #42A5F5;
+            --blue-light:   #90CAF9;
+            --green:        #66BB6A;
+            --purple:       #AB47BC;
+            --pink:         #F06292;
+            --yellow:       #FFD54F;
+            --teal:         #26C6DA;
+
+            --bg:           #FFF8F0;
+            --bg-card:      #FFFFFF;
+            --text:         #3D2B1F;
+            --text-soft:    #7B5E52;
+            --border:       rgba(255,112,67,0.15);
+
+            --gradient-main:   linear-gradient(135deg, var(--orange) 0%, var(--orange-light) 100%);
+            --gradient-cool:   linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+            --gradient-nature: linear-gradient(135deg, var(--green) 0%, var(--teal) 100%);
+            --gradient-dream:  linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
+
+            --radius-xl:   28px;
+            --radius-lg:   20px;
+            --radius-md:   14px;
+            --radius-pill: 50px;
+
+            --shadow-soft:  0 8px 30px rgba(255,112,67,0.12);
+            --shadow-card:  0 4px 20px rgba(0,0,0,0.06);
+            --shadow-hover: 0 16px 48px rgba(255,112,67,0.22);
+
+            --font-title: 'Baloo 2', cursive;
+            --font-body:  'Nunito', sans-serif;
+
+            --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --transition:  0.28s ease;
         }
-        
-        /* Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f7fb;
-            color: var(--dark);
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 16px;
+            line-height: 1.65;
+            /* Fond doux, non distrayant */
+            background-image:
+                radial-gradient(circle at 15% 20%, rgba(255,112,67,0.06) 0%, transparent 50%),
+                radial-gradient(circle at 85% 80%, rgba(66,165,245,0.06) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(102,187,106,0.04) 0%, transparent 60%);
+            min-height: 100vh;
         }
-        
-        /* Navbar moderne */
+
+        #page-wrapper { display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* Skip link accessibilité */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 16px;
+            background: var(--orange);
+            color: white;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            z-index: 9999;
+            transition: top 0.2s;
+            text-decoration: none;
+        }
+        .skip-link:focus { top: 12px; color: white; }
+
+        /* ─────────────────────────────────────────
+           BARRE DE FOCUS (progression session)
+        ───────────────────────────────────────── */
+        #focus-bar {
+            height: 5px;
+            background: linear-gradient(90deg, var(--orange), var(--orange-light), var(--green), var(--blue));
+            background-size: 300% 100%;
+            animation: focusBarMove 4s linear infinite;
+            transform-origin: left;
+            transform: scaleX(0);
+            transition: transform 0.5s ease;
+        }
+        @keyframes focusBarMove {
+            0%   { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+
+        /* ─────────────────────────────────────────
+           NAVBAR TDAH-FRIENDLY
+           • Icônes emoji + labels courts
+           • Couleurs différenciées par section
+           • Hover animé, focus visible
+        ───────────────────────────────────────── */
         .navbar {
-            background: white !important;
-            box-shadow: 0 5px 30px rgba(0,0,0,0.03);
-            padding: 15px 0;
-            transition: all 0.3s;
+            background: var(--bg-card) !important;
+            box-shadow: 0 3px 20px rgba(0,0,0,0.07);
+            padding: 0 !important;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 3px solid var(--orange-light);
+            transition: box-shadow var(--transition);
         }
-        .navbar.sticky {
-            padding: 10px 0;
-            box-shadow: 0 5px 30px rgba(0,0,0,0.1);
-            background: rgba(255,255,255,0.98) !important;
-            backdrop-filter: blur(10px);
+        .navbar.scrolled {
+            box-shadow: 0 8px 32px rgba(0,0,0,0.13);
         }
-        .navbar-brand h1 {
-            font-size: 28px;
+
+        .navbar-inner {
+            display: flex;
+            align-items: center;
+            padding: 10px 24px;
+            gap: 12px;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        .navbar-brand img {
+            height: 80px;
+            width: auto;
+            filter: drop-shadow(0 2px 6px rgba(255,112,67,0.3));
+        }
+        .brand-name {
+            font-family: var(--font-title);
+            font-size: 35px;
             font-weight: 800;
-            background: var(--gradient);
+            background: var(--gradient-main);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            line-height: 1;
         }
-        .nav-link {
-            font-weight: 500;
-            margin: 0 8px;
-            color: var(--dark) !important;
-            transition: all 0.3s;
-            border-radius: 30px;
-            padding: 8px 18px !important;
-        }
-        .nav-link:hover, .nav-link.active {
-            background: var(--gradient);
-            color: white !important;
-            transform: translateY(-2px);
-        }
-        .btn-primary-custom {
-            background: var(--gradient);
-            color: white;
-            border-radius: 50px;
-            padding: 10px 25px;
-            font-weight: 600;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(255,107,53,0.3);
-        }
-        .btn-primary-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255,107,53,0.4);
-            color: white;
-        }
-        
-        /* Animation de transition (sans loader) */
-        #dynamic-content {
-            min-height: 500px;
-            transition: opacity 0.2s ease;
-        }
-        
-        /* Footer moderne */
-        .footer {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #aaa;
-            margin-top: 60px;
-        }
-        .footer h3 {
-            color: white;
-            font-size: 18px;
-            margin-bottom: 20px;
-            position: relative;
-            display: inline-block;
-        }
-        .footer h3:after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 0;
-            width: 40px;
-            height: 3px;
-            background: var(--gradient);
-            border-radius: 3px;
-        }
-        .social-btn {
-            width: 38px;
-            height: 38px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            margin-right: 8px;
-            transition: all 0.3s;
-            color: white;
-        }
-        .social-btn:hover {
-            background: var(--gradient);
-            transform: translateY(-3px);
-            color: white;
-        }
-        
-        /* Scroll to top */
-        .back-to-top {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 45px;
-            height: 45px;
-            background: var(--gradient);
-            border-radius: 50%;
+
+        .navbar-nav-wrap {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-            z-index: 999;
+        }
+
+        .nav-items {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            list-style: none;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-item-custom a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--text-soft);
+            font-family: var(--font-body);
+            font-size: 20px;
+            font-weight: 700;
+            transition: all var(--transition);
+            border: 2px solid transparent;
+        }
+        .nav-item-custom a .nav-icon {
+            font-size: 20px;
+            transition: transform var(--transition);
+        }
+        .nav-item-custom a:hover,
+        .nav-item-custom a.active {
+            background: rgba(255,112,67,0.08);
+            color: var(--orange);
+            border-color: rgba(255,112,67,0.25);
+            transform: translateY(-2px);
+        }
+        .nav-item-custom a:hover .nav-icon,
+        .nav-item-custom a.active .nav-icon {
+            transform: scale(1.2) rotate(-6deg);
+        }
+
+        /* Couleurs distinctes par section */
+        .nav-item-custom[data-color="blue"]   a:hover,
+        .nav-item-custom[data-color="blue"]   a.active { color: var(--blue);   border-color: rgba(66,165,245,0.3);  background: rgba(66,165,245,0.08); }
+        .nav-item-custom[data-color="green"]  a:hover,
+        .nav-item-custom[data-color="green"]  a.active { color: var(--green);  border-color: rgba(102,187,106,0.3); background: rgba(102,187,106,0.08); }
+        .nav-item-custom[data-color="purple"] a:hover,
+        .nav-item-custom[data-color="purple"] a.active { color: var(--purple); border-color: rgba(171,71,188,0.3);  background: rgba(171,71,188,0.08); }
+        .nav-item-custom[data-color="teal"]   a:hover,
+        .nav-item-custom[data-color="teal"]   a.active { color: var(--teal);   border-color: rgba(38,198,218,0.3);  background: rgba(38,198,218,0.08); }
+        .nav-item-custom[data-color="pink"]   a:hover,
+        .nav-item-custom[data-color="pink"]   a.active { color: var(--pink);   border-color: rgba(240,98,146,0.3);  background: rgba(240,98,146,0.08); }
+        .nav-item-custom[data-color="yellow"] a:hover,
+        .nav-item-custom[data-color="yellow"] a.active { color: #E65100;       border-color: rgba(255,213,79,0.5);  background: rgba(255,213,79,0.1); }
+
+        /* Bouton Compte */
+        .btn-compte {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: var(--radius-pill);
+            background: var(--gradient-main);
+            color: white !important;
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 20px;
+            text-decoration: none;
+            box-shadow: var(--shadow-soft);
+            transition: all var(--transition);
+            flex-shrink: 0;
+        }
+        .btn-compte:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: var(--shadow-hover);
+            color: white !important;
+        }
+
+        /* Hamburger mobile */
+        .navbar-toggle-btn {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            width: 44px;
+            height: 44px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
             cursor: pointer;
+            transition: all var(--transition);
+            flex-shrink: 0;
         }
-        .back-to-top.show {
-            opacity: 1;
-            visibility: visible;
+        .navbar-toggle-btn:hover { background: rgba(255,112,67,0.1); }
+        .navbar-toggle-btn span {
+            display: block;
+            width: 22px;
+            height: 2.5px;
+            background: var(--orange);
+            border-radius: 2px;
+            transition: all 0.3s;
         }
-        .back-to-top:hover {
-            transform: translateY(-5px);
-            color: white;
+
+        /* ─────────────────────────────────────────
+           CONTENU DYNAMIQUE
+        ───────────────────────────────────────── */
+        #dynamic-content {
+            flex: 1;
+            min-height: 500px;
         }
-        
-        /* Animation */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .page-fade-enter {
+            animation: pageFadeIn 0.3s ease both;
         }
-        
-        /* ========== STYLES DES EXERCICES ========== */
+        @keyframes pageFadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─────────────────────────────────────────
+           COMPOSANTS GLOBAUX (cartes, boutons…)
+        ───────────────────────────────────────── */
+
+        /* Titres */
+        h1, h2, h3, h4 { font-family: var(--font-title); }
+
+        /* Cards génériques */
+        .fk-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+            border: 2px solid var(--border);
+            transition: all var(--transition);
+        }
+        .fk-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(255,112,67,0.3);
+        }
+
+        /* Stat cards */
         .stat-card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: 24px;
             text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            transition: all 0.3s;
+            box-shadow: var(--shadow-card);
+            border: 2px solid var(--border);
+            transition: all var(--transition);
             cursor: pointer;
-            border: 1px solid rgba(0,0,0,0.05);
         }
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: var(--shadow-hover);
         }
         .stat-number {
-            font-size: 36px;
+            font-family: var(--font-title);
+            font-size: 40px;
             font-weight: 800;
-            background: var(--gradient);
+            background: var(--gradient-main);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         .stat-label {
-            color: #666;
+            color: var(--text-soft);
             font-size: 14px;
-            margin-top: 8px;
-        }
-        
-        .badge-type {
-            display: inline-block;
-            padding: 6px 18px;
-            border-radius: 30px;
-            font-size: 12px;
             font-weight: 600;
+            margin-top: 6px;
         }
-        .badge-memoire { background: linear-gradient(135deg, #9C27B0, #7B1FA2); color: white; }
-        .badge-attention { background: linear-gradient(135deg, #2196F3, #1976D2); color: white; }
-        .badge-logique { background: linear-gradient(135deg, #FF9800, #F57C00); color: white; }
-        .badge-chrono { background: linear-gradient(135deg, #F44336, #D32F2F); color: white; }
-        
+
+        /* Badges types d'exercice */
+        .badge-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 14px;
+            border-radius: var(--radius-pill);
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .badge-memoire   { background: linear-gradient(135deg, #CE93D8, #AB47BC); color: white; }
+        .badge-attention { background: linear-gradient(135deg, #90CAF9, #42A5F5); color: white; }
+        .badge-logique   { background: linear-gradient(135deg, #FFCC80, #FFA726); color: white; }
+        .badge-chrono    { background: linear-gradient(135deg, #EF9A9A, #EF5350); color: white; }
+
+        /* Cards exercice */
         .exercice-card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            border: 1px solid rgba(0,0,0,0.05);
-            height: 100%;
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-card);
+            border: 2px solid var(--border);
+            transition: all var(--transition);
             cursor: pointer;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
         }
+        .exercice-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--gradient-main);
+            transform: scaleX(0);
+            transition: transform var(--transition);
+        }
+        .exercice-card:hover::before { transform: scaleX(1); }
         .exercice-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(255,112,67,0.25);
         }
-        
-        .filter-section {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        
-        .btn-filter {
-            background: var(--gradient);
-            border: none;
-            color: white;
-            border-radius: 30px;
-            padding: 10px 25px;
-            font-weight: 500;
-        }
-        
-        .etoiles {
-            color: #FFC107;
-            font-size: 14px;
-        }
-        
+
+        /* Étoiles */
+        .etoiles { color: var(--yellow); font-size: 15px; }
+
+        /* Empty state */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            background: white;
-            border-radius: 20px;
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+        }
+        .empty-state .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            display: block;
+            animation: floatAnim 3s ease-in-out infinite;
+        }
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-12px); }
+        }
+
+        /* Filtres */
+        .filter-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-card);
+            border: 2px solid var(--border);
+        }
+        .btn-filter {
+            background: var(--gradient-main);
+            border: none;
+            color: white;
+            border-radius: var(--radius-pill);
+            padding: 10px 24px;
+            font-weight: 700;
+            font-family: var(--font-body);
+            transition: all var(--transition);
+        }
+        .btn-filter:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-soft);
+            color: white;
+        }
+
+        /* Boutons globaux */
+        .btn-fk {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: var(--radius-pill);
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 15px;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition);
+            text-decoration: none;
+        }
+        .btn-fk-primary {
+            background: var(--gradient-main);
+            color: white;
+            box-shadow: var(--shadow-soft);
+        }
+        .btn-fk-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: var(--shadow-hover);
+            color: white;
+        }
+        .btn-fk-outline {
+            background: transparent;
+            color: var(--orange);
+            border: 2.5px solid var(--orange);
+        }
+        .btn-fk-outline:hover {
+            background: var(--gradient-main);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* ─────────────────────────────────────────
+           TOAST DE RÉCOMPENSE
+           Encourage l'enfant TDAH après une action
+        ───────────────────────────────────────── */
+        #reward-toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: 16px 20px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            border-left: 5px solid var(--green);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 300px;
+            transform: translateX(130%);
+            transition: transform 0.4s var(--ease-bounce);
+            pointer-events: none;
+        }
+        #reward-toast.show { transform: translateX(0); }
+        #reward-toast .reward-emoji { font-size: 32px; }
+        #reward-toast .reward-text  { font-weight: 700; font-size: 14px; color: var(--text); }
+        #reward-toast .reward-sub   { font-size: 12px; color: var(--text-soft); font-weight: 600; }
+
+        /* ─────────────────────────────────────────
+           FOOTER
+        ───────────────────────────────────────── */
+        .fk-footer {
+            background: linear-gradient(135deg, #2D1B10 0%, #1A0F08 100%);
+            color: rgba(255,255,255,0.6);
+            margin-top: auto;
+            position: relative;
+            overflow: hidden;
+        }
+        .fk-footer::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--gradient-main);
+        }
+        .fk-footer h3 {
+            font-family: var(--font-title);
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+        .footer-link {
+            display: block;
+            color: rgba(255,255,255,0.55);
+            text-decoration: none;
+            padding: 4px 0;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all var(--transition);
+        }
+        .footer-link:hover { color: var(--orange-light); padding-left: 6px; }
+
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+            margin-right: 8px;
+            transition: all var(--transition);
+            color: white;
+            text-decoration: none;
+        }
+        .social-btn:hover { background: var(--gradient-main); transform: translateY(-4px) scale(1.1); color: white; }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .footer-contact-item .icon-wrap {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,112,67,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--orange-light);
+            font-size: 13px;
+        }
+
+        .footer-newsletter { display: flex; }
+        .footer-newsletter input {
+            background: rgba(255,255,255,0.07);
+            border: 1.5px solid rgba(255,255,255,0.15);
+            border-right: none;
+            color: white;
+            border-radius: var(--radius-md) 0 0 var(--radius-md);
+            padding: 10px 14px;
+            font-family: var(--font-body);
+            font-size: 14px;
+            outline: none;
+            flex: 1;
+            transition: border-color var(--transition);
+        }
+        .footer-newsletter input::placeholder { color: rgba(255,255,255,0.3); }
+        .footer-newsletter input:focus { border-color: var(--orange); }
+        .footer-newsletter button {
+            background: var(--gradient-main);
+            border: none;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            font-family: var(--font-body);
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity var(--transition);
+        }
+        .footer-newsletter button:hover { opacity: 0.88; }
+        .footer-divider { border-color: rgba(255,255,255,0.08); margin: 32px 0 20px; }
+        .footer-copy { font-size: 13px; color: rgba(255,255,255,0.35); font-weight: 600; }
+
+        /* ─────────────────────────────────────────
+           BOUTON RETOUR EN HAUT
+        ───────────────────────────────────────── */
+        #back-to-top {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-main);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            box-shadow: var(--shadow-soft);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition);
+            cursor: pointer;
+            z-index: 998;
+            text-decoration: none;
+        }
+        #back-to-top.show { opacity: 1; visibility: visible; }
+        #back-to-top:hover { transform: translateY(-5px) scale(1.1); box-shadow: var(--shadow-hover); color: white; }
+
+        /* ─────────────────────────────────────────
+           ACCESSIBILITÉ
+        ───────────────────────────────────────── */
+        :focus-visible {
+            outline: 3px solid var(--orange);
+            outline-offset: 3px;
+            border-radius: 6px;
+        }
+
+        /* ─────────────────────────────────────────
+           RESPONSIVE MOBILE
+        ───────────────────────────────────────── */
+        @media (max-width: 992px) {
+            .navbar-toggle-btn { display: flex; }
+            .navbar-nav-wrap {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--bg-card);
+                box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+                padding: 12px;
+                z-index: 999;
+                border-top: 2px solid var(--border);
+            }
+            .navbar-nav-wrap.open { display: flex; }
+            .nav-items { flex-direction: column; align-items: stretch; width: 100%; gap: 4px; }
+            .nav-item-custom a { flex-direction: row; justify-content: flex-start; gap: 12px; padding: 12px 16px; font-size: 15px; }
+            .nav-item-custom a .nav-icon { font-size: 22px; }
+            .brand-name { font-size: 22px; }
+        }
+        @media (max-width: 576px) {
+            .btn-compte { display: none !important; }
+        }
+
+        /* Réduction des animations (accessibilité) */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
-    
+
     {% block stylesheets %}{% endblock %}
 </head>
 
 <body>
-    <div class="container-xxl bg-white p-0">
-       
+    <!-- Lien d'évitement clavier -->
+    <a href="#dynamic-content" class="skip-link">Aller au contenu principal</a>
 
-        <nav class="navbar navbar-expand-lg bg-white navbar-light sticky-top px-4 px-lg-5 py-lg-0">
-            <a href="#" id="homeLink" class="navbar-brand">
-                <img src="{{ asset('base-front/img/logo.png') }}" alt="Logo" height="45" class="me-2">
-                <h1 class="m-0">Focus<span class="text-primary">Kid</span></h1>
-            </a>
-            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarCollapse">
-                <div class="navbar-nav mx-auto">
+    <!-- Barre de progression de la session -->
+    <div id="focus-bar" role="progressbar" aria-hidden="true"></div>
 
-    <!-- Menu principal avec les bonnes routes -->
-   <!-- APRÈS : pointe vers app_home (page d'accueil) -->
-<a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_index') }}">
-    <i class="fas fa-home me-1"></i> Accueil
-</a>
-    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_sessions_de_calme_front') }}">
-        <i class="fas fa-spa me-1"></i> Session de calme
-    </a>
-    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_enfant_cours') }}">
-        <i class="fas fa-book me-1"></i> Cours
-    </a>
-    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_exercice_index', {'type': 'non_complete'}) }}">
-        <i class="fas fa-puzzle-piece me-1"></i> Exercices
-    </a>
-    <!-- ✅ CORRECTION ICI : le lien "Carnet" pointe vers app_carnet_educatif_index -->
-    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_carnet_educatif_index') }}">
-        <i class="fas fa-notebook me-1"></i> Carnet éducatif
-    </a>
-    <a href="#" class="nav-item nav-link ajax-link" data-url="{{ path('app_front_jeu_list') }}">
-        <i class="fas fa-gamepad me-1"></i> Jeux
-    </a>
-    <a href="{{ path('app_emotion_index') }}" class="nav-item nav-link">
-    <i class="fas fa-face-smile me-1"></i> Mes Émotions
-</a>
-    <a href="#" class="nav-item nav-link ajax-link" data-url="#">
-        <i class="fas fa-users me-1"></i> Espace Parent
-    </a>
-</div>
-                <a href="#" class="btn btn-primary-custom px-4 d-none d-lg-block ajax-link" data-url="{{ path('app_front_exercice_index') }}">
-                    <i class="fas fa-user me-2"></i>Mon compte
+    <div id="page-wrapper">
+
+        <!-- ═══════════════════════════════════
+             NAVBAR
+        ═══════════════════════════════════ -->
+        <nav class="navbar" role="navigation" aria-label="Navigation principale">
+            <div class="navbar-inner container-fluid">
+
+                <!-- Logo -->
+                <a href="#" id="homeLink" class="navbar-brand" aria-label="FocusKid - Accueil">
+                    <img src="{{ asset('base-front/img/logo.png') }}" alt="Logo FocusKid">
+                    <span class="brand-name">Focus<span style="color:var(--blue)">Kid</span></span>
                 </a>
+
+                <!-- Hamburger mobile -->
+                <button class="navbar-toggle-btn" id="navToggle"
+                        aria-expanded="false" aria-controls="navMenu" aria-label="Ouvrir le menu">
+                    <span></span><span></span><span></span>
+                </button>
+
+                <!-- Menu -->
+                <div class="navbar-nav-wrap" id="navMenu">
+                    <ul class="nav-items" role="list">
+                        <li class="nav-item-custom" data-color="orange">
+                            <a href="#" class="ajax-link" data-url="{{ path('app_index') }}" aria-label="Accueil">
+                                <span class="nav-icon">🏠</span>
+                                <span>Accueil</span>
+                            </a>
+                        </li>
+                        <li class="nav-item-custom" data-color="teal">
+                            <a href="#" class="ajax-link" data-url="{{ path('app_sessions_de_calme_front') }}" aria-label="Session de calme">
+                                <span class="nav-icon">🌸</span>
+                                <span>Calme</span>
+                            </a>
+                        </li>
+                        <li class="nav-item-custom" data-color="blue">
+                            <a href="#" class="ajax-link" data-url="{{ path('app_enfant_cours') }}" aria-label="Cours">
+                                <span class="nav-icon">📚</span>
+                                <span>Cours</span>
+                            </a>
+                        </li>
+                        <li class="nav-item-custom" data-color="purple">
+                            <a href="#" class="ajax-link" data-url="{{ path('app_front_exercice_index', {'type': 'non_complete'}) }}" aria-label="Exercices">
+                                <span class="nav-icon">🧩</span>
+                                <span>Exercices</span>
+                            </a>
+                        </li>
+                        <li class="nav-item-custom" data-color="green">
+                            <a href="#" class="ajax-link" data-url="{{ path('app_carnet_educatif_index') }}" aria-label="Carnet éducatif">
+                                <span class="nav-icon">📓</span>
+                                <span>Carnet</span>
+                            </a>
+                        </li>
+                        <li class="nav-item-custom" data-color="yellow">
+                            <a href="#" class="ajax-link" data-url="{{ path('app_front_jeu_list') }}" aria-label="Jeux">
+                                <span class="nav-icon">🎮</span>
+                                <span>Jeux</span>
+                            </a>
+                        </li>
+                        <li class="nav-item-custom" data-color="pink">
+                            <a href="{{ path('app_emotion_index') }}" class="nav-link-direct" aria-label="Mes émotions">
+                                <span class="nav-icon">😊</span>
+                                <span>Émotions</span>
+                            </a>
+                        </li>
+                        <li class="nav-item-custom" data-color="blue">
+                            <a href="#" class="ajax-link" data-url="#" aria-label="Espace Parents">
+                                <span class="nav-icon">👨‍👩‍👧</span>
+                                <span>Parents</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Bouton Mon Compte -->
+                <a href="#" class="btn-compte ajax-link d-none d-lg-flex"
+                   data-url="{{ path('app_profile_index') }}" aria-label="Mon compte">
+                    <span>👤</span> Mon compte
+                </a>
+
             </div>
         </nav>
-      
-        <!-- Zone de contenu dynamique - SANS LOADER -->
-        <div id="dynamic-content">
-            {% block body %}{% endblock %}
-        </div>
 
-        <!-- Footer moderne -->
-        <div class="footer pt-5 mt-5">
+        <!-- ═══════════════════════════════════
+             CONTENU PRINCIPAL
+        ═══════════════════════════════════ -->
+        <main id="dynamic-content" role="main" tabindex="-1">
+            {% block body %}{% endblock %}
+        </main>
+
+        <!-- ═══════════════════════════════════
+             FOOTER
+        ═══════════════════════════════════ -->
+        <footer class="fk-footer pt-5" role="contentinfo">
             <div class="container py-4">
                 <div class="row g-4">
+
                     <div class="col-lg-4 col-md-6">
-                        <h3 class="mb-4">Focus<span class="text-primary">Kid</span></h3>
-                        <p class="mb-3">Plateforme éducative innovante pour aider les enfants à apprendre tout en s'amusant.</p>
-                        <div class="d-flex">
-                            <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#" class="social-btn"><i class="fab fa-twitter"></i></a>
-                            <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
-                            <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
+                        <h3>Focus<span style="color:var(--orange-light)">Kid</span> 🚀</h3>
+                        <p style="font-size:14px;line-height:1.7;margin-bottom:20px;">
+                            Plateforme éducative innovante pour aider les enfants à apprendre tout en s'amusant, adaptée aux enfants avec TDAH.
+                        </p>
+                        <div>
+                            <a href="#" class="social-btn" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="social-btn" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="social-btn" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="social-btn" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                         </div>
                     </div>
+
                     <div class="col-lg-2 col-md-6">
-                        <h3 class="mb-4">Liens rapides</h3>
-                        <div class="d-flex flex-column">
-                            <a href="#" class="text-decoration-none text-white-50 mb-2">À propos</a>
-                            <a href="#" class="text-decoration-none text-white-50 mb-2">Contact</a>
-                            <a href="#" class="text-decoration-none text-white-50 mb-2">FAQ</a>
-                            <a href="#" class="text-decoration-none text-white-50 mb-2">Blog</a>
+                        <h3>Liens</h3>
+                        <a href="#" class="footer-link">À propos</a>
+                        <a href="#" class="footer-link">Contact</a>
+                        <a href="#" class="footer-link">FAQ</a>
+                        <a href="#" class="footer-link">Blog</a>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <h3>Contact</h3>
+                        <div class="footer-contact-item">
+                            <div class="icon-wrap"><i class="fas fa-map-marker-alt"></i></div>
+                            <span>123 Rue de l'Éducation, Tunis</span>
+                        </div>
+                        <div class="footer-contact-item">
+                            <div class="icon-wrap"><i class="fas fa-phone-alt"></i></div>
+                            <span>+216 12 345 678</span>
+                        </div>
+                        <div class="footer-contact-item">
+                            <div class="icon-wrap"><i class="fas fa-envelope"></i></div>
+                            <span>contact@focuskid.com</span>
                         </div>
                     </div>
+
                     <div class="col-lg-3 col-md-6">
-                        <h3 class="mb-4">Contact</h3>
-                        <p class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i>123 Rue de l'Éducation, Tunis</p>
-                        <p class="mb-2"><i class="fas fa-phone-alt me-2 text-primary"></i>+216 12 345 678</p>
-                        <p class="mb-2"><i class="fas fa-envelope me-2 text-primary"></i>contact@focuskid.com</p>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <h3 class="mb-4">Newsletter</h3>
-                        <p>Recevez nos actualités</p>
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-dark border-secondary text-white" placeholder="Votre email">
-                            <button class="btn btn-primary-custom">S'abonner</button>
+                        <h3>Newsletter</h3>
+                        <p style="font-size:14px;margin-bottom:14px;">
+                            Recevez nos conseils pour accompagner les enfants TDAH !
+                        </p>
+                        <div class="footer-newsletter">
+                            <input type="email" placeholder="Votre email" aria-label="Adresse email newsletter">
+                            <button type="button" aria-label="S'abonner">OK</button>
                         </div>
                     </div>
+
                 </div>
-                <hr class="border-secondary my-4">
-                <div class="text-center">
-                    <p class="mb-0">&copy; 2024 FocusKid. Tous droits réservés.</p>
-                </div>
+                <hr class="footer-divider">
+                <p class="text-center footer-copy">© 2024 FocusKid — Tous droits réservés 💛</p>
             </div>
+        </footer>
+
+    </div><!-- /#page-wrapper -->
+
+    <!-- Bouton retour en haut -->
+    <a href="#" id="back-to-top" aria-label="Retour en haut de la page">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+
+    <!-- Toast de récompense (API globale : window.showReward()) -->
+    <div id="reward-toast" role="status" aria-live="polite" aria-atomic="true">
+        <span class="reward-emoji">🌟</span>
+        <div>
+            <div class="reward-text">Super travail !</div>
+            <div class="reward-sub">Continue comme ça 💪</div>
         </div>
-        
-        <a href="#" class="back-to-top">
-            <i class="fas fa-arrow-up"></i>
-        </a>
     </div>
 
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- PNJ Mascot -->
+    <!-- Mascot PNJ -->
     {% include 'components/_mascot.html.twig' %}
 
-   
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-
+    <!-- JS Libs -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('base-front/lib/wow/wow.min.js') }}"></script>
     <script src="{{ asset('base-front/lib/easing/easing.min.js') }}"></script>
     <script src="{{ asset('base-front/lib/waypoints/waypoints.min.js') }}"></script>
     <script src="{{ asset('base-front/lib/owlcarousel/owl.carousel.min.js') }}"></script>
-
-
     <script src="{{ asset('base-front/js/face-detection.js') }}"></script>
     <script src="{{ asset('base-front/js/exercice-guardian.js') }}"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js">
-    
-
     <script src="{{ asset('base-front/js/main.js') }}"></script>
 
     <script>
-        $(document).ready(function() {
-            console.log('✅ Navigation AJAX initialisée');
-            
-            // Navbar scroll effect
-            $(window).scroll(function() {
-                if ($(this).scrollTop() > 50) {
-                    $('.navbar').addClass('sticky');
-                    $('.back-to-top').addClass('show');
-                } else {
-                    $('.navbar').removeClass('sticky');
-                    $('.back-to-top').removeClass('show');
+    (function() {
+        'use strict';
+
+        /* ── Menu hamburger mobile ── */
+        var navToggle = document.getElementById('navToggle');
+        var navMenu   = document.getElementById('navMenu');
+        if (navToggle && navMenu) {
+            navToggle.addEventListener('click', function() {
+                var isOpen = navMenu.classList.toggle('open');
+                navToggle.setAttribute('aria-expanded', String(isOpen));
+            });
+            // Fermer si clic à l'extérieur
+            document.addEventListener('click', function(e) {
+                if (!navMenu.contains(e.target) && !navToggle.contains(e.target)) {
+                    navMenu.classList.remove('open');
+                    navToggle.setAttribute('aria-expanded', 'false');
                 }
             });
-            
-            $('.back-to-top').click(function(e) {
+        }
+
+        /* ── Navbar scroll ── */
+        var navbar    = document.querySelector('.navbar');
+        var backToTop = document.getElementById('back-to-top');
+        window.addEventListener('scroll', function() {
+            var scrolled = window.scrollY > 60;
+            if (navbar)    navbar.classList.toggle('scrolled', scrolled);
+            if (backToTop) backToTop.classList.toggle('show', scrolled);
+        }, { passive: true });
+
+        /* ── Retour en haut ── */
+        if (backToTop) {
+            backToTop.addEventListener('click', function(e) {
                 e.preventDefault();
-                $('html, body').animate({scrollTop: 0}, 500);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
-            
-            var contentDiv = $('#dynamic-content');
-            var currentUrl = window.location.pathname;
-            
-            function loadContent(url) {
-                if (!url) return;
-                
-                console.log('📥 Chargement:', url);
-                
-                $.ajax({
-                    url: url,
-                    type: 'GET',
-                    dataType: 'html',
-                    success: function(data) {
-                        var newContent = $(data).find('#dynamic-content').html();
-                        contentDiv.html(newContent || data);
-                        
-                        window.history.pushState({url: url}, '', url);
-                        
-                        var newTitle = $(data).filter('title').text();
-                        if (newTitle) document.title = newTitle;
-                        
-                        $('.nav-link').removeClass('active');
-                        $('.ajax-link[data-url="' + url + '"]').addClass('active');
-                        
-                        $('html, body').animate({scrollTop: 0}, 200);
-                        
-                        if (typeof WOW !== 'undefined') new WOW().init();
-                        
-                        console.log('✅ Contenu chargé');
-                    },
-                    error: function() {
-                        window.location.href = url;
-                    }
-                });
-            }
-            
-            $(document).on('click', '.ajax-link', function(e) {
+        }
+
+        /* ── Navigation AJAX ── */
+        var contentDiv = document.getElementById('dynamic-content');
+        var currentUrl = window.location.pathname;
+
+        function loadContent(url) {
+            if (!url || url === '#') return;
+
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(res) { return res.text(); })
+                .then(function(html) {
+                    var parser  = new DOMParser();
+                    var doc     = parser.parseFromString(html, 'text/html');
+                    var newMain = doc.getElementById('dynamic-content');
+
+                    contentDiv.innerHTML = newMain ? newMain.innerHTML : html;
+
+                    // Animation d'entrée
+                    contentDiv.classList.remove('page-fade-enter');
+                    void contentDiv.offsetWidth;
+                    contentDiv.classList.add('page-fade-enter');
+
+                    window.history.pushState({ url: url }, '', url);
+
+                    var newTitle = doc.querySelector('title');
+                    if (newTitle) document.title = newTitle.textContent;
+
+                    // Mise à jour lien actif
+                    document.querySelectorAll('.ajax-link').forEach(function(link) {
+                        link.classList.toggle('active', link.dataset.url === url);
+                    });
+
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    if (typeof WOW !== 'undefined') new WOW().init();
+
+                    // Fermeture menu mobile
+                    if (navMenu)   navMenu.classList.remove('open');
+                    if (navToggle) navToggle.setAttribute('aria-expanded', 'false');
+                })
+                .catch(function() { window.location.href = url; });
+        }
+
+        document.addEventListener('click', function(e) {
+            var link = e.target.closest('.ajax-link');
+            if (link) {
                 e.preventDefault();
-                var url = $(this).data('url');
+                var url = link.dataset.url;
                 if (url) loadContent(url);
-            });
-            
-            $('#homeLink').on('click', function(e) {
-                e.preventDefault();
-                loadContent("{{ path('app_front_exercice_index') }}");
-            });
-            
-            window.addEventListener('popstate', function(event) {
-                if (event.state && event.state.url) loadContent(event.state.url);
-            });
-            
-            $('.ajax-link').each(function() {
-                if (currentUrl.includes($(this).data('url'))) {
-                    $(this).addClass('active');
-                }
-            });
-            
-            console.log('✅ Liens AJAX:', $('.ajax-link').length);
+            }
         });
+
+        var homeLink = document.getElementById('homeLink');
+        if (homeLink) {
+            homeLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                loadContent("{{ path('app_index') }}");
+            });
+        }
+
+        window.addEventListener('popstate', function(e) {
+            if (e.state && e.state.url) loadContent(e.state.url);
+        });
+
+        document.querySelectorAll('.ajax-link').forEach(function(link) {
+            if (link.dataset.url && currentUrl.includes(link.dataset.url)) {
+                link.classList.add('active');
+            }
+        });
+
+        /* ── Toast de récompense (API globale) ── */
+        window.showReward = function(emoji, text, sub) {
+            var toast = document.getElementById('reward-toast');
+            if (!toast) return;
+            toast.querySelector('.reward-emoji').textContent = emoji || '🌟';
+            toast.querySelector('.reward-text').textContent  = text  || 'Super travail !';
+            toast.querySelector('.reward-sub').textContent   = sub   || 'Continue comme ça 💪';
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 3500);
+        };
+
+        /* ── Barre de focus animée ── */
+        var focusBar = document.getElementById('focus-bar');
+        if (focusBar) {
+            var progress = 0;
+            var timer = setInterval(function() {
+                progress += Math.random() * 2.5 + 0.5;
+                if (progress > 100) { progress = 100; clearInterval(timer); }
+                focusBar.style.transform = 'scaleX(' + (progress / 100) + ')';
+            }, 600);
+        }
+
+        console.log('✅ FocusKid — Interface TDAH-Friendly initialisée');
+    })();
     </script>
-    
+
     {% block javascripts %}{% endblock %}
 </body>
 

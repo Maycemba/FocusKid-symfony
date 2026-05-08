@@ -1,0 +1,157 @@
+{# templates/profile/index.html.twig #}
+{% extends 'base-front1.html.twig' %}
+
+{% block title %}Mon Profil - FocusKid{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- En-tête -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold mb-3" style="background: linear-gradient(135deg, #FF6B35, #4A90E2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Mon Profil
+                </h1>
+                <p class="text-muted">Gérez vos informations personnelles</p>
+            </div>
+            
+            <div class="row">
+                <!-- Sidebar avec avatar -->
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body text-center p-4">
+                            <!-- Avatar -->
+                            <div class="mb-4">
+                                {% if user.avatar %}
+                                    <img src="{{ asset('uploads/avatars/' ~ user.avatar) }}" 
+                                         alt="Avatar" 
+                                         class="rounded-circle img-fluid"
+                                         style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #FF6B35;">
+                                {% else %}
+                                    <div class="rounded-circle bg-gradient d-flex align-items-center justify-content-center mx-auto"
+                                         style="width: 150px; height: 150px; background: linear-gradient(135deg, #FF6B35, #4A90E2);">
+                                        <span class="display-1 text-white">
+                                            {{ user.username|first|upper }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <h3 class="mb-1">{{ user.fullName ?: user.username }}</h3>
+                            <p class="text-muted mb-3">
+                                {% if 'ROLE_ADMIN' in user.roles %}
+                                    <span class="badge bg-danger">Administrateur</span>
+                                {% elseif 'ROLE_PARENT' in user.roles %}
+                                    <span class="badge bg-primary">Parent</span>
+                                {% else %}
+                                    <span class="badge bg-success">Enfant</span>
+                                {% endif %}
+                            </p>
+                            
+                            <hr>
+                            
+                            <div class="text-start">
+                                <p class="mb-2">
+                                    <i class="fas fa-user text-primary me-2"></i>
+                                    <strong>Nom d'utilisateur:</strong> {{ user.username }}
+                                </p>
+                                <p class="mb-2">
+                                    <i class="fas fa-envelope text-primary me-2"></i>
+                                    <strong>Email:</strong> {{ user.email }}
+                                </p>
+                                {% if user.phone %}
+                                <p class="mb-2">
+                                    <i class="fas fa-phone text-primary me-2"></i>
+                                    <strong>Téléphone:</strong> {{ user.phone }}
+                                </p>
+                                {% endif %}
+                                {% if user.birthdate %}
+                                <p class="mb-2">
+                                    <i class="fas fa-birthday-cake text-primary me-2"></i>
+                                    <strong>Date de naissance:</strong> {{ user.birthdate|date('d/m/Y') }}
+                                </p>
+                                {% endif %}
+                                <p class="mb-2">
+                                    <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                    <strong>Membre depuis:</strong> {{ user.createdAt|date('d/m/Y') }}
+                                </p>
+                                <p class="mb-0">
+                                    <i class="fas fa-circle text-{% if user.isActive %}success{% else %}danger{% endif %} me-2"></i>
+                                    <strong>Statut:</strong> {% if user.isActive %}Actif{% else %}Inactif{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informations principales -->
+                <div class="col-md-8">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4 class="mb-0">
+                                    <i class="fas fa-info-circle text-primary me-2"></i>
+                                    Informations personnelles
+                                </h4>
+                                <a href="{{ path('app_profile_edit') }}" class="btn btn-primary-custom">
+                                    <i class="fas fa-edit me-2"></i>Modifier le profil
+                                </a>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-muted small">Prénom</label>
+                                    <p class="fw-bold mb-0">{{ user.firstname ?: 'Non renseigné' }}</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-muted small">Nom</label>
+                                    <p class="fw-bold mb-0">{{ user.lastname ?: 'Non renseigné' }}</p>
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label class="text-muted small">Email</label>
+                                    <p class="fw-bold mb-0">{{ user.email }}</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-muted small">Téléphone</label>
+                                    <p class="fw-bold mb-0">{{ user.phone ?: 'Non renseigné' }}</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-muted small">Date de naissance</label>
+                                    <p class="fw-bold mb-0">{{ user.birthdate ? user.birthdate|date('d/m/Y') : 'Non renseignée' }}</p>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-bell me-1 text-primary"></i>
+                                    <span>Notifications par email: </span>
+                                    <strong>{{ user.notificationsEmail ? 'Activées' : 'Désactivées' }}</strong>
+                                </div>
+                                <a href="{{ path('app_profile_edit') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-sliders-h me-2"></i>Personnaliser
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sections supplémentaires pour enfants TDAH -->
+                    <div class="card border-0 shadow-sm rounded-4 mt-4">
+                        <div class="card-body p-4">
+                            <h4 class="mb-3">
+                                <i class="fas fa-brain text-primary me-2"></i>
+                                Conseils personnalisés
+                            </h4>
+                            <div class="alert alert-info">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Astuce FocusKid:</strong> Personnalisez votre profil pour recevoir des recommandations adaptées à vos besoins!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

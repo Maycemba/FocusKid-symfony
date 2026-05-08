@@ -148,11 +148,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->passwordHash;
     }
 
-    public function setPasswordHash(string $passwordHash): self
-    {
-        $this->passwordHash = $passwordHash;
-        return $this;
-    }
+    public function setPasswordHash(string $password): self
+{
+    // Note: Ne pas hasher ici, le hasher sera utilisé dans le contrôleur
+    $this->passwordHash = $password;
+    return $this;
+}
 
     public function getRole(): ?int
     {
@@ -327,4 +328,116 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // Nothing sensitive stored in memory
     }
+    // src/Entity/Utilisateur.php
+// Ajoutez ces propriétés après les propriétés existantes
+
+#[ORM\Column(name: 'firstname', type: 'string', length: 100, nullable: true)]
+private ?string $firstname = null;
+
+#[ORM\Column(name: 'lastname', type: 'string', length: 100, nullable: true)]
+private ?string $lastname = null;
+
+#[ORM\Column(name: 'phone', type: 'string', length: 20, nullable: true)]
+private ?string $phone = null;
+
+#[ORM\Column(name: 'birthdate', type: 'date', nullable: true)]
+private ?\DateTimeInterface $birthdate = null;
+
+#[ORM\Column(name: 'avatar', type: 'string', length: 255, nullable: true)]
+private ?string $avatar = null;
+
+// Ajoutez les getters et setters correspondants
+
+public function getFirstname(): ?string
+{
+    return $this->firstname;
+}
+
+public function setFirstname(?string $firstname): self
+{
+    $this->firstname = $firstname;
+    return $this;
+}
+
+public function getLastname(): ?string
+{
+    return $this->lastname;
+}
+
+public function setLastname(?string $lastname): self
+{
+    $this->lastname = $lastname;
+    return $this;
+}
+
+public function getPhone(): ?string
+{
+    return $this->phone;
+}
+
+public function setPhone(?string $phone): self
+{
+    $this->phone = $phone;
+    return $this;
+}
+
+public function getBirthdate(): ?\DateTimeInterface
+{
+    return $this->birthdate;
+}
+
+public function setBirthdate(?\DateTimeInterface $birthdate): self
+{
+    $this->birthdate = $birthdate;
+    return $this;
+}
+
+public function getAvatar(): ?string
+{
+    return $this->avatar;
+}
+
+public function setAvatar(?string $avatar): self
+{
+    $this->avatar = $avatar;
+    return $this;
+}
+
+public function getFullName(): string
+{
+    return trim($this->firstname . ' ' . $this->lastname);
+}
+// src/Entity/Utilisateur.php
+// Ajoutez ces propriétés après les propriétés existantes (vers ligne 50-60)
+
+#[ORM\Column(name: 'reset_token', type: 'string', length: 255, nullable: true)]
+private ?string $resetToken = null;
+
+#[ORM\Column(name: 'reset_token_expiry', type: 'datetime', nullable: true)]
+private ?\DateTimeInterface $resetTokenExpiry = null;
+
+// Ensuite, ajoutez les getters et setters correspondants
+// (ajoutez-les vers la fin de la classe, avant la dernière accolade)
+
+public function getResetToken(): ?string
+{
+    return $this->resetToken;
+}
+
+public function setResetToken(?string $resetToken): self
+{
+    $this->resetToken = $resetToken;
+    return $this;
+}
+
+public function getResetTokenExpiry(): ?\DateTimeInterface
+{
+    return $this->resetTokenExpiry;
+}
+
+public function setResetTokenExpiry(?\DateTimeInterface $resetTokenExpiry): self
+{
+    $this->resetTokenExpiry = $resetTokenExpiry;
+    return $this;
+}
 }
