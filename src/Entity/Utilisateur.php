@@ -5,14 +5,26 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+<<<<<<< HEAD
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+=======
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+>>>>>>> origin/User
 use App\Repository\UtilisateurRepository;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[ORM\Table(name: 'utilisateur')]
+<<<<<<< HEAD
 class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
+=======
+#[UniqueEntity(fields: ['username'], message: 'Ce nom d\'utilisateur est déjà utilisé.')]
+#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé.')]
+class Utilisateur implements UserInterface
+>>>>>>> origin/User
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -30,7 +42,22 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+<<<<<<< HEAD
     #[ORM\Column(name: 'Username', type: 'string', nullable: false)]
+=======
+    #[ORM\Column(type: 'string', length: 50, nullable: false, unique: true)]
+    #[Assert\NotBlank(message: 'Le nom d\'utilisateur est obligatoire.')]
+    #[Assert\Length(
+        min: 3,
+        max: 50,
+        minMessage: 'Le nom d\'utilisateur doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le nom d\'utilisateur ne peut pas dépasser {{ limit }} caractères.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-Z0-9_]+$/',
+        message: 'Le nom d\'utilisateur ne peut contenir que des lettres, chiffres et underscores.'
+    )]
+>>>>>>> origin/User
     private ?string $username = null;
 
     public function getUsername(): ?string
@@ -44,7 +71,17 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+<<<<<<< HEAD
     #[ORM\Column(name: 'Email', type: 'string', nullable: false)]
+=======
+    #[ORM\Column(type: 'string', length: 100, nullable: false, unique: true)]
+    #[Assert\NotBlank(message: 'L\'email est obligatoire.')]
+    #[Assert\Email(message: 'L\'adresse email « {{ value }} » n\'est pas valide.')]
+    #[Assert\Length(
+        max: 100,
+        maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.'
+    )]
+>>>>>>> origin/User
     private ?string $email = null;
 
     public function getEmail(): ?string
@@ -58,7 +95,18 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+<<<<<<< HEAD
     #[ORM\Column(name: 'PasswordHash', type: 'string', nullable: false)]
+=======
+    #[ORM\Column(type: 'string', length: 255, nullable: false, name: 'passwordHash')]
+    #[Assert\NotBlank(message: 'Le mot de passe est obligatoire.')]
+    #[Assert\Length(
+        min: 4,
+        max: 255,
+        minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le mot de passe ne peut pas dépasser {{ limit }} caractères.'
+    )]
+>>>>>>> origin/User
     private ?string $passwordHash = null;
 
     public function getPasswordHash(): ?string
@@ -72,8 +120,18 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+<<<<<<< HEAD
     #[ORM\Column(name: 'Role', type: 'integer', nullable: false)]
     private ?int $role = null;
+=======
+    #[ORM\Column(type: 'string', length: 100, nullable: false)]
+    #[Assert\NotBlank(message: 'Le rôle est obligatoire.')]
+    #[Assert\Choice(
+        choices: ['admin', 'enfant', 'parent'],
+        message: 'Le rôle doit être admin, enfant ou parent.'
+    )]
+    private ?string $role = null;
+>>>>>>> origin/User
 
     public function getRole(): ?int
     {
@@ -86,8 +144,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+<<<<<<< HEAD
     #[ORM\Column(name: 'IsActive', type: 'boolean', nullable: true)]
     private ?bool $isActive = null;
+=======
+    #[ORM\Column(type: 'boolean', nullable: true, name: 'isActive')]
+    private ?bool $isActive = true;
+>>>>>>> origin/User
 
     public function isIsActive(): ?bool
     {
@@ -100,8 +163,18 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+<<<<<<< HEAD
   #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
 private ?\DateTimeInterface $createdAt = null;
+=======
+    public function isActive(): ?bool
+    {
+        return $this->isActive;
+    }
+
+    #[ORM\Column(type: 'datetime', nullable: true, name: 'createdAt')]
+    private ?\DateTimeInterface $createdAt = null;
+>>>>>>> origin/User
 
 public function getCreatedAt(): ?\DateTimeInterface
 {
@@ -114,8 +187,13 @@ public function setCreatedAt(?\DateTimeInterface $createdAt): self
     return $this;
 }
 
+<<<<<<< HEAD
 #[ORM\Column(name: 'notifications_email', type: 'boolean', nullable: true)]
 private ?bool $notificationsEmail = null;
+=======
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $notifications_email = false;
+>>>>>>> origin/User
 
 // Ajoute les getter/setter
 public function getNotificationsEmail(): ?bool
@@ -142,12 +220,73 @@ public function setNotificationsEmail(?bool $notificationsEmail): self
     //     return $this;
     // }
 
+    public function isNotificationsEmail(): ?bool
+    {
+        return $this->notifications_email;
+    }
+
+    public function setNotificationsEmail(?bool $notifications_email): static
+    {
+        $this->notifications_email = $notifications_email;
+        return $this;
+    }
+    #[ORM\Column(type: 'string', length: 10, nullable: true)]
+private ?string $resetToken = null;
+
+public function getResetToken(): ?string
+{
+    return $this->resetToken;
+}
+
+public function setResetToken(?string $resetToken): self
+{
+    $this->resetToken = $resetToken;
+    return $this;
+}
+
+#[ORM\Column(type: 'datetime', nullable: true)]
+private ?\DateTimeInterface $resetTokenExpiry = null;
+
+public function getResetTokenExpiry(): ?\DateTimeInterface
+{
+    return $this->resetTokenExpiry;
+}
+
+public function setResetTokenExpiry(?\DateTimeInterface $resetTokenExpiry): self
+{
+    $this->resetTokenExpiry = $resetTokenExpiry;
+    return $this;
+}
+
+    // ── Relations ─────────────────────────────────────────
+
     #[ORM\OneToMany(targetEntity: CarnetEducatif::class, mappedBy: 'utilisateur')]
     private Collection $carnetEducatifs;
 
-    /**
-     * @return Collection<int, CarnetEducatif>
-     */
+    #[ORM\OneToMany(targetEntity: ReponseUserExercice::class, mappedBy: 'utilisateur')]
+    private Collection $reponseUserExercices;
+
+    #[ORM\OneToMany(targetEntity: ReponseUserQuiz::class, mappedBy: 'utilisateur')]
+    private Collection $reponseUserQuizs;
+
+    #[ORM\OneToMany(targetEntity: Score::class, mappedBy: 'utilisateur')]
+    private Collection $scores;
+
+    #[ORM\OneToMany(targetEntity: SessionsDeCalme::class, mappedBy: 'utilisateur')]
+    private Collection $sessionsDeCalmes;
+
+    public function __construct()
+    {
+        $this->carnetEducatifs      = new ArrayCollection();
+        $this->reponseUserExercices = new ArrayCollection();
+        $this->reponseUserQuizs     = new ArrayCollection();
+        $this->scores               = new ArrayCollection();
+        $this->sessionsDeCalmes     = new ArrayCollection();
+        $this->isActive             = true;
+        $this->notifications_email  = false;
+        $this->createdAt            = new \DateTime();
+    }
+
     public function getCarnetEducatifs(): Collection
     {
         if (!$this->carnetEducatifs instanceof Collection) {
@@ -170,12 +309,6 @@ public function setNotificationsEmail(?bool $notificationsEmail): self
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: ReponseUserExercice::class, mappedBy: 'utilisateur')]
-    private Collection $reponseUserExercices;
-
-    /**
-     * @return Collection<int, ReponseUserExercice>
-     */
     public function getReponseUserExercices(): Collection
     {
         if (!$this->reponseUserExercices instanceof Collection) {
@@ -200,7 +333,11 @@ public function setNotificationsEmail(?bool $notificationsEmail): self
         return $this->username; // Utiliser username au lieu d'email
     }
 
+<<<<<<< HEAD
     public function getRoles(): array
+=======
+    public function getReponseUserQuizs(): Collection
+>>>>>>> origin/User
     {
         $roles = [];
 
@@ -235,5 +372,89 @@ public function setNotificationsEmail(?bool $notificationsEmail): self
         $this->passwordHash = $password;
         return $this;
     }
+<<<<<<< HEAD
     
+=======
+
+    public function removeReponseUserQuiz(ReponseUserQuiz $reponseUserQuiz): self
+    {
+        $this->getReponseUserQuizs()->removeElement($reponseUserQuiz);
+        return $this;
+    }
+
+    public function getScores(): Collection
+    {
+        if (!$this->scores instanceof Collection) {
+            $this->scores = new ArrayCollection();
+        }
+        return $this->scores;
+    }
+
+    public function addScore(Score $score): self
+    {
+        if (!$this->getScores()->contains($score)) {
+            $this->getScores()->add($score);
+        }
+        return $this;
+    }
+
+    public function removeScore(Score $score): self
+    {
+        $this->getScores()->removeElement($score);
+        return $this;
+    }
+
+    public function getSessionsDeCalmes(): Collection
+    {
+        if (!$this->sessionsDeCalmes instanceof Collection) {
+            $this->sessionsDeCalmes = new ArrayCollection();
+        }
+        return $this->sessionsDeCalmes;
+    }
+
+    public function addSessionsDeCalme(SessionsDeCalme $sessionsDeCalme): self
+    {
+        if (!$this->getSessionsDeCalmes()->contains($sessionsDeCalme)) {
+            $this->getSessionsDeCalmes()->add($sessionsDeCalme);
+        }
+        return $this;
+    }
+
+    public function removeSessionsDeCalme(SessionsDeCalme $sessionsDeCalme): self
+    {
+        $this->getSessionsDeCalmes()->removeElement($sessionsDeCalme);
+        return $this;
+    }
+
+    // ── UserInterface ──────────────────────────────────────
+
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->username;
+    }
+
+public function getRoles(): array
+{
+    $roles = ['ROLE_USER']; // MUST always be present
+
+    $roles[] = match($this->role) {
+        'admin'  => 'ROLE_ADMIN',
+        'parent' => 'ROLE_PARENT',
+        'enfant' => 'ROLE_ENFANT',
+        default  => 'ROLE_USER',
+    };
+
+    return array_unique($roles);
+>>>>>>> origin/User
+}
+
+    public function getPassword(): ?string
+    {
+        return $this->passwordHash;
+    }
+
+    public function eraseCredentials(): void
+    {
+        // nothing sensitive stored in memory
+    }
 }

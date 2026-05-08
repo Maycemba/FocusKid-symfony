@@ -1,6 +1,7 @@
 <?php
 namespace App\Controller;
 
+<<<<<<< HEAD
 use App\Repository\CourRepository;
 use App\Service\TranslationService;
 use Dompdf\Dompdf;
@@ -9,11 +10,15 @@ use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+=======
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+>>>>>>> origin/User
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class FrontController extends AbstractController
 {
+<<<<<<< HEAD
     #[Route('/index', name: 'app_index')]
     public function index(): Response
     {
@@ -198,5 +203,27 @@ public function listeCours(
                 'Content-Disposition' => 'inline; filename="' . $nomFichier . '"'
             ]
         );
+=======
+    #[Route('/', name: 'app_home')]
+    public function home(): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return $this->redirectToRoute('app_utilisateur_index');
+        }
+
+        return $this->redirectToRoute('app_index');
+    }
+
+    #[Route('/index', name: 'app_index')]
+    public function index(): Response
+    {
+        return $this->render('public/base-front/index.html');
+>>>>>>> origin/User
     }
 }

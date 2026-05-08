@@ -1,14 +1,183 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="fr">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+<<<<<<< HEAD
     <title>{% block title %}FocusKids Admin - Dashboard{% endblock %}</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('base-back/assets/images/logos/favicon.png') }}">
     <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/logo.png') }}" />
     <link rel="stylesheet" href="{{ asset('base-back/assets/css/styles.min.css') }}" />
+=======
+    <title>{% block title %}FocusKid Admin{% endblock %}</title>
+    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/favicon.png') }}"/>
+    <link rel="stylesheet" href="{{ asset('base-back/assets/css/styles.min.css') }}"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            background: #f0f4ff;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* ── TOP BAR ── */
+        .top-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 64px;
+            background: rgba(152, 220, 248, 0.95);
+            backdrop-filter: blur(8px);
+            border-bottom: 3px solid rgba(7, 164, 209, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            z-index: 1000;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .top-bar-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #1a1a8b, #4a4adb);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .top-bar-logo i { color: white; font-size: 20px; }
+        .top-bar-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a8b;
+            text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+        }
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .top-bar-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .top-bar-avatar {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #1a1a8b, #4a4adb);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .top-bar-username {
+            font-weight: 700;
+            color: #1a1a8b;
+            font-size: 15px;
+        }
+        .btn-logout {
+            background: #ef5350;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 7px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: opacity 0.2s;
+        }
+        .btn-logout:hover { opacity: 0.88; color: white; }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            bottom: 0;
+            width: 90px;
+            background: linear-gradient(to bottom,
+                rgba(197, 239, 197, 0.95),
+                rgba(197, 237, 188, 0.92));
+            border-right: 2px solid rgba(26,26,139,0.15);
+            border-radius: 0 30px 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 28px 8px;
+            gap: 24px;
+            box-shadow: 3px 0 16px rgba(0,0,0,0.08);
+            z-index: 999;
+        }
+        .sidebar-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            padding: 10px 8px;
+            border-radius: 16px;
+            width: 74px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            background: transparent;
+        }
+        .sidebar-btn:hover {
+            transform: scale(1.18);
+            box-shadow: 0 0 18px rgba(255, 215, 0, 0.7);
+        }
+        .sidebar-btn:active {
+            transform: scale(0.94);
+        }
+        .sidebar-btn.active {
+            background: rgba(255, 179, 43, 0.2);
+            box-shadow: 0 0 12px rgba(255, 179, 43, 0.5);
+        }
+        .sidebar-icon {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+        .sidebar-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1a1a8b;
+            text-align: center;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+            margin-top: 64px;
+            margin-left: 90px;
+            padding: 28px;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* ── WHITE BOARD ── */
+        .white-board {
+            background: rgba(255, 255, 255, 0.93);
+            border-radius: 24px;
+            border: 3px solid #ffb32b;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+            padding: 28px;
+            min-height: calc(100vh - 140px);
+        }
+    </style>
+>>>>>>> origin/User
     {% block stylesheets %}{% endblock %}
     <style>
         /* Style pour minimiser le logo */
@@ -92,12 +261,9 @@
         }
     </style>
 </head>
-
 <body>
-  
-    <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
-        data-sidebar-position="fixed" data-header-position="fixed">
 
+<<<<<<< HEAD
         <div class="app-topstrip bg-dark py-3 px-4 w-100 d-lg-flex align-items-center justify-content-between">
             <div class="text-white">
                 <small>🌟 FocusKids - Plateforme éducative pour enfants</small>
@@ -447,7 +613,99 @@
         })();
     </script>
 
-    {% block javascripts %}{% endblock %}
-</body>
+=======
+    {# ── TOP BAR ── #}
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <div class="top-bar-logo">
+                <i class="ti ti-book-2"></i>
+            </div>
+            <span class="top-bar-title">FocusKid</span>
+        </div>
+        <div class="top-bar-right">
+            <div class="top-bar-user">
+                <div class="top-bar-avatar">
+                    {{ app.session.get('user_username')|upper|slice(0,1) }}
+                </div>
+                <span class="top-bar-username">
+                    {{ app.session.get('user_username') }}
+                </span>
+            </div>
+            <a href="{{ path('app_logout') }}" class="btn-logout">
+                <i class="ti ti-logout"></i> Déconnexion
+            </a>
+        </div>
+    </div>
 
+    {# ── SIDEBAR ── #}
+    <div class="sidebar">
+        <a href="{{ path('app_utilisateur_new') }}"
+           class="sidebar-btn {{ app.request.get('_route') == 'app_utilisateur_new' ? 'active' : '' }}">
+            <img src="{{ asset('base-back/assets/images/sidebar/plus.png') }}"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+                 class="sidebar-icon" alt="Ajouter">
+            <span class="sidebar-icon" style="display:none;width:50px;height:50px;
+                background:#43A047;border-radius:14px;align-items:center;
+                justify-content:center;color:white;font-size:22px">
+                <i class="ti ti-plus"></i>
+            </span>
+            <span class="sidebar-label">Ajouter</span>
+        </a>
+
+        <a href="{{ path('app_utilisateur_index') }}"
+           class="sidebar-btn {{ app.request.get('_route') == 'app_utilisateur_index' ? 'active' : '' }}">
+            <span class="sidebar-icon" style="display:flex;width:50px;height:50px;
+                background:#1a1a8b;border-radius:14px;align-items:center;
+                justify-content:center;color:white;font-size:22px">
+                <i class="ti ti-list"></i>
+            </span>
+            <span class="sidebar-label">Liste</span>
+        </a>
+
+        <a href="{{ path('app_utilisateur_index') }}"
+           class="sidebar-btn">
+            <span class="sidebar-icon" style="display:flex;width:50px;height:50px;
+                background:#ffb32b;border-radius:14px;align-items:center;
+                justify-content:center;color:#1a1a8b;font-size:22px">
+                <i class="ti ti-pencil"></i>
+            </span>
+            <span class="sidebar-label">Modifier</span>
+        </a>
+
+        <a href="{{ path('app_utilisateur_index') }}"
+           class="sidebar-btn">
+            <span class="sidebar-icon" style="display:flex;width:50px;height:50px;
+                background:#ef5350;border-radius:14px;align-items:center;
+                justify-content:center;color:white;font-size:22px">
+                <i class="ti ti-trash"></i>
+            </span>
+            <span class="sidebar-label">Supprimer</span>
+        </a>
+
+        <a href="{{ path('app_security_dashboard') }}"
+           class="sidebar-btn {{ app.request.get('_route') starts with 'app_security_' ? 'active' : '' }}">
+            <span class="sidebar-icon" style="display:flex;width:50px;height:50px;
+                background:#7b1fa2;border-radius:14px;align-items:center;
+                justify-content:center;color:white;font-size:22px">
+                <i class="ti ti-shield-lock"></i>
+            </span>
+            <span class="sidebar-label">Sécurité</span>
+        </a>
+    </div>
+
+    {# ── MAIN CONTENT ── #}
+    <div class="main-content">
+        <div class="white-board">
+            {% block body %}{% endblock %}
+        </div>
+    </div>
+
+    <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('assets/js/app.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
+>>>>>>> origin/User
+    {% block javascripts %}{% endblock %}
+
+</body>
 </html>

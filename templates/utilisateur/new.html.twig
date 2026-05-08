@@ -1,11 +1,95 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-back.html.twig' %}
 
-{% block title %}New Utilisateur{% endblock %}
+{% block title %}Nouvel Utilisateur{% endblock %}
 
 {% block body %}
-    <h1>Create new Utilisateur</h1>
+<div class="container-fluid">
 
-    {{ include('utilisateur/_form.html.twig') }}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-semibold mb-1">Nouvel Utilisateur</h4>
+            <p class="text-muted mb-0">Remplissez le formulaire pour créer un utilisateur</p>
+        </div>
+        <a href="{{ path('app_utilisateur_index') }}" class="btn btn-outline-secondary">
+            <i class="ti ti-arrow-left me-1"></i> Retour
+        </a>
+    </div>
 
-    <a href="{{ path('app_utilisateur_index') }}">back to list</a>
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+
+                    {% if errors is defined and errors|length > 0 %}
+                        <div class="alert alert-danger rounded-3">
+                            <ul class="mb-0">
+                                {% for error in errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <form method="POST" action="{{ path('app_utilisateur_new') }}">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Nom d'utilisateur <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="username" class="form-control"
+                                   placeholder="ex: johndoe" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" name="email" class="form-control"
+                                   placeholder="ex: john@email.com" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Mot de passe <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" name="password" class="form-control"
+                                   placeholder="••••••••" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Rôle</label>
+                            <select name="role" class="form-select">
+                                <option value="enfant">🎓 Enfant</option>
+                                <option value="parent">👨‍👩‍👧 Parent</option>
+                                <option value="admin">👑 Admin</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox"
+                                       name="isActive" id="isActive" checked>
+                                <label class="form-check-label fw-semibold" for="isActive">
+                                    Compte actif
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="ti ti-check me-1"></i> Enregistrer
+                            </button>
+                            <a href="{{ path('app_utilisateur_index') }}"
+                               class="btn btn-outline-secondary px-4">
+                                Annuler
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
 {% endblock %}
