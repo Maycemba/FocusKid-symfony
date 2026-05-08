@@ -1,0 +1,318 @@
+{% extends 'base-front.html.twig' %}
+
+{% block title %}Inscription - FocusKid | Rejoins l'aventure{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .register-hero {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        padding: 80px 0;
+    }
+
+    .register-card {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 28px;
+        padding: 40px;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        border: 1px solid rgba(255,255,255,0.3);
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .register-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .register-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+
+    .register-icon i {
+        font-size: 35px;
+        color: white;
+    }
+
+    .input-group-modern {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .input-group-modern i {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--orange);
+        font-size: 18px;
+        z-index: 10;
+    }
+
+    .input-group-modern input {
+        width: 100%;
+        padding: 12px 16px 12px 48px;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        font-size: 15px;
+        transition: all 0.3s;
+        outline: none;
+    }
+
+    .input-group-modern input:focus {
+        border-color: var(--orange);
+        box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
+    }
+
+    .input-group-modern input.is-invalid {
+        border-color: #dc3545;
+    }
+
+    .btn-register {
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        border: none;
+        padding: 14px;
+        border-radius: 16px;
+        font-weight: bold;
+        font-size: 16px;
+        transition: all 0.3s;
+        width: 100%;
+        color: white;
+    }
+
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(255,107,53,0.3);
+    }
+
+    .password-strength {
+        margin-top: 8px;
+        height: 4px;
+        border-radius: 2px;
+        transition: all 0.3s;
+    }
+
+    .strength-weak { width: 33%; background: #dc3545; }
+    .strength-medium { width: 66%; background: #ffc107; }
+    .strength-strong { width: 100%; background: #28a745; }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert-custom {
+        border-radius: 16px;
+        border: none;
+        padding: 12px 20px;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--orange);
+        border-color: var(--orange);
+    }
+
+    .form-check-label {
+        margin-left: 8px;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="register-hero">
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-lg-6">
+                <div class="register-card">
+                    <div class="register-header">
+                        <div class="register-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h2 class="h3 fw-bold mb-2">Rejoins l'aventure FocusKid 🚀</h2>
+                        <p class="text-muted">Crée ton compte et commence à apprendre en t'amusant</p>
+                    </div>
+
+                    {% for flash_error in app.flashes('error') %}
+                        <div class="alert alert-danger alert-custom mb-4">
+                            <i class="fas fa-exclamation-circle me-2"></i> {{ flash_error }}
+                        </div>
+                    {% endfor %}
+
+                    {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
+                    
+                    <div class="input-group-modern">
+                        <i class="fas fa-user-astronaut"></i>
+                        {{ form_widget(registrationForm.username, {'attr': {'placeholder': 'Choisis ton pseudo *'}}) }}
+                        {{ form_errors(registrationForm.username) }}
+                    </div>
+
+                    <div class="input-group-modern">
+                        <i class="fas fa-envelope"></i>
+                        {{ form_widget(registrationForm.email, {'attr': {'placeholder': 'Ton adresse email *'}}) }}
+                        {{ form_errors(registrationForm.email) }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="input-group-modern">
+                                <i class="fas fa-user"></i>
+                                {{ form_widget(registrationForm.firstname, {'attr': {'placeholder': 'Prénom'}}) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group-modern">
+                                <i class="fas fa-user"></i>
+                                {{ form_widget(registrationForm.lastname, {'attr': {'placeholder': 'Nom'}}) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group-modern">
+                        <i class="fas fa-key"></i>
+                        {{ form_widget(registrationForm.plainPassword.first, {'attr': {'placeholder': 'Mot de passe *', 'id': 'password'}}) }}
+                        {{ form_errors(registrationForm.plainPassword.first) }}
+                    </div>
+
+                    <!-- Indicateur de force du mot de passe -->
+                    <div class="password-strength mb-3" id="password-strength"></div>
+
+                    <div class="input-group-modern">
+                        <i class="fas fa-check-circle"></i>
+                        {{ form_widget(registrationForm.plainPassword.second, {'attr': {'placeholder': 'Confirme ton mot de passe *'}}) }}
+                        {{ form_errors(registrationForm.plainPassword.second) }}
+                    </div>
+
+                    <div class="mb-4 form-check">
+                        {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(registrationForm.agreeTerms, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                        {{ form_errors(registrationForm.agreeTerms) }}
+                    </div>
+
+                    <button type="submit" class="btn-register">
+                        <i class="fas fa-rocket me-2"></i> Créer mon compte
+                    </button>
+
+                    {{ form_end(registrationForm) }}
+
+                    <hr class="my-4">
+
+                    <p class="text-center mb-0">
+                        <small>Déjà un compte ? 
+                            <a href="{{ path('app_login') }}" class="fw-bold text-decoration-none" style="color: var(--orange);">
+                                Connecte-toi ici
+                            </a>
+                        </small>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Colonne des avantages -->
+            <div class="col-lg-5 offset-lg-1 d-none d-lg-block">
+                <div class="text-white">
+                    <h2 class="display-5 fw-bold mb-4">Pourquoi créer un compte ?</h2>
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="bg-white bg-opacity-20 rounded-circle p-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-trophy fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">Suis tes progrès</h5>
+                                <p class="mb-0 opacity-75">Gagne des badges et deviens expert</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="bg-white bg-opacity-20 rounded-circle p-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-chart-line fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">Tableau de bord parent</h5>
+                                <p class="mb-0 opacity-75">Visualise les résultats en temps réel</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="bg-white bg-opacity-20 rounded-circle p-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-infinity fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">Accès illimité</h5>
+                                <p class="mb-0 opacity-75">À tous les exercices et jeux éducatifs</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 pt-3">
+                        <div class="d-flex gap-2 mb-2">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="fst-italic fs-5">"Super application ! Mon fils a déjà appris énormément en quelques semaines."</p>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-user-circle fa-2x"></i>
+                            <div>
+                                <strong>Thomas Dubois</strong><br>
+                                <small>Papa de Maxime, 7 ans</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// Détection automatique de la force du mot de passe
+const passwordInput = document.getElementById('password');
+const strengthDiv = document.getElementById('password-strength');
+
+if(passwordInput && strengthDiv) {
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        let strength = 0;
+        
+        if(password.length >= 4) strength++;
+        if(password.length >= 8) strength++;
+        if(password.match(/[a-z]+/)) strength++;
+        if(password.match(/[A-Z]+/)) strength++;
+        if(password.match(/[0-9]+/)) strength++;
+        if(password.match(/[$@#&!]+/)) strength++;
+        
+        strengthDiv.className = 'password-strength mb-3';
+        if(password.length === 0) {
+            strengthDiv.style.display = 'none';
+        } else {
+            strengthDiv.style.display = 'block';
+            if(strength <= 2) {
+                strengthDiv.className += ' strength-weak';
+            } else if(strength <= 4) {
+                strengthDiv.className += ' strength-medium';
+            } else {
+                strengthDiv.className += ' strength-strong';
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

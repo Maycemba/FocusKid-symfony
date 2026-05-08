@@ -1,315 +1,506 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>FocusKid — Connexion</title>
-    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/favicon.png') }}"/>
-    <link rel="stylesheet" href="{{ asset('base-back/assets/css/styles.min.css') }}"/>
-    <style>
-        body {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-        }
-        .login-wrapper {
-            width: 100%;
-            max-width: 440px;
-            padding: 16px;
-        }
-        .login-card {
-            background: #fff;
-            border-radius: 20px;
-            padding: 48px 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-        }
-        .login-logo {
-            width: 72px;
-            height: 72px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-        }
-        .login-logo i { font-size: 32px; color: white; }
-        .login-title {
-            font-size: 26px;
-            font-weight: 700;
-            color: #2d3748;
-            text-align: center;
-            margin: 0 0 6px;
-        }
-        .login-subtitle {
-            text-align: center;
-            color: #718096;
-            font-size: 14px;
-            margin: 0 0 32px;
-        }
-        .form-label {
-            font-weight: 600;
-            font-size: 13px;
-            color: #4a5568;
-            margin-bottom: 6px;
-            display: block;
-        }
-        .input-wrap {
-            position: relative;
-            margin-bottom: 20px;
-        }
-        .input-wrap i {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #a0aec0;
-            font-size: 16px;
-            pointer-events: none;
-        }
-        .input-wrap input {
-            width: 100%;
-            padding: 12px 16px 12px 42px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 14px;
-            color: #2d3748;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            outline: none;
-            box-sizing: border-box;
-        }
-        .input-wrap input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
-        }
-        .remember-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-        .remember-row input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            accent-color: #667eea;
-            cursor: pointer;
-        }
-        .remember-row label {
-            font-size: 13px;
-            color: #4a5568;
-            cursor: pointer;
-            margin: 0;
-        }
-        .btn-login {
-            width: 100%;
-            padding: 13px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
-        }
-        .btn-login:hover {
-            opacity: 0.92;
-            transform: translateY(-1px);
-        }
-        .alert-error {
-            background: #fff5f5;
-            border: 1.5px solid #fed7d7;
-            border-radius: 10px;
-            color: #c53030;
-            padding: 12px 16px;
-            font-size: 13px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .role-badges {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 28px;
-        }
-        .role-badge {
-            background: #f7fafc;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 20px;
-            padding: 5px 14px;
-            font-size: 12px;
-            color: #718096;
-        }
-        .captcha-wrap {
-            margin-bottom: 20px;
-        }
-        .captcha-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-        .captcha-img {
-            border-radius: 8px;
-            border: 1.5px solid #e2e8f0;
-            cursor: pointer;
-            height: 50px;
-            width: 160px;
-            object-fit: cover;
-        }
-        .captcha-refresh {
-            background: none;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 8px 10px;
-            cursor: pointer;
-            color: #667eea;
-            font-size: 18px;
-            transition: border-color 0.2s;
-        }
-        .captcha-refresh:hover { border-color: #667eea; }
-        .captcha-hint {
-            font-size: 11px;
-            color: #a0aec0;
-            margin-bottom: 6px;
-        }
-    </style>
-</head>
-<body>
-<div class="login-wrapper">
-    <div class="login-card">
+{% extends 'base-front.html.twig' %}
 
-        <div class="login-logo">
-            <i class="ti ti-book-2"></i>
-        </div>
-        <h1 class="login-title">FocusKid</h1>
-        <p class="login-subtitle">Connectez-vous à votre espace</p>
+{% block title %}FocusKid - L'aventure éducative commence ici{% endblock %}
 
-        {% if error %}
-            <div class="alert-error">
-                <i class="ti ti-alert-circle"></i>
-                {{ error.messageKey|trans(error.messageData, 'security') }}
-            </div>
-        {% endif %}
+{% block stylesheets %}
+<style>
+    :root {
+        --orange: #FF6B35;
+        --blue: #4A90E2;
+        --purple: #9B59B6;
+        --green: #27AE60;
+    }
 
-        <form method="POST" action="{{ path('app_login') }}" autocomplete="off">
+    /* Hero Section Style Connexion */
+    .hero-welcome {
+        min-height: 90vh;
+        background: linear-gradient(135deg, rgba(255,107,53,0.95), rgba(74,144,226,0.95)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="3" fill="white" opacity="0.3"/><circle cx="80" cy="40" r="2" fill="white" opacity="0.2"/><circle cx="50" cy="80" r="4" fill="white" opacity="0.25"/></svg>');
+        background-size: cover;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
 
-            <label class="form-label">Nom d'utilisateur</label>
-            <div class="input-wrap">
-                <i class="ti ti-user"></i>
-                <input type="text"
-                    name="username"
-                    placeholder="Entrez votre nom d'utilisateur"
-                    value="{{ savedUsername }}"
-                    autocomplete="off"
-                    required
-                    autofocus>
-            </div>
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
 
-            <label class="form-label">Mot de passe</label>
-            <div class="input-wrap">
-                        <i class="ti ti-lock"></i>
-                        <input type="password"
-                name="password"
-                placeholder="Entrez votre mot de passe"
-                value=""
-                autocomplete="new-password"
-                required>
-            </div>
+    .floating-elements {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+    }
 
-            <!-- CAPTCHA -->
-            <div class="captcha-wrap">
-                <label class="form-label">Code de sécurité</label>
-                <div class="captcha-row">
-                    <img id="captcha-img"
-                         src="{{ path('app_captcha_image') }}"
-                         alt="CAPTCHA"
-                         class="captcha-img"
-                         title="Cliquez pour rafraîchir">
-                    <button type="button" class="captcha-refresh" id="captcha-refresh"
-                            title="Nouveau code">&#x21bb;</button>
+    .float-1, .float-2, .float-3 {
+        position: absolute;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .float-1 { top: 10%; left: 5%; font-size: 40px; animation-delay: 0s; }
+    .float-2 { bottom: 15%; right: 8%; font-size: 50px; animation-delay: 2s; }
+    .float-3 { top: 30%; right: 15%; font-size: 35px; animation-delay: 4s; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+
+    /* Card de connexion fusionnée */
+    .login-card-modern {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        border-radius: 28px;
+        padding: 40px 32px;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        border: 1px solid rgba(255,255,255,0.3);
+        transition: transform 0.3s ease;
+    }
+
+    .login-card-modern:hover {
+        transform: translateY(-5px);
+    }
+
+    /* Features améliorées */
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px 20px;
+        transition: all 0.4s ease;
+        cursor: pointer;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .feature-icon i {
+        font-size: 30px;
+        color: white;
+    }
+
+    /* Inputs style connexion */
+    .input-modern {
+        position: relative;
+    }
+
+    .input-modern i {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--orange);
+        font-size: 18px;
+    }
+
+    .input-modern input {
+        width: 100%;
+        padding: 12px 16px 12px 48px;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        font-size: 15px;
+        transition: all 0.3s;
+        outline: none;
+    }
+
+    .input-modern input:focus {
+        border-color: var(--orange);
+        box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
+    }
+
+    /* CTA Banner */
+    .cta-banner {
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        border-radius: 30px;
+        padding: 60px 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-banner::before {
+        content: '🎓';
+        position: absolute;
+        font-size: 150px;
+        opacity: 0.1;
+        bottom: -30px;
+        right: -30px;
+        transform: rotate(-15deg);
+    }
+
+    /* Stats animées */
+    .stat-number {
+        font-size: 48px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Animation fade in */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.8s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- Hero Section Fusionnée -->
+<div class="hero-welcome">
+    <div class="floating-elements">
+        <div class="float-1">🌟</div>
+        <div class="float-2">🎨</div>
+        <div class="float-3">📚</div>
+    </div>
+    
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <!-- Colonne Texte -->
+            <div class="col-lg-7 hero-content animate-fadeInUp">
+                <div class="mb-4">
+                    <span class="badge bg-white text-dark px-4 py-2 rounded-pill mb-3">
+                        🎉 La nouvelle façon d'apprendre
+                    </span>
                 </div>
-                <p class="captcha-hint">Entrez les 5 caractères affichés (insensible à la casse)</p>
-                <div class="input-wrap">
-                    <i class="ti ti-shield-check"></i>
-                    <input type="text"
-                           name="captcha"
-                           placeholder="Entrez le code affiché"
-                           maxlength="5"
-                           autocomplete="off"
-                           required
-                           style="text-transform:uppercase;letter-spacing:4px;font-weight:600">
+                <h1 class="display-3 fw-bold text-white mb-4">
+                    Bienvenue dans l'aventure<br>
+                    <span class="text-warning">FocusKid</span> ✨
+                </h1>
+                <p class="lead text-white-50 mb-4 fs-4">
+                    Apprendre en s'amusant avec des exercices interactifs, des jeux éducatifs 
+                    et un suivi personnalisé pour votre enfant.
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="#" class="btn btn-light btn-lg rounded-pill px-5 py-3 fw-bold" 
+                       style="box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+                        <i class="fas fa-rocket me-2"></i> Commencer l'aventure
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-lg rounded-pill px-5 py-3">
+                        <i class="fas fa-play-circle me-2"></i> Voir la démo
+                    </a>
+                </div>
+                
+                <!-- Mini stats -->
+                <div class="row mt-5 g-3">
+                    <div class="col-4">
+                        <div class="text-white">
+                            <h3 class="fw-bold mb-0">500+</h3>
+                            <small>Exercices</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-white">
+                            <h3 class="fw-bold mb-0">50+</h3>
+                            <small>Jeux</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-white">
+                            <h3 class="fw-bold mb-0">98%</h3>
+                            <small>Satisfaits</small>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Remember Me checkbox -->
-                    <div class="remember-row">
-                <input type="checkbox"
-                    name="remember_me"
-                    id="remember_me"
-                    value="1"
-                    {{ rememberChecked ? 'checked' : '' }}>
-                <label for="remember_me">Se souvenir de moi</label>
-                <a href="{{ path('app_forgot_password') }}"
-                style="margin-left:auto; font-size:13px; color:#667eea; text-decoration:none;">
-                    Mot de passe oublié ?
-                </a>
+            <!-- Colonne Connexion (Carte moderne) -->
+            <div class="col-lg-5 animate-fadeInUp" style="animation-delay: 0.2s;">
+                <div class="login-card-modern">
+                    <div class="text-center mb-4">
+                        <div class="mx-auto mb-3" style="width: 60px; height: 60px; background: linear-gradient(135deg, #FF6B35, #4A90E2); border-radius: 18px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-graduation-cap fa-2x text-white"></i>
+                        </div>
+                        <h2 class="h3 fw-bold mb-2">Déjà inscrit ?</h2>
+                        <p class="text-muted">Connecte-toi à ton espace magique</p>
+                    </div>
+
+                    {% if error %}
+                        <div class="alert alert-danger rounded-pill mb-4">
+                            <i class="fas fa-face-frown me-2"></i> {{ error.messageKey|trans(error.messageData, 'security') }}
+                        </div>
+                    {% endif %}
+
+                    <form method="POST" action="{{ path('app_login') }}">
+                        <div class="mb-3">
+                            <div class="input-modern">
+                                <i class="fas fa-user-astronaut"></i>
+                                <input type="text" 
+                                       name="username" 
+                                       placeholder="Ton nom d'utilisateur"
+                                       value="{{ savedUsername }}"
+                                       required autofocus>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="input-modern">
+                                <i class="fas fa-key"></i>
+                                <input type="password" 
+                                       name="password" 
+                                       placeholder="Ton mot de passe secret"
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- CAPTCHA simplifié -->
+                        <div class="mb-3">
+                            <div class="bg-light rounded-3 p-3">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <img id="captcha-img" 
+                                         src="{{ path('app_captcha_image') }}" 
+                                         alt="Code" 
+                                         style="height: 45px; width: 150px; object-fit: cover; border-radius: 12px; cursor: pointer;">
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-secondary rounded-circle" 
+                                            id="captcha-refresh"
+                                            style="width: 45px; height: 45px;">
+                                        <i class="fas fa-arrows-rotate"></i>
+                                    </button>
+                                </div>
+                                <div class="input-modern">
+                                    <i class="fas fa-shield-heart"></i>
+                                    <input type="text" 
+                                           name="captcha" 
+                                           placeholder="Code de sécurité"
+                                           maxlength="5"
+                                           style="text-transform: uppercase;"
+                                           required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <label class="d-flex align-items-center gap-2">
+                                <input type="checkbox" name="remember_me" value="1" {{ rememberChecked ? 'checked' : '' }}>
+                                <small>Se souvenir de moi</small>
+                            </label>
+                            <a href="{{ path('app_forgot_password') }}" class="text-decoration-none small" style="color: var(--orange);">
+                                Mot de passe oublié ?
+                            </a>
+                        </div>
+
+                        {% if lockoutSeconds > 0 %}
+                            <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold" disabled>
+                                <i class="fas fa-hourglass-half me-2"></i>
+                                Attends <span id="countdown">{{ lockoutSeconds }}</span> sec
+                            </button>
+                            <script>
+                                let secs = {{ lockoutSeconds }};
+                                const timer = setInterval(() => {
+                                    secs--;
+                                    if(secs <= 0) {
+                                        clearInterval(timer);
+                                        document.querySelector('.btn-primary').disabled = false;
+                                        document.querySelector('.btn-primary').innerHTML = '🚀 Se connecter <i class="fas fa-arrow-right ms-2"></i>';
+                                    } else {
+                                        document.getElementById('countdown').textContent = secs;
+                                    }
+                                }, 1000);
+                            </script>
+                        {% else %}
+                            <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold">
+                                🚀 Se connecter
+                            </button>
+                        {% endif %}
+                    </form>
+
+                    <hr class="my-4">
+
+                    <p class="text-center mb-0">
+                        <small>Nouveau sur FocusKid ? 
+                            <a href="{{ path('app_register') }}"  class="fw-bold text-decoration-none" style="color: var(--orange);">
+                                Créer un compte gratuit
+                            </a>
+                        </small>
+                    </p>
+                </div>
             </div>
-
-            {% if lockoutSeconds > 0 %}
-            <button type="submit" class="btn-login" disabled
-                style="opacity:0.5;cursor:not-allowed;background:linear-gradient(135deg,#a0aec0,#718096);">
-                <span id="lockout-label">⏳ Bloqué — éssayez dans <span id="countdown">{{ lockoutSeconds }}</span>s</span>
-            </button>
-            <script>
-            (function() {
-                var secs = {{ lockoutSeconds }};
-                var el   = document.getElementById("countdown");
-                var btn  = document.querySelector(".btn-login");
-                var label = document.getElementById("lockout-label");
-                var timer = setInterval(function() {
-                    secs--;
-                    if (secs <= 0) {
-                        clearInterval(timer);
-                        btn.disabled = false;
-                        btn.style.opacity = "1";
-                        btn.style.cursor  = "pointer";
-                        btn.style.background = "linear-gradient(135deg,#667eea,#764ba2)";
-                        label.innerHTML = "Se connecter &rarr;";
-                    } else {
-                        el.textContent = secs;
-                    }
-                }, 1000);
-            })();
-            </script>
-            {% else %}
-            <button type="submit" class="btn-login">
-                Se connecter &rarr;
-            </button>
-            {% endif %}
-
-        </form>
-
-        <div class="role-badges">
-            <span class="role-badge">👑 Admin</span>
-            <span class="role-badge">🎓 Étudiant</span>
-            <span class="role-badge">👨‍👩‍👧 Parent</span>
         </div>
-
     </div>
 </div>
+
+<!-- Section Fonctionnalités -->
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3">Pourquoi les enfants <span style="background: linear-gradient(135deg, #FF6B35, #4A90E2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">adorent FocusKid</span> ?</h2>
+        <p class="lead text-muted">Une expérience d'apprentissage unique qui éveille la curiosité</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-puzzle-piece"></i>
+                </div>
+                <h4 class="fw-bold mb-3">Exercices ludiques</h4>
+                <p class="text-muted">Des activités adaptées à chaque âge qui transforment l'apprentissage en jeu</p>
+                <div class="mt-3">
+                    <span class="badge bg-light text-dark">🎯 200+ exercices</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <h4 class="fw-bold mb-3">Jeux éducatifs</h4>
+                <p class="text-muted">Développe la logique, la mémoire et la créativité en s'amusant</p>
+                <div class="mt-3">
+                    <span class="badge bg-light text-dark">🎮 50+ jeux</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-simple"></i>
+                </div>
+                <h4 class="fw-bold mb-3">Suivi personnalisé</h4>
+                <p class="text-muted">Tableau de bord parents pour suivre les progrès en temps réel</p>
+                <div class="mt-3">
+                    <span class="badge bg-light text-dark">📊 Rapports détaillés</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section Témoignages + Stats -->
+<div class="container-fluid bg-light py-5">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <h2 class="display-5 fw-bold mb-4">
+                    Ils nous font <span style="color: var(--orange);">confiance</span>
+                </h2>
+                <div class="mb-4">
+                    <div class="d-flex gap-2 mb-3">
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                    </div>
+                    <p class="fs-5 fst-italic">"Mon fils adore faire ses exercices sur FocusKid. Il progresse vraiment et prend plaisir à apprendre !"</p>
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="https://randomuser.me/api/portraits/women/68.jpg" class="rounded-circle" width="50" height="50" alt="Parent">
+                        <div>
+                            <strong>Sophie Martin</strong><br>
+                            <small class="text-muted">Maman de Léo, 8 ans</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="row g-4">
+                    <div class="col-6">
+                        <div class="bg-white p-4 rounded-4 text-center shadow-sm">
+                            <div class="stat-number">1000+</div>
+                            <p class="mb-0 text-muted">Enfants inscrits</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="bg-white p-4 rounded-4 text-center shadow-sm">
+                            <div class="stat-number">98%</div>
+                            <p class="mb-0 text-muted">Parents satisfaits</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="bg-white p-4 rounded-4 text-center shadow-sm">
+                            <div class="stat-number">500+</div>
+                            <p class="mb-0 text-muted">Exercices créés</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="bg-white p-4 rounded-4 text-center shadow-sm">
+                            <div class="stat-number">4.9</div>
+                            <p class="mb-0 text-muted">⭐ Note moyenne</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Final -->
+<div class="container py-5">
+    <div class="cta-banner text-white text-center">
+        <h2 class="display-5 fw-bold mb-3">Prêt à rejoindre l'aventure FocusKid ?</h2>
+        <p class="lead mb-4">Inscris-toi gratuitement et découvre un monde où apprendre devient un jeu</p>
+        <a  href="{{ path('app_register') }}" class="btn btn-light btn-lg rounded-pill px-5 py-3 fw-bold">
+            <i class="fas fa-user-plus me-2"></i> Créer mon compte gratuitement
+        </a>
+        <p class="mt-3 mb-0 small">✨ Aucune carte bancaire requise - Gratuit pour toujours</p>
+    </div>
+</div>
+
+<style>
+    .btn-primary {
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        border: none;
+        transition: all 0.3s;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(255,107,53,0.3);
+    }
+    .badge.bg-light.text-dark {
+        background: #f3f4f6 !important;
+        padding: 8px 16px;
+    }
+</style>
+{% endblock %}
+
+{% block javascripts %}
 <script>
 function refreshCaptcha() {
-    var img = document.getElementById('captcha-img');
+    const img = document.getElementById('captcha-img');
     img.src = '{{ path('app_captcha_image') }}?t=' + Date.now();
+    img.style.transform = 'rotate(180deg)';
+    setTimeout(() => img.style.transform = '', 300);
 }
-document.getElementById('captcha-refresh').addEventListener('click', refreshCaptcha);
-document.getElementById('captcha-img').addEventListener('click', refreshCaptcha);
+
+const refreshBtn = document.getElementById('captcha-refresh');
+if(refreshBtn) {
+    refreshBtn.addEventListener('click', refreshCaptcha);
+    document.getElementById('captcha-img').addEventListener('click', refreshCaptcha);
+}
 </script>
-</body>
-</html>
+{% endblock %}
