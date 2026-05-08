@@ -22,11 +22,11 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'id', type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 50, nullable: false, unique: true)]
+    #[ORM\Column(name: 'Username', type: 'string', length: 255, nullable: false)]
     #[Assert\NotBlank(message: 'Le nom d\'utilisateur est obligatoire.')]
     #[Assert\Length(
         min: 3,
-        max: 50,
+        max: 255,
         minMessage: 'Le nom d\'utilisateur doit contenir au moins {{ limit }} caractères.',
         maxMessage: 'Le nom d\'utilisateur ne peut pas dépasser {{ limit }} caractères.'
     )]
@@ -36,16 +36,16 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private ?string $username = null;
 
-    #[ORM\Column(type: 'string', length: 100, nullable: false, unique: true)]
+    #[ORM\Column(name: 'Email', type: 'string', length: 255, nullable: false)]
     #[Assert\NotBlank(message: 'L\'email est obligatoire.')]
     #[Assert\Email(message: 'L\'adresse email « {{ value }} » n\'est pas valide.')]
     #[Assert\Length(
-        max: 100,
+        max: 255,
         maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.'
     )]
     private ?string $email = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: false)]
+    #[ORM\Column(name: 'PasswordHash', type: 'string', length: 255, nullable: false)]
     #[Assert\NotBlank(message: 'Le mot de passe est obligatoire.')]
     #[Assert\Length(
         min: 4,
@@ -55,28 +55,27 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private ?string $passwordHash = null;
 
-    #[ORM\Column(type: 'string', length: 20, nullable: false)]
+    #[ORM\Column(name: 'Role', type: 'integer', nullable: false)]
     #[Assert\NotBlank(message: 'Le rôle est obligatoire.')]
-    #[Assert\Choice(
-        choices: ['admin', 'enfant', 'parent'],
-        message: 'Le rôle doit être admin, enfant ou parent.'
-    )]
-    private ?string $role = null;
+    private ?int $role = null;
 
-    #[ORM\Column(type: 'boolean', nullable: true)]
+    #[ORM\Column(name: 'IsActive', type: 'boolean', nullable: true)]
     private ?bool $isActive = true;
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $createdAt = null;
 
-    #[ORM\Column(type: 'boolean', nullable: true)]
+    #[ORM\Column(name: 'notifications_email', type: 'boolean', nullable: true)]
     private ?bool $notificationsEmail = false;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $resetToken = null;
+    // ⚠️ Ces colonnes n'existent pas dans votre base de données !
+    // Soit vous les ajoutez à la base, soit vous les commentez/supprimez
+    
+    // #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    // private ?string $resetToken = null;
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $resetTokenExpiry = null;
+    // #[ORM\Column(type: 'datetime', nullable: true)]
+    // private ?\DateTimeInterface $resetTokenExpiry = null;
 
     // ── Relations ─────────────────────────────────────────
 
@@ -155,12 +154,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getRole(): ?string
+    public function getRole(): ?int
     {
         return $this->role;
     }
 
-    public function setRole(string $role): self
+    public function setRole(int $role): self
     {
         $this->role = $role;
         return $this;
@@ -196,28 +195,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setNotificationsEmail(?bool $notificationsEmail): self
     {
         $this->notificationsEmail = $notificationsEmail;
-        return $this;
-    }
-
-    public function getResetToken(): ?string
-    {
-        return $this->resetToken;
-    }
-
-    public function setResetToken(?string $resetToken): self
-    {
-        $this->resetToken = $resetToken;
-        return $this;
-    }
-
-    public function getResetTokenExpiry(): ?\DateTimeInterface
-    {
-        return $this->resetTokenExpiry;
-    }
-
-    public function setResetTokenExpiry(?\DateTimeInterface $resetTokenExpiry): self
-    {
-        $this->resetTokenExpiry = $resetTokenExpiry;
         return $this;
     }
 
@@ -329,14 +306,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $roles = ['ROLE_USER'];
 
-        $roleMap = [
-            'admin' => 'ROLE_ADMIN',
-            'parent' => 'ROLE_PARENT',
-            'enfant' => 'ROLE_ENFANT',
-        ];
-
-        if (isset($roleMap[$this->role])) {
-            $roles[] = $roleMap[$this->role];
+        // Convertir le rôle numérique en rôle Symfony
+        if ($this->role === 0) {
+            $roles[] = 'ROLE_PARENT';
+        } elseif ($this->role === 1) {
+            $roles[] = 'ROLE_ADMIN';
+        } elseif ($this->role === 2) {
+            $roles[] = 'ROLE_ENFANT';
         }
 
         return array_unique($roles);

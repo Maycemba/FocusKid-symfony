@@ -1,6 +1,7 @@
 <?php
+
 namespace App\Controller;
- 
+
 use App\Repository\CourRepository;
 use App\Service\TranslationService;
 use Dompdf\Dompdf;
@@ -9,89 +10,87 @@ use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-=======
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
->>>>>>> origin/User
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class FrontController extends AbstractController
-{ 
+{
     #[Route('/index', name: 'app_index')]
     public function index(): Response
     {
         return $this->render('public/base-front/index.html');
     }
 
-// Version de test sans pagination complexe
-#[Route('/enfant', name: 'app_enfant_cours', methods: ['GET'])]
-public function listeCours(
-    Request $request,
-    CourRepository $courRepository
-): Response {
-    try {
-        $search = trim($request->query->get('search', ''));
-        $niveau = trim($request->query->get('niveau', ''));
-        $sort   = trim($request->query->get('sort', 'az'));
+    // Version de test sans pagination complexe
+    #[Route('/enfant', name: 'app_enfant_cours', methods: ['GET'])]
+    public function listeCours(
+        Request $request,
+        CourRepository $courRepository
+    ): Response {
+        try {
+            $search = trim($request->query->get('search', ''));
+            $niveau = trim($request->query->get('niveau', ''));
+            $sort   = trim($request->query->get('sort', 'az'));
 
-        $qb = $courRepository->createQueryBuilder('c');
+            $qb = $courRepository->createQueryBuilder('c');
 
-        if ($search !== '') {
-            $qb->andWhere('LOWER(c.titre) LIKE :search')
-                ->setParameter('search', '%' . mb_strtolower($search) . '%');
-        }
-
-        if ($niveau !== '') {
-            $qb->andWhere('c.niveau = :niveau')
-                ->setParameter('niveau', (int)$niveau);
-        }
-
-        if ($sort === 'za') {
-            $qb->orderBy('c.titre', 'DESC');
-        } else {
-            $qb->orderBy('c.titre', 'ASC');
-        }
-
-        $cours = $qb->getQuery()->getResult();
-
-        if ($request->isXmlHttpRequest()) {
-            $items = [];
-            foreach ($cours as $cour) {
-                $items[] = [
-                    'id'          => $cour->getIdCours(),
-                    'titre'       => $cour->getTitre(),
-                    'niveau'      => $cour->getNiveau(),
-                    'description' => $cour->getDescription(),
-                    'formateur'   => $cour->getFormateur(),
-                    'lecons'      => $cour->getLecons()->count(),
-                    'urlLecons'   => $this->generateUrl('app_enfant_lecons', [
-                        'id_cours' => $cour->getIdCours(),
-                        '_locale' => $request->getLocale(),
-                    ]),
-                ];
+            if ($search !== '') {
+                $qb->andWhere('LOWER(c.titre) LIKE :search')
+                    ->setParameter('search', '%' . mb_strtolower($search) . '%');
             }
 
-            return $this->json([
-                'cours' => $items,
-                'total' => count($items),
-                'page' => 1,
-                'pages' => 1
-            ]);
-        }
+            if ($niveau !== '') {
+                $qb->andWhere('c.niveau = :niveau')
+                    ->setParameter('niveau', (int)$niveau);
+            }
 
-        return $this->render('front/cours.html.twig', [
-            'cours' => $cours,
-            'search' => $search,
-            'niveau' => $niveau,
-            'sort' => $sort,
-        ]);
-    } catch (\Exception $e) {
-        if ($request->isXmlHttpRequest()) {
-            return $this->json(['error' => $e->getMessage()], 500);
+            if ($sort === 'za') {
+                $qb->orderBy('c.titre', 'DESC');
+            } else {
+                $qb->orderBy('c.titre', 'ASC');
+            }
+
+            $cours = $qb->getQuery()->getResult();
+
+            if ($request->isXmlHttpRequest()) {
+                $items = [];
+                foreach ($cours as $cour) {
+                    $items[] = [
+                        'id'          => $cour->getIdCours(),
+                        'titre'       => $cour->getTitre(),
+                        'niveau'      => $cour->getNiveau(),
+                        'description' => $cour->getDescription(),
+                        'formateur'   => $cour->getFormateur(),
+                        'lecons'      => $cour->getLecons()->count(),
+                        'urlLecons'   => $this->generateUrl('app_enfant_lecons', [
+                            'id_cours' => $cour->getIdCours(),
+                            '_locale' => $request->getLocale(),
+                        ]),
+                    ];
+                }
+
+                return $this->json([
+                    'cours' => $items,
+                    'total' => count($items),
+                    'page' => 1,
+                    'pages' => 1
+                ]);
+            }
+
+            return $this->render('front/cours.html.twig', [
+                'cours' => $cours,
+                'search' => $search,
+                'niveau' => $niveau,
+                'sort' => $sort,
+            ]);
+        } catch (\Exception $e) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json(['error' => $e->getMessage()], 500);
+            }
+            throw $e;
         }
-        throw $e;
     }
-}
+
     #[Route(
         '/enfant/cours/{id_cours}/{_locale}',
         name: 'app_enfant_lecons',
@@ -201,7 +200,8 @@ public function listeCours(
                 'Content-Disposition' => 'inline; filename="' . $nomFichier . '"'
             ]
         );
- 
+    }
+
     #[Route('/', name: 'app_home')]
     public function home(): Response
     {
@@ -216,12 +216,5 @@ public function listeCours(
         }
 
         return $this->redirectToRoute('app_index');
-    }
-
-    #[Route('/index', name: 'app_index')]
-    public function index(): Response
-    {
-        return $this->render('public/base-front/index.html');
- 
     }
 }
