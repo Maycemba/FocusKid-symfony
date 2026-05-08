@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-<<<<<<< HEAD
+ 
     <title>{% block title %}FocusKids Admin - Dashboard{% endblock %}</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('base-back/assets/images/logos/favicon.png') }}">
     <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/logo.png') }}" />
     <link rel="stylesheet" href="{{ asset('base-back/assets/css/styles.min.css') }}" />
-=======
+ 
     <title>{% block title %}FocusKid Admin{% endblock %}</title>
     <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/favicon.png') }}"/>
     <link rel="stylesheet" href="{{ asset('base-back/assets/css/styles.min.css') }}"/>
@@ -177,93 +177,7 @@
             min-height: calc(100vh - 140px);
         }
     </style>
->>>>>>> origin/User
-    {% block stylesheets %}{% endblock %}
-    <style>
-        /* Style pour minimiser le logo */
-        .brand-logo img {
-            height: 60px !important;
-            width: auto !important;
-            max-width: 150px !important;
-            object-fit: contain;
-        }
-        .brand-logo a {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-        }
-        .brand-logo span {
-            font-size: 18px;
-            font-weight: bold;
-            margin-left: 8px;
-        }
-        /* Cacher le header (app-header) */
-        .app-header {
-            display: none !important;
-        }
-        /* Ajuster le body-wrapper pour qu'il prenne toute la place */
-        .body-wrapper {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-        }
-        
-        /* Loader AJAX */
-        #ajaxLoader {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 9999;
-            background: rgba(0, 0, 0, 0.9);
-            padding: 25px 40px;
-            border-radius: 15px;
-            text-align: center;
-            display: none;
-            box-shadow: 0 0 30px rgba(0,0,0,0.3);
-        }
-        .loader-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px auto;
-        }
-        .loader-text {
-            color: white;
-            font-size: 14px;
-            margin: 0;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Animation transition contenu */
-        #dynamic-content {
-            min-height: 400px;
-            transition: opacity 0.2s;
-        }
-        
-        /* Lien actif dans le menu */
-        .sidebar-link.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white !important;
-            border-radius: 10px;
-        }
-        .sidebar-link.active iconify-icon {
-            color: white !important;
-        }
-        
-        .sidebar-link {
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
 
-<<<<<<< HEAD
         <div class="app-topstrip bg-dark py-3 px-4 w-100 d-lg-flex align-items-center justify-content-between">
             <div class="text-white">
                 <small>🌟 FocusKids - Plateforme éducative pour enfants</small>
@@ -613,98 +527,6 @@
         })();
     </script>
 
-=======
-    {# ── TOP BAR ── #}
-    <div class="top-bar">
-        <div class="top-bar-left">
-            <div class="top-bar-logo">
-                <i class="ti ti-book-2"></i>
-            </div>
-            <span class="top-bar-title">FocusKid</span>
-        </div>
-        <div class="top-bar-right">
-            <div class="top-bar-user">
-                <div class="top-bar-avatar">
-                    {{ app.session.get('user_username')|upper|slice(0,1) }}
-                </div>
-                <span class="top-bar-username">
-                    {{ app.session.get('user_username') }}
-                </span>
-            </div>
-            <a href="{{ path('app_logout') }}" class="btn-logout">
-                <i class="ti ti-logout"></i> Déconnexion
-            </a>
-        </div>
-    </div>
-
-    {# ── SIDEBAR ── #}
-    <div class="sidebar">
-        <a href="{{ path('app_utilisateur_new') }}"
-           class="sidebar-btn {{ app.request.get('_route') == 'app_utilisateur_new' ? 'active' : '' }}">
-            <img src="{{ asset('base-back/assets/images/sidebar/plus.png') }}"
-                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-                 class="sidebar-icon" alt="Ajouter">
-            <span class="sidebar-icon" style="display:none;width:50px;height:50px;
-                background:#43A047;border-radius:14px;align-items:center;
-                justify-content:center;color:white;font-size:22px">
-                <i class="ti ti-plus"></i>
-            </span>
-            <span class="sidebar-label">Ajouter</span>
-        </a>
-
-        <a href="{{ path('app_utilisateur_index') }}"
-           class="sidebar-btn {{ app.request.get('_route') == 'app_utilisateur_index' ? 'active' : '' }}">
-            <span class="sidebar-icon" style="display:flex;width:50px;height:50px;
-                background:#1a1a8b;border-radius:14px;align-items:center;
-                justify-content:center;color:white;font-size:22px">
-                <i class="ti ti-list"></i>
-            </span>
-            <span class="sidebar-label">Liste</span>
-        </a>
-
-        <a href="{{ path('app_utilisateur_index') }}"
-           class="sidebar-btn">
-            <span class="sidebar-icon" style="display:flex;width:50px;height:50px;
-                background:#ffb32b;border-radius:14px;align-items:center;
-                justify-content:center;color:#1a1a8b;font-size:22px">
-                <i class="ti ti-pencil"></i>
-            </span>
-            <span class="sidebar-label">Modifier</span>
-        </a>
-
-        <a href="{{ path('app_utilisateur_index') }}"
-           class="sidebar-btn">
-            <span class="sidebar-icon" style="display:flex;width:50px;height:50px;
-                background:#ef5350;border-radius:14px;align-items:center;
-                justify-content:center;color:white;font-size:22px">
-                <i class="ti ti-trash"></i>
-            </span>
-            <span class="sidebar-label">Supprimer</span>
-        </a>
-
-        <a href="{{ path('app_security_dashboard') }}"
-           class="sidebar-btn {{ app.request.get('_route') starts with 'app_security_' ? 'active' : '' }}">
-            <span class="sidebar-icon" style="display:flex;width:50px;height:50px;
-                background:#7b1fa2;border-radius:14px;align-items:center;
-                justify-content:center;color:white;font-size:22px">
-                <i class="ti ti-shield-lock"></i>
-            </span>
-            <span class="sidebar-label">Sécurité</span>
-        </a>
-    </div>
-
-    {# ── MAIN CONTENT ── #}
-    <div class="main-content">
-        <div class="white-board">
-            {% block body %}{% endblock %}
-        </div>
-    </div>
-
-    <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('assets/js/app.min.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
->>>>>>> origin/User
     {% block javascripts %}{% endblock %}
 
 </body>
