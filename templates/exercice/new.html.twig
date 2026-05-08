@@ -97,6 +97,62 @@
             display: inline-flex;
             align-items: center;
         }
+        /* Style pour les prédictions */
+        .predictions-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            color: white;
+        }
+        .predictions-card h6 {
+            color: white;
+            margin-bottom: 15px;
+        }
+        .prediction-item {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        .prediction-item:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateX(5px);
+        }
+        .badge-prediction-success {
+            background: #4CAF50;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .badge-prediction-danger {
+            background: #F44336;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .badge-prediction-warning {
+            background: #FF9800;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 {% endblock %}
 
@@ -133,7 +189,7 @@
                         
                         <div class="col-md-3 mb-3">
                             {{ form_label(form.difficulte, '⭐ Difficulté', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.difficulte, {'attr': {'class': 'form-select form-field'}}) }}
+                            {{ form_widget(form.difficulte, {'attr': {'class': 'form-select form-field', 'id': 'exercice_difficulte'}}) }}
                         </div>
                     </div>
                     
@@ -272,22 +328,48 @@
                         </div>
                     </div>
                     
-                    <div class="config-section mt-3">
-                        <h5 class="mb-3"><i class="ti ti-users"></i> 👶 Enfants concernés</h5>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-check mb-2">
-                                    {{ form_widget(form.pour_tous_enfants, {'attr': {'class': 'form-check-input', 'id': 'tousEnfantsRadio'}}) }}
-                                    <label class="form-check-label" for="tousEnfantsRadio">👥 Tous les enfants</label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input type="radio" id="selectionEnfantsRadio" name="enfantsGroup" class="form-check-input">
-                                    <label class="form-check-label" for="selectionEnfantsRadio">🎯 Choisir des enfants spécifiques</label>
-                                </div>
-                                <div id="enfantsSelectionDiv" style="display: none; margin-top: 15px;">
-                                    {{ form_label(form.enfantsSelectionnes, 'Sélectionnez les enfants', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.enfantsSelectionnes, {'attr': {'class': 'form-select form-field', 'size': 5}}) }}
-                                </div>
+                   <div class="config-section mt-3">
+    <h5 class="mb-3"><i class="ti ti-users"></i> 👶 Enfants concernés</h5>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-check mb-2">
+                {{ form_widget(form.pour_tous_enfants, {'attr': {'class': 'form-check-input', 'id': 'tousEnfantsRadio'}}) }}
+                <label class="form-check-label" for="tousEnfantsRadio">👥 Tous les enfants</label>
+            </div>
+            <div class="form-check mb-2">
+                <input type="radio" id="selectionEnfantsRadio" name="enfantsGroup" class="form-check-input">
+                <label class="form-check-label" for="selectionEnfantsRadio">🎯 Choisir des enfants spécifiques</label>
+            </div>
+            <div id="enfantsSelectionDiv" style="display: none; margin-top: 15px;">
+                <label class="form-label">Sélectionnez les enfants</label>
+                <select name="exercice[enfantsSelectionnes][]" id="exercice_enfantsSelectionnes" class="form-select form-field" size="5" multiple>
+                    {% for enfant in enfants %}
+                        <option value="{{ enfant.id }}">{{ enfant.username }} ({{ enfant.email }})</option>
+                    {% else %}
+                        <option disabled>Aucun enfant trouvé dans la base</option>
+                    {% endfor %}
+                </select>
+                {% if enfants|length == 0 %}
+                    <div class="alert alert-warning mt-2">
+                        ⚠️ Aucun enfant n'a été trouvé dans la base de données. 
+                        Assurez-vous qu'il existe des utilisateurs avec le rôle 'enfant'.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+                    
+                    <!-- 🔥 SECTION DES PRÉDICTIONS EN TEMPS RÉEL -->
+                    <div id="predictionsPreview" class="predictions-card" style="display: none;">
+                        <h6><i class="ti ti-chart-bar"></i> 🔮 Prédictions en temps réel</h6>
+                        <p class="small" style="color: rgba(255,255,255,0.8); margin-bottom: 10px;">
+                            Basé sur l'historique de chaque enfant
+                        </p>
+                        <div id="predictionsList">
+                            <div class="text-center py-3">
+                                <div class="loading-spinner"></div>
+                                <p class="mt-2 mb-0">Chargement des prédictions...</p>
                             </div>
                         </div>
                     </div>
@@ -347,7 +429,8 @@
 </div>
 
 <script>
-    // Fonctions pour ajouter des lignes
+    // ========== FONCTIONS POUR AJOUTER DES LIGNES ==========
+    
     function addAttentionQuestionRow(images = '', intrus = '', reponse = '') {
         const container = document.getElementById('attentionQuestionsContainer');
         if(!container) return;
@@ -400,94 +483,207 @@
         });
     }
     
-   function changeExerciceType() {
-    const typeSelect = document.getElementById('exercice_type');
-    const typeBadge = document.getElementById('typeBadge');
-    const configs = ['configMemoire', 'configAttention', 'configLogique', 'configChrono'];
+    // ========== CHANGEMENT DE TYPE D'EXERCICE ==========
     
-    console.log("🔄 Changement de type vers:", typeSelect.value);
-    
-    // Cacher toutes les configs
-    configs.forEach(c => { 
-        const el = document.getElementById(c); 
-        if(el) {
-            el.classList.remove('active');
-            console.log("❌ Caché:", c);
+    function changeExerciceType() {
+        const typeSelect = document.getElementById('exercice_type');
+        const typeBadge = document.getElementById('typeBadge');
+        const configs = ['configMemoire', 'configAttention', 'configLogique', 'configChrono'];
+        
+        console.log("🔄 Changement de type vers:", typeSelect.value);
+        
+        configs.forEach(c => { 
+            const el = document.getElementById(c); 
+            if(el) el.classList.remove('active');
+        });
+        
+        const selectedType = typeSelect.value;
+        
+        const badgeClass = {
+            'MÉMOIRE': 'badge-memoire',
+            'ATTENTION': 'badge-attention',
+            'LOGIQUE': 'badge-logique',
+            'CHRONO': 'badge-chrono'
+        };
+        
+        typeBadge.textContent = selectedType;
+        typeBadge.className = 'badge-type ms-2 ' + (badgeClass[selectedType] || 'badge-memoire');
+        
+        let configId = 'configMemoire';
+        switch(selectedType) {
+            case 'MÉMOIRE': configId = 'configMemoire'; break;
+            case 'ATTENTION': configId = 'configAttention'; break;
+            case 'LOGIQUE': configId = 'configLogique'; break;
+            case 'CHRONO': configId = 'configChrono'; break;
         }
-    });
-    
-    const selectedType = typeSelect.value;
-    
-    // Mettre à jour le badge
-    const badgeClass = {
-        'MÉMOIRE': 'badge-memoire',
-        'ATTENTION': 'badge-attention',
-        'LOGIQUE': 'badge-logique',
-        'CHRONO': 'badge-chrono'
-    };
-    
-    typeBadge.textContent = selectedType;
-    typeBadge.className = 'badge-type ms-2 ' + (badgeClass[selectedType] || 'badge-memoire');
-    
-    // Afficher la config du type sélectionné
-    let configId = null;
-    switch(selectedType) {
-        case 'MÉMOIRE':
-            configId = 'configMemoire';
-            break;
-        case 'ATTENTION':
-            configId = 'configAttention';
-            break;
-        case 'LOGIQUE':
-            configId = 'configLogique';
-            break;
-        case 'CHRONO':
-            configId = 'configChrono';
-            break;
-        default:
-            configId = 'configMemoire';
+        
+        const configEl = document.getElementById(configId);
+        if(configEl) configEl.classList.add('active');
+        
+        // 🔥 Recharger les prédictions si des enfants sont sélectionnés
+        loadPredictions();
     }
     
-    console.log("🎯 Configuration à afficher:", configId);
+    // ========== 🔥 PRÉDICTIONS EN TEMPS RÉEL ==========
     
-    const configEl = document.getElementById(configId);
-    if(configEl) {
-        configEl.classList.add('active');
-        console.log("✅ Affiché:", configId);
-        console.log("✅ Style display:", window.getComputedStyle(configEl).display);
-    } else {
-        console.error("❌ Élément non trouvé:", configId);
+    async function loadPredictions() {
+        const enfantsSelect = document.getElementById('exercice_enfantsSelectionnes');
+        const predictionsDiv = document.getElementById('predictionsPreview');
+        const predictionsList = document.getElementById('predictionsList');
+        
+        if (!enfantsSelect) return;
+        
+        const selectedOptions = Array.from(enfantsSelect.selectedOptions);
+        
+        // Vérifier si des enfants sont sélectionnés et si le formulaire est valide
+        if (selectedOptions.length === 0) {
+            predictionsDiv.style.display = 'none';
+            return;
+        }
+        
+        const difficulte = document.getElementById('exercice_difficulte')?.value || 3;
+        const type = document.getElementById('exercice_type')?.value || 'MÉMOIRE';
+        
+        const typeCode = {
+            'MÉMOIRE': 1,
+            'ATTENTION': 2,
+            'LOGIQUE': 3,
+            'CHRONO': 4
+        }[type] || 1;
+        
+        // Afficher la section des prédictions avec loader
+        predictionsDiv.style.display = 'block';
+        predictionsList.innerHTML = '<div class="text-center py-3"><div class="loading-spinner"></div><p class="mt-2 mb-0">Chargement des prédictions...</p></div>';
+        
+        const predictions = [];
+        
+        for (const option of selectedOptions) {
+            const enfantId = option.value;
+            const enfantNom = option.text;
+            
+            try {
+                // Appeler l'API Symfony pour les stats
+                const statsResponse = await fetch(`/exercice/api/enfant-stats/${enfantId}`);
+                const stats = await statsResponse.json();
+                
+                // Appeler l'API Python pour la prédiction
+                const predResponse = await fetch('http://localhost:5000/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        difficulte: parseInt(difficulte),
+                        type_exercice: typeCode,
+                        score_moyen: stats.score_moyen,
+                        temps_moyen: stats.temps_moyen
+                    })
+                });
+                const pred = await predResponse.json();
+                
+                predictions.push({
+                    nom: enfantNom,
+                    id: enfantId,
+                    reussite: pred.reussite_predite === 1,
+                    probabilite: pred.probabilite_reussite.toFixed(1),
+                    score_moyen: stats.score_moyen,
+                    temps_moyen: stats.temps_moyen,
+                    nb_exercices: stats.nb_exercices
+                });
+            } catch (error) {
+                console.error('Erreur pour enfant', enfantId, error);
+                predictions.push({
+                    nom: enfantNom,
+                    id: enfantId,
+                    reussite: false,
+                    probabilite: '?',
+                    error: true
+                });
+            }
+        }
+        
+        // Afficher les résultats
+        let html = '<div class="row">';
+        for (const pred of predictions) {
+            let badgeClass = 'badge-prediction-warning';
+            let badgeIcon = '⚠️';
+            let badgeText = 'Incertain';
+            
+            if (!pred.error) {
+                if (pred.reussite && pred.probabilite >= 70) {
+                    badgeClass = 'badge-prediction-success';
+                    badgeIcon = '✅';
+                    badgeText = `Réussite (${pred.probabilite}%)`;
+                } else if (!pred.reussite && pred.probabilite <= 30) {
+                    badgeClass = 'badge-prediction-danger';
+                    badgeIcon = '❌';
+                    badgeText = `Échec (${100-pred.probabilite}% risque)`;
+                } else {
+                    badgeClass = 'badge-prediction-warning';
+                    badgeIcon = '⚠️';
+                    badgeText = `Incertain (${pred.probabilite}%)`;
+                }
+            } else {
+                badgeText = 'Erreur chargement';
+                badgeIcon = '⚠️';
+            }
+            
+            const bgColor = pred.reussite ? '#4CAF50' : '#F44336';
+            const progressWidth = pred.reussite ? pred.probabilite : (100 - pred.probabilite);
+            
+            html += `
+                <div class="col-md-12 mb-2">
+                    <div class="prediction-item">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <strong>${escapeHtml(pred.nom)}</strong>
+                                ${!pred.error ? `<small class="ms-2" style="opacity:0.7;">📊 ${pred.score_moyen}/20 | ⏱️ ${pred.temps_moyen}s | 📚 ${pred.nb_exercices} exos</small>` : ''}
+                            </div>
+                            <span class="${badgeClass}">
+                                ${badgeIcon} ${badgeText}
+                            </span>
+                        </div>
+                        ${!pred.error ? `
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: ${progressWidth}%; background-color: ${bgColor};" 
+                                 aria-valuenow="${progressWidth}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        html += '</div>';
+        
+        predictionsList.innerHTML = html;
     }
-}
+    
+    // ========== AJOUTER DES EXEMPLES PAR DÉFAUT ==========
     
     function addDefaultExamples() {
-        // Exemples pour CHRONO
         addChronoDefiRow('6 × 7 = ?', '42', 15);
         addChronoDefiRow('40 + 38 = ?', '78', 15);
         addChronoDefiRow('45 - 4 = ?', '41', 17);
         addChronoDefiRow('Quel est le plus grand océan ?', 'Pacifique', 11);
         addChronoDefiRow('49 - 24 = ?', '25', 11);
         
-        // Exemples pour ATTENTION
         addAttentionQuestionRow('🐶,🐱,🐭,🐹,🐰,🦊', '🦊', '🦊');
         addAttentionQuestionRow('🍎,🍎,🍎,🍎,🍏', '🍏', '🍏');
         
-        // Exemples pour LOGIQUE
         addLogiqueSequenceRow('2, 4, 6, 8, ?', '10', '+2');
         addLogiqueSequenceRow('5, 10, 15, 20, ?', '25', '+5');
     }
     
+    // ========== INITIALISATION ==========
+    
     document.addEventListener('DOMContentLoaded', function() {
         console.log("DOM chargé, initialisation...");
         
-        // Ajouter les exemples par défaut
         addDefaultExamples();
         
-        // Gestion du changement de type
         const typeSelect = document.getElementById('exercice_type');
         if(typeSelect) {
             typeSelect.addEventListener('change', changeExerciceType);
-            changeExerciceType(); // Appel initial pour afficher la bonne config
+            changeExerciceType();
         }
         
         // Gestion enfants
@@ -501,10 +697,12 @@
                 enfantsDiv.style.display = 'none';
                 if (selectionEnfantsRadio) selectionEnfantsRadio.checked = false;
                 if (tousEnfantsRadio) tousEnfantsRadio.checked = true;
+                document.getElementById('predictionsPreview').style.display = 'none';
             } else {
                 enfantsDiv.style.display = 'block';
                 if (tousEnfantsRadio) tousEnfantsRadio.checked = false;
                 if (selectionEnfantsRadio) selectionEnfantsRadio.checked = true;
+                loadPredictions();
             }
         }
         
@@ -512,21 +710,37 @@
             pourTousEnfants.addEventListener('change', toggleEnfantsSelection);
             toggleEnfantsSelection();
         }
+        
         if (selectionEnfantsRadio) {
             selectionEnfantsRadio.addEventListener('change', function() {
                 if (this.checked && pourTousEnfants) {
                     pourTousEnfants.checked = false;
                     enfantsDiv.style.display = 'block';
+                    loadPredictions();
                 }
             });
         }
+        
         if (tousEnfantsRadio) {
             tousEnfantsRadio.addEventListener('change', function() {
                 if (this.checked && pourTousEnfants) {
                     pourTousEnfants.checked = true;
                     enfantsDiv.style.display = 'none';
+                    document.getElementById('predictionsPreview').style.display = 'none';
                 }
             });
+        }
+        
+        // 🔥 Écouter les changements sur la sélection des enfants
+        const enfantsSelect = document.getElementById('exercice_enfantsSelectionnes');
+        if (enfantsSelect) {
+            enfantsSelect.addEventListener('change', loadPredictions);
+        }
+        
+        // 🔥 Écouter les changements de difficulté
+        const difficulteSelect = document.getElementById('exercice_difficulte');
+        if (difficulteSelect) {
+            difficulteSelect.addEventListener('change', loadPredictions);
         }
         
         // Jours d'assignation
@@ -630,7 +844,8 @@
         }
     });
     
-    // Génération IA
+    // ========== GÉNÉRATION IA ==========
+    
     const generateBtn = document.getElementById('generateIABtn');
     const iaLoading = document.getElementById('iaLoading');
     if(generateBtn) {
