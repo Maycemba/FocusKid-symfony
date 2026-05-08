@@ -1,0 +1,502 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bilan superviseur — {{ child_name }}{% endblock %}
+
+{% block extra_styles %}
+{% set emotion_color = {
+    'serein':    '#1D9E75',
+    'anxieux':   '#EF9F27',
+    'triste':    '#378ADD',
+    'agite':     '#D85A30',
+    'en_colere': '#E24B4A'
+} %}
+
+:root {
+    --em: {{ emotion_color[result.emotion] ?? '#534AB7' }};
+}
+
+.sup-wrap {
+    max-width: 780px;
+    margin: 0 auto;
+}
+
+.sup-header {
+    background: #fff;
+    border-radius: 24px;
+    padding: 28px 32px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.sup-avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--em) 15%, white);
+    border: 3px solid var(--em);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+}
+
+.sup-info h1 {
+    font-family: 'Baloo 2', cursive;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.sup-info p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+.alerte-badge {
+    margin-left: auto;
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.alerte-badge.on  { background: #fef2f2; color: #A32D2D; border: 1.5px solid #fca5a5; }
+.alerte-badge.off { background: #f0fdf4; color: #166534; border: 1.5px solid #86efac; }
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 560px) { .grid-2 { grid-template-columns: 1fr; } }
+
+.card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px 28px;
+    box-shadow: var(--shadow);
+}
+
+.card-title {
+    font-family: 'Baloo 2', cursive;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Émotion principale */
+.emotion-display {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.emotion-icon {
+    font-size: 48px;
+    line-height: 1;
+}
+
+.emotion-name {
+    font-family: 'Baloo 2', cursive;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--em);
+    text-transform: capitalize;
+}
+
+.emotion-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+/* Jauge score */
+.score-gauge {
+    text-align: center;
+}
+
+.gauge-num {
+    font-family: 'Baloo 2', cursive;
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--em);
+    line-height: 1;
+}
+
+.gauge-max { font-size: 16px; color: var(--muted); font-weight: 700; }
+
+.gauge-bar-wrap {
+    background: #f0eeff;
+    border-radius: 30px;
+    height: 12px;
+    margin-top: 14px;
+    overflow: hidden;
+}
+
+.gauge-bar-fill {
+    height: 100%;
+    background: var(--em);
+    border-radius: 30px;
+    width: {{ ((result.score_total / 20) * 100)|round }}%;
+}
+
+.gauge-label {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+    font-weight: 700;
+}
+
+/* Confiance IA */
+.confidence-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.confidence-num {
+    font-family: 'Baloo 2', cursive;
+    font-size: 36px;
+    font-weight: 800;
+    color: #534AB7;
+}
+
+.confidence-bar-wrap {
+    flex: 1;
+    background: #ede9ff;
+    border-radius: 30px;
+    height: 10px;
+    overflow: hidden;
+}
+
+.confidence-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #534AB7, #7F77DD);
+    border-radius: 30px;
+    width: {{ result.confidence }}%;
+}
+
+/* Description */
+.description-text {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.7;
+    padding: 14px 18px;
+    background: color-mix(in srgb, var(--em) 8%, white);
+    border-radius: 12px;
+    border-left: 4px solid var(--em);
+}
+
+/* Indicateurs / recommandations */
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.tag {
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.tag.indicator {
+    background: color-mix(in srgb, var(--em) 12%, white);
+    color: var(--em);
+    border: 1.5px solid color-mix(in srgb, var(--em) 30%, white);
+}
+
+.reco-list {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.reco-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+    padding: 12px 16px;
+    background: #f7f5ff;
+    border-radius: 12px;
+}
+
+.reco-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #534AB7;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Message bilan enfant */
+.child-msg {
+    background: color-mix(in srgb, var(--em) 8%, white);
+    border: 1.5px solid color-mix(in srgb, var(--em) 25%, white);
+    border-radius: 20px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.child-emoji { font-size: 36px; flex-shrink: 0; }
+
+.child-msg-text {
+    font-family: 'Baloo 2', cursive;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.5;
+    font-style: italic;
+}
+
+.child-msg-label {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--em);
+    margin-bottom: 6px;
+}
+
+/* Métadonnées */
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.meta-pill {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.meta-pill .meta-val {
+    font-family: 'Baloo 2', cursive;
+    font-size: 20px;
+    font-weight: 800;
+    color: #534AB7;
+    display: block;
+}
+
+.meta-pill .meta-key {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    flex: 1;
+    padding: 16px 20px;
+    border-radius: 16px;
+    font-family: 'Baloo 2', cursive;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.15s;
+    border: none;
+    cursor: pointer;
+    min-width: 160px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #534AB7, #7F77DD);
+    color: #fff;
+}
+
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(83,74,183,0.35); }
+
+.btn-secondary { background: #f0eeff; color: #534AB7; }
+.btn-secondary:hover { background: #ede9ff; }
+
+.btn-danger { background: #fef2f2; color: #A32D2D; }
+.btn-danger:hover { background: #fee2e2; }
+{% endblock %}
+
+{% block content %}
+<div class="sup-wrap">
+
+    {# En-tête superviseur #}
+    <div class="sup-header">
+        <div class="sup-avatar">{{ result.bilan_enfant.emoji }}</div>
+        <div class="sup-info">
+            <h1>Bilan de {{ child_name }}</h1>
+            <p>ID : {{ child_id }} — Analysé le {{ "now"|date("d/m/Y à H:i") }}</p>
+        </div>
+        {% if result.bilan_superviseur.alerte %}
+            <div class="alerte-badge on">⚠️ Attention requise</div>
+        {% else %}
+            <div class="alerte-badge off">✓ Situation stable</div>
+        {% endif %}
+    </div>
+
+    {# Méta stats #}
+    <div class="meta-grid">
+        <div class="meta-pill">
+            <span class="meta-val">{{ result.score_total }}/20</span>
+            <div class="meta-key">Score total</div>
+        </div>
+        <div class="meta-pill">
+            <span class="meta-val">{{ result.confidence }}%</span>
+            <div class="meta-key">Confiance IA</div>
+        </div>
+        <div class="meta-pill">
+            <span class="meta-val">5</span>
+            <div class="meta-key">Questions</div>
+        </div>
+    </div>
+
+    {# Grille principale #}
+    <div class="grid-2">
+
+        {# Émotion détectée #}
+        <div class="card">
+            <div class="card-title">🎭 Émotion détectée</div>
+            <div class="emotion-display">
+                <div class="emotion-icon">{{ result.bilan_enfant.emoji }}</div>
+                <div>
+                    <div class="emotion-name">{{ result.emotion | replace({'_': ' '}) }}</div>
+                    <div class="emotion-sub">{{ result.bilan_superviseur.titre }}</div>
+                </div>
+            </div>
+        </div>
+
+        {# Score #}
+        <div class="card">
+            <div class="card-title">📊 Score émotionnel</div>
+            <div class="score-gauge">
+                <span class="gauge-num">{{ result.score_total }}</span>
+                <span class="gauge-max"> / 20</span>
+                <div class="gauge-bar-wrap">
+                    <div class="gauge-bar-fill"></div>
+                </div>
+                <div class="gauge-label">
+                    {% if result.score_total >= 16 %}Très bon état émotionnel
+                    {% elseif result.score_total >= 12 %}Bon état général
+                    {% elseif result.score_total >= 8  %}État moyen, vigilance
+                    {% else %}État fragile, intervention conseillée
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {# Description clinique #}
+    <div class="card" style="margin-bottom:16px">
+        <div class="card-title">📋 Description</div>
+        <div class="description-text">{{ result.bilan_superviseur.description }}</div>
+    </div>
+
+    {# Indicateurs #}
+    <div class="card" style="margin-bottom:16px">
+        <div class="card-title">🔍 Indicateurs observés</div>
+        <div class="tag-list">
+            {% for ind in result.bilan_superviseur.indicateurs %}
+                <span class="tag indicator">{{ ind }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Recommandations #}
+    <div class="card" style="margin-bottom:16px">
+        <div class="card-title">💡 Recommandations pour le superviseur</div>
+        <div class="reco-list">
+            {% for i, reco in result.bilan_superviseur.recommandations %}
+                <div class="reco-item">
+                    <div class="reco-num">{{ i + 1 }}</div>
+                    <span>{{ reco }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Message affiché à l'enfant #}
+    <div class="child-msg">
+        <div class="child-emoji">{{ result.bilan_enfant.emoji }}</div>
+        <div>
+            <div class="child-msg-label">Message affiché à l'enfant</div>
+            <div class="child-msg-text">"{{ result.bilan_enfant.phrase }}"</div>
+        </div>
+    </div>
+
+    {# Confiance IA #}
+    <div class="card" style="margin-bottom:20px">
+        <div class="card-title">🤖 Confiance du modèle IA</div>
+        <div class="confidence-display">
+            <span class="confidence-num">{{ result.confidence }}%</span>
+            <div class="confidence-bar-wrap">
+                <div class="confidence-bar-fill"></div>
+            </div>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-top:10px">
+            {% if result.confidence >= 80 %}
+                Résultat très fiable. Le modèle est très confiant dans cette analyse.
+            {% elseif result.confidence >= 60 %}
+                Résultat fiable. Combinez avec votre observation directe de l'enfant.
+            {% else %}
+                Résultat à interpréter avec prudence. Observez l'enfant directement.
+            {% endif %}
+        </p>
+    </div>
+
+    {# Actions #}
+    <div class="actions">
+        <a href="{{ path('quizz_bilan') }}" class="btn-action btn-secondary">
+            ← Bilan enfant
+        </a>
+        <a href="{{ path('quizz_home') }}" class="btn-action btn-secondary">
+            🔄 Nouveau quiz
+        </a>
+        {% if result.bilan_superviseur.alerte %}
+        <button class="btn-action btn-danger" onclick="alert('Fonctionnalité à connecter à votre système de notification.')">
+            ⚠️ Signaler
+        </button>
+        {% endif %}
+        <button class="btn-action btn-primary" onclick="window.print()">
+            🖨️ Imprimer
+        </button>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,258 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ton bilan — {{ child_name }}{% endblock %}
+
+{% block extra_styles %}
+:root {
+    --emotion-color: {% if result.emotion == 'serein' %}#1D9E75
+        {%- elseif result.emotion == 'anxieux' %}#EF9F27
+        {%- elseif result.emotion == 'triste' %}#378ADD
+        {%- elseif result.emotion == 'agite' %}#D85A30
+        {%- else %}#E24B4A{% endif %};
+}
+
+.bilan-wrap {
+    max-width: 620px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.emotion-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--emotion-color);
+    color: #fff;
+    font-family: 'Baloo 2', cursive;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 8px 24px;
+    border-radius: 30px;
+    margin-bottom: 24px;
+}
+
+.big-emoji {
+    font-size: 80px;
+    display: block;
+    margin-bottom: 8px;
+    animation: pop 0.5s cubic-bezier(.4,0,.2,1);
+}
+
+@keyframes pop {
+    0%   { transform: scale(0.5); opacity: 0; }
+    80%  { transform: scale(1.1); }
+    100% { transform: scale(1);   opacity: 1; }
+}
+
+.bilan-title {
+    font-family: 'Baloo 2', cursive;
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--emotion-color);
+    margin-bottom: 8px;
+}
+
+.child-name {
+    font-size: 18px;
+    color: var(--muted);
+    margin-bottom: 32px;
+}
+
+.motivation-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    border-left: 6px solid var(--emotion-color);
+    text-align: left;
+}
+
+.motivation-label {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--emotion-color);
+    margin-bottom: 12px;
+}
+
+.motivation-text {
+    font-family: 'Baloo 2', cursive;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.5;
+}
+
+.score-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-align: left;
+}
+
+.score-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--emotion-color) 15%, white);
+    border: 3px solid var(--emotion-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    flex-direction: column;
+}
+
+.score-num {
+    font-family: 'Baloo 2', cursive;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--emotion-color);
+    line-height: 1;
+}
+
+.score-max { font-size: 11px; color: var(--muted); font-weight: 700; }
+
+.score-info h3 {
+    font-family: 'Baloo 2', cursive;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.score-info p { font-size: 14px; color: var(--muted); }
+
+.confidence-bar-wrap {
+    background: #ede9ff;
+    border-radius: 30px;
+    height: 8px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.confidence-bar-fill {
+    height: 100%;
+    background: var(--emotion-color);
+    border-radius: 30px;
+    width: {{ result.confidence }}%;
+    transition: width 1s ease;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    flex: 1;
+    padding: 16px 20px;
+    border-radius: 16px;
+    font-family: 'Baloo 2', cursive;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.15s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #534AB7, #7F77DD);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(83,74,183,0.35);
+}
+
+.btn-secondary {
+    background: #f0eeff;
+    color: #534AB7;
+}
+
+.btn-secondary:hover { background: #ede9ff; }
+
+.stars-row {
+    margin: 16px 0;
+    font-size: 28px;
+    letter-spacing: 4px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="bilan-wrap">
+
+    <div class="emotion-badge">
+        {{ result.bilan_enfant.emoji }} Ton émotion du jour
+    </div>
+
+    <span class="big-emoji">{{ result.bilan_enfant.emoji }}</span>
+
+    <h1 class="bilan-title">
+        {% if result.emotion == 'serein' %}Tu es serein(e) ! 🌟
+        {% elseif result.emotion == 'anxieux' %}Tu es un peu anxieux(se)
+        {% elseif result.emotion == 'triste' %}Tu te sens triste
+        {% elseif result.emotion == 'agite' %}Tu es agité(e) !
+        {% else %}Tu es en colère
+        {% endif %}
+    </h1>
+
+    <p class="child-name">Bravo {{ child_name }} d'avoir répondu aux questions ! 🎉</p>
+
+    <div class="stars-row">
+        {% if result.score_total >= 16 %}⭐⭐⭐⭐⭐
+        {% elseif result.score_total >= 12 %}⭐⭐⭐⭐☆
+        {% elseif result.score_total >= 8  %}⭐⭐⭐☆☆
+        {% elseif result.score_total >= 4  %}⭐⭐☆☆☆
+        {% else %}⭐☆☆☆☆
+        {% endif %}
+    </div>
+
+    {# Message motivant #}
+    <div class="motivation-card">
+        <div class="motivation-label">💬 Message pour toi</div>
+        <div class="motivation-text">{{ result.bilan_enfant.phrase }}</div>
+    </div>
+
+    {# Score #}
+    <div class="score-card">
+        <div class="score-circle">
+            <div class="score-num">{{ result.score_total }}</div>
+            <div class="score-max">/20</div>
+        </div>
+        <div class="score-info">
+            <h3>Ton score aujourd'hui</h3>
+            <p>L'IA est sûre à {{ result.confidence }}%</p>
+            <div class="confidence-bar-wrap">
+                <div class="confidence-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    {# Actions #}
+    <div class="actions">
+        <a href="{{ path('quizz_home') }}" class="btn-action btn-secondary">
+            🔄 Refaire un quiz
+        </a>
+        <a href="{{ path('quizz_superviseur', { childId: result.child_id }) }}" class="btn-action btn-primary">
+            📋 Voir le bilan complet
+        </a>
+    </div>
+
+</div>
+{% endblock %}

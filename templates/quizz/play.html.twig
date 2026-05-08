@@ -1,0 +1,394 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Quiz de {{ child_name }}{% endblock %}
+
+{% block extra_styles %}
+.quiz-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+.quiz-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.quiz-header .greeting {
+    font-family: 'Baloo 2', cursive;
+    font-size: 28px;
+    font-weight: 800;
+    color: #534AB7;
+}
+
+.quiz-header .subtitle {
+    font-size: 16px;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+/* Barre de progression */
+.progress-bar-wrap {
+    background: #ede9ff;
+    border-radius: 30px;
+    height: 10px;
+    margin-bottom: 32px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #534AB7, #7F77DD);
+    border-radius: 30px;
+    transition: width 0.4s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+/* Carte question */
+.question-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 36px;
+    box-shadow: var(--shadow);
+    display: none;
+    animation: slideIn 0.35s cubic-bezier(.4,0,.2,1);
+}
+
+.question-card.active { display: block; }
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.question-number {
+    display: inline-block;
+    background: #ede9ff;
+    color: #534AB7;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 4px 14px;
+    border-radius: 30px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 16px;
+}
+
+.question-text {
+    font-family: 'Baloo 2', cursive;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 28px;
+    line-height: 1.3;
+}
+
+/* Options de réponse */
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.option-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    border: 2.5px solid #ede9ff;
+    border-radius: 16px;
+    background: #fafafa;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    transition: all 0.18s;
+    text-align: left;
+}
+
+.option-btn:hover {
+    border-color: #534AB7;
+    background: #f0eeff;
+    transform: translateX(4px);
+}
+
+.option-btn.selected {
+    border-color: #534AB7;
+    background: #ede9ff;
+    color: #534AB7;
+}
+
+.option-emoji {
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+/* Navigation */
+.nav-btns {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.btn-prev, .btn-next, .btn-submit {
+    padding: 14px 28px;
+    border-radius: 14px;
+    font-family: 'Baloo 2', cursive;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+}
+
+.btn-prev {
+    background: #f0eeff;
+    color: #534AB7;
+}
+
+.btn-prev:hover { background: #ede9ff; }
+
+.btn-next, .btn-submit {
+    flex: 1;
+    background: linear-gradient(135deg, #534AB7, #7F77DD);
+    color: #fff;
+}
+
+.btn-next:hover, .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(83,74,183,0.35);
+}
+
+.btn-next:disabled, .btn-submit:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Indicateurs de questions */
+.q-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.q-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #ede9ff;
+    transition: all 0.2s;
+}
+
+.q-dot.done     { background: #534AB7; }
+.q-dot.current  { background: #7F77DD; transform: scale(1.3); }
+
+/* Loader soumission */
+.submit-loader {
+    display: none;
+    text-align: center;
+    padding: 40px;
+}
+
+.submit-loader.active { display: block; }
+
+.loader-emoji {
+    font-size: 48px;
+    animation: spin 1s linear infinite;
+    display: block;
+    margin-bottom: 12px;
+}
+
+@keyframes spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loader-text {
+    font-family: 'Baloo 2', cursive;
+    font-size: 20px;
+    font-weight: 700;
+    color: #534AB7;
+}
+{% endblock %}
+
+{% block content %}
+<div class="quiz-wrap">
+
+    <div class="quiz-header">
+        <div class="greeting">Bonjour {{ child_name }} ! 👋</div>
+        <div class="subtitle">Réponds aux {{ questions|length }} questions honnêtement. Il n'y a pas de mauvaise réponse !</div>
+    </div>
+
+    <div class="progress-label">
+        <span id="progress-text">Question 1 sur {{ questions|length }}</span>
+        <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+
+    {# Questions #}
+    {% for question in questions %}
+        <div class="question-card {% if loop.first %}active{% endif %}"
+             id="q-card-{{ loop.index }}"
+             data-index="{{ loop.index }}"
+             data-qid="{{ question.id }}">
+
+            <div class="question-number">Question {{ loop.index }} / {{ questions|length }}</div>
+            <div class="question-text">{{ question.text }}</div>
+
+            <div class="options-list" id="opts-{{ loop.index }}">
+                {% for key, option in question.options %}
+                    <button class="option-btn"
+                            data-score="{{ question.scores[key] }}"
+                            onclick="selectOption({{ loop.parent.loop.index }}, this, {{ question.scores[key] }})">
+                        <span class="option-emoji">{{ option | split(' ') | last }}</span>
+                        <span>{{ option | split(' ') | slice(0, -1) | join(' ') }}</span>
+                    </button>
+                {% endfor %}
+            </div>
+
+            <div class="nav-btns">
+                {% if not loop.first %}
+                    <button class="btn-prev" onclick="goTo({{ loop.index - 1 }})">← Retour</button>
+                {% endif %}
+
+                {% if not loop.last %}
+                    <button class="btn-next"
+                            id="btn-next-{{ loop.index }}"
+                            disabled
+                            onclick="goTo({{ loop.index + 1 }})">
+                        Suivant →
+                    </button>
+                {% else %}
+                    <button class="btn-submit"
+                            id="btn-submit"
+                            disabled
+                            onclick="submitQuiz()">
+                        Voir mon bilan 🌟
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+
+    {# Loader pendant l'analyse #}
+    <div class="submit-loader" id="submit-loader">
+        <span class="loader-emoji">🌀</span>
+        <div class="loader-text">L'IA analyse tes réponses…</div>
+    </div>
+
+    {# Indicateurs #}
+    <div class="q-dots" id="q-dots">
+        {% for question in questions %}
+            <div class="q-dot {% if loop.first %}current{% endif %}" id="dot-{{ loop.index }}"></div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{# Données passées au JS #}
+<script>
+const TOTAL      = {{ questions|length }};
+const CHILD_ID   = "{{ child_id }}";
+const answers    = {};  // { questionId: score }
+
+let currentQ = 1;
+
+function selectOption(qIndex, btn, score) {
+    // Désélectionne les autres
+    document.querySelectorAll(`#opts-${qIndex} .option-btn`).forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+
+    // Enregistre la réponse
+    const card   = document.getElementById(`q-card-${qIndex}`);
+    const qId    = card.dataset.qid;
+    answers[qId] = score;
+
+    // Active le bouton suivant / soumettre
+    const btnNext   = document.getElementById(`btn-next-${qIndex}`);
+    const btnSubmit = document.getElementById('btn-submit');
+    if (btnNext)   btnNext.disabled   = false;
+    if (btnSubmit) btnSubmit.disabled = Object.keys(answers).length < TOTAL;
+}
+
+function goTo(index) {
+    document.getElementById(`q-card-${currentQ}`).classList.remove('active');
+    document.getElementById(`dot-${currentQ}`).className = 'q-dot done';
+
+    currentQ = index;
+    document.getElementById(`q-card-${currentQ}`).classList.add('active');
+
+    // Mise à jour dots
+    for (let i = 1; i <= TOTAL; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        if (i < currentQ)      dot.className = 'q-dot done';
+        else if (i === currentQ) dot.className = 'q-dot current';
+        else                   dot.className = 'q-dot';
+    }
+
+    // Mise à jour barre de progression
+    const pct = Math.round(((currentQ - 1) / TOTAL) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = `Question ${currentQ} sur ${TOTAL}`;
+    document.getElementById('progress-pct').textContent  = pct + '%';
+}
+
+function submitQuiz() {
+    if (Object.keys(answers).length < TOTAL) {
+        alert('Réponds à toutes les questions d\'abord !');
+        return;
+    }
+
+    document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('q-dots').style.display = 'none';
+    document.getElementById('submit-loader').classList.add('active');
+
+    const formattedAnswers = Object.entries(answers).map(([qId, score]) => ({
+        question_id: parseInt(qId),
+        score: score
+    }));
+
+    // CHANGEZ: /quiz/submit → /quizz/api/analyze
+    fetch('/quizz/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            child_id: CHILD_ID,
+            child_name: "{{ child_name }}",
+            answers: formattedAnswers 
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        // CHANGEZ: data.redirect → data.redirect_url (selon votre contrôleur)
+        if (data.redirect_url) {
+            window.location.href = data.redirect_url;
+        } else if (data.success && data.result) {
+            // Alternative: rediriger vers bilan si pas d'URL
+            window.location.href = '/quizz/bilan';
+        } else {
+            alert('Erreur : ' + (data.error || 'Inconnue'));
+            document.getElementById('submit-loader').classList.remove('active');
+            document.getElementById(`q-card-${TOTAL}`).classList.add('active');
+        }
+    })
+    .catch(err => {
+        alert('Erreur réseau : ' + err.message);
+        document.getElementById('submit-loader').classList.remove('active');
+        document.getElementById(`q-card-${TOTAL}`).classList.add('active');
+    });
+}
+</script>
+{% endblock %}

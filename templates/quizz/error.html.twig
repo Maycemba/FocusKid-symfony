@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Erreur - Quiz Émotionnel{% endblock %}
+
+{% block extra_styles %}
+<style>
+.error-container {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.error-emoji {
+    font-size: 80px;
+    margin-bottom: 20px;
+}
+
+.error-title {
+    font-family: 'Baloo 2', cursive;
+    font-size: 32px;
+    color: #E24B4A;
+    margin-bottom: 16px;
+}
+
+.error-message {
+    color: var(--muted);
+    margin-bottom: 30px;
+    font-size: 16px;
+    background: #fef2f2;
+    padding: 16px;
+    border-radius: 12px;
+    font-family: monospace;
+}
+
+.btn-retry, .btn-test {
+    display: inline-block;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #534AB7, #7F77DD);
+    color: white;
+    text-decoration: none;
+    border-radius: 16px;
+    font-weight: 700;
+    transition: transform 0.15s;
+    margin: 0 8px;
+}
+
+.btn-retry:hover, .btn-test:hover {
+    transform: translateY(-2px);
+}
+
+.btn-test {
+    background: linear-gradient(135deg, #64748b, #94a3b8);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-emoji">🔌</div>
+    <h1 class="error-title">Connexion à l'IA impossible</h1>
+    <p class="error-message">{{ error|default('Le serveur Python n\'est pas accessible.') }}</p>
+    
+    <h3 style="margin: 20px 0 10px; color: var(--text);">Solutions :</h3>
+    <div style="text-align: left; background: #f8fafc; padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+        <p style="margin: 8px 0;">1. Ouvrez un terminal et exécutez :</p>
+        <code style="background: #1e293b; color: #e2e8f0; padding: 8px; display: block; border-radius: 8px; margin: 8px 0;">
+            cd emotion_ai/api<br>
+            python app.py
+        </code>
+        <p style="margin: 8px 0;">2. Vérifiez que le serveur tourne sur : http://localhost:5000</p>
+        <p style="margin: 8px 0;">3. Rechargez cette page après avoir démarré le serveur</p>
+    </div>
+    
+    <div>
+        <a href="{{ path('quizz_home') }}" class="btn-retry">🔄 Réessayer</a>
+        <a href="{{ path('quizz_test') }}" class="btn-test">🧪 Page de test</a>
+    </div>
+</div>
+{% endblock %}

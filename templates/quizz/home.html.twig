@@ -1,0 +1,243 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - Quiz Émotionnel{% endblock %}
+
+{% block extra_styles %}
+<style>
+.hero {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.hero-emoji {
+    font-size: 72px;
+    display: block;
+    margin-bottom: 16px;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+
+.hero h1 {
+    font-family: 'Baloo 2', cursive;
+    font-size: 42px;
+    font-weight: 800;
+    color: #534AB7;
+    line-height: 1.1;
+    margin-bottom: 12px;
+}
+
+.hero p {
+    font-size: 18px;
+    color: var(--muted);
+    margin-bottom: 40px;
+    line-height: 1.6;
+}
+
+.start-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 36px;
+    box-shadow: var(--shadow);
+    text-align: left;
+}
+
+.start-card h2 {
+    font-family: 'Baloo 2', cursive;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #ede9ff;
+    border-radius: 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    color: var(--text);
+    transition: border-color 0.2s;
+    outline: none;
+}
+
+.form-group input:focus {
+    border-color: #534AB7;
+}
+
+.btn-start {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #534AB7, #7F77DD);
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    font-family: 'Baloo 2', cursive;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    margin-top: 8px;
+}
+
+.btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(83,74,183,0.35);
+}
+
+.btn-start:active { transform: translateY(0); }
+
+.info-strip {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.info-pill {
+    flex: 1;
+    background: #f7f5ff;
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #534AB7;
+}
+
+.info-pill span { display: block; font-size: 22px; margin-bottom: 4px; }
+
+.api-status {
+    margin-top: 32px;
+    padding: 14px 20px;
+    border-radius: 14px;
+    background: #f0fdf4;
+    border: 1.5px solid #86efac;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #166534;
+}
+
+.api-status.offline {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #A32D2D;
+}
+
+.status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.status-dot.offline { background: #ef4444; animation: none; }
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <span class="hero-emoji">🌈</span>
+    <h1>Comment tu te sens aujourd'hui ?</h1>
+    <p>Un petit quiz de 5 questions pour mieux comprendre tes émotions.<br>Réponds honnêtement, il n'y a pas de mauvaise réponse !</p>
+
+    <div class="start-card">
+        <h2>🚀 Commencer le quiz</h2>
+
+        <div class="form-group">
+            <label for="child-name">Ton prénom</label>
+            <input type="text" id="child-name" placeholder="Ex : Lucas, Emma..." maxlength="40" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+            <label for="child-id">Identifiant (optionnel)</label>
+            <input type="text" id="child-id" placeholder="Ex : eleve_042" maxlength="40">
+        </div>
+
+        <button class="btn-start" onclick="startQuiz()">
+            Démarrer le quiz ✨
+        </button>
+
+        <div class="info-strip">
+            <div class="info-pill"><span>5</span>Questions</div>
+            <div class="info-pill"><span>🎮</span>Interactif</div>
+            <div class="info-pill"><span>⚡</span>Rapide</div>
+            <div class="info-pill"><span>🔒</span>Confidentiel</div>
+        </div>
+
+        <div class="api-status" id="api-status">
+            <div class="status-dot" id="status-dot"></div>
+            <span id="status-text">Vérification de la connexion IA...</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function startQuiz() {
+    const name = document.getElementById('child-name').value.trim() || 'Mon enfant';
+    const id = document.getElementById('child-id').value.trim() || 'child_' + Date.now();
+    window.location.href = '/quizz/start?name=' + encodeURIComponent(name) + '&id=' + encodeURIComponent(id);
+}
+
+document.getElementById('child-name').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') startQuiz();
+});
+
+// Vérification santé API
+fetch('/quizz/health')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var ok = data.status === 'ok';
+        var statusDiv = document.getElementById('api-status');
+        var dotDiv = document.getElementById('status-dot');
+        var textSpan = document.getElementById('status-text');
+        
+        if (ok) {
+            statusDiv.className = 'api-status';
+            dotDiv.className = 'status-dot';
+            textSpan.textContent = 'Serveur IA connecté et prêt ✓';
+        } else {
+            statusDiv.className = 'api-status offline';
+            dotDiv.className = 'status-dot offline';
+            textSpan.textContent = 'Serveur IA non disponible — lancez python app.py';
+        }
+    })
+    .catch(function() {
+        document.getElementById('api-status').className = 'api-status offline';
+        document.getElementById('status-dot').className = 'status-dot offline';
+        document.getElementById('status-text').textContent = 'Serveur IA non disponible — lancez python app.py';
+    });
+</script>
+{% endblock %}

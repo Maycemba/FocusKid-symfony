@@ -1,0 +1,121 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "text": "Comment tu te sens aujourd'hui ?",
+      "options": ["Très bien 😊", "Bien 🙂", "Pas super 😐", "Triste 😢", "En colère 😠"],
+      "scores": [4, 3, 2, 1, 0]
+    },
+    {
+      "id": 2,
+      "text": "Est-ce que tu as bien dormi cette nuit ?",
+      "options": ["Oui très bien 😴", "Un peu 🛌", "Non pas du tout 😩"],
+      "scores": [4, 2, 0]
+    },
+    {
+      "id": 3,
+      "text": "Est-ce que tu as envie de jouer avec tes amis ?",
+      "options": ["Oui beaucoup ! 🎮", "Un peu 🙂", "Non pas du tout 😶"],
+      "scores": [4, 2, 0]
+    },
+    {
+      "id": 4,
+      "text": "Est-ce qu'il y a quelque chose qui te fait peur aujourd'hui ?",
+      "options": ["Non, rien 💪", "Un tout petit peu 😅", "Oui beaucoup 😨"],
+      "scores": [4, 2, 0]
+    },
+    {
+      "id": 5,
+      "text": "Comment était ta journée à l'école ?",
+      "options": ["Super ! ⭐", "Normale 📚", "Difficile 😤", "Horrible 😭"],
+      "scores": [4, 3, 1, 0]
+    },
+    {
+      "id": 6,
+      "text": "Est-ce que tu as réussi à te concentrer aujourd'hui ?",
+      "options": ["Oui facilement 🧠", "Parfois 😐", "Non c'était dur 😣"],
+      "scores": [4, 2, 0]
+    },
+    {
+      "id": 7,
+      "text": "Est-ce que tu te sens calme en ce moment ?",
+      "options": ["Oui très calme 🌸", "Un peu agité 🌀", "Non très agité ⚡"],
+      "scores": [4, 2, 0]
+    },
+    {
+      "id": 8,
+      "text": "Est-ce que tu as mangé correctement aujourd'hui ?",
+      "options": ["Oui tout 🍽️", "Un peu 🍞", "Presque rien 😞"],
+      "scores": [4, 2, 0]
+    },
+    {
+      "id": 9,
+      "text": "Est-ce que tu as eu envie de crier ou de pleurer ?",
+      "options": ["Non pas du tout 😊", "Un peu 😤", "Oui beaucoup 😢"],
+      "scores": [4, 2, 0]
+    },
+    {
+      "id": 10,
+      "text": "Est-ce que tu te sens seul(e) ?",
+      "options": ["Non j'ai des amis 👫", "Parfois 😶", "Oui souvent 💔"],
+      "scores": [4, 2, 0]
+    },
+    { "id": 1, "theme": "humeur", "text": "Comment tu te sens aujourd'hui ?", "options": ["Très bien 😊","Bien 🙂","Pas super 😐","Triste 😢","En colère 😠"], "scores": [4,3,2,1,0] },
+    { "id": 2, "theme": "humeur", "text": "Est-ce que tu es content(e) en ce moment ?", "options": ["Oui beaucoup 😄","Un peu 🙂","Non pas trop 😕","Non du tout 😞"], "scores": [4,3,1,0] },
+    { "id": 3, "theme": "humeur", "text": "Comment était ta matinée ?", "options": ["Super ! ⭐","Bien 👍","Normale 😐","Difficile 😤","Horrible 😭"], "scores": [4,3,2,1,0] },
+    { "id": 4, "theme": "humeur", "text": "Est-ce que tu as souri aujourd'hui ?", "options": ["Oui plein de fois 😄","Un peu 🙂","Non presque pas 😶"], "scores": [4,2,0] },
+    { "id": 5, "theme": "humeur", "text": "Comment tu te sens dans ton corps ?", "options": ["Bien et en forme 💪","Normal 😐","Fatigué(e) 😴","Mal quelque part 😣"], "scores": [4,2,1,0] },
+    { "id": 6, "theme": "humeur", "text": "Est-ce que tu es fier(e) de toi aujourd'hui ?", "options": ["Oui beaucoup 🌟","Un peu 🙂","Pas vraiment 😕","Non 😞"], "scores": [4,3,1,0] },
+
+    { "id": 7, "theme": "sommeil", "text": "Est-ce que tu as bien dormi cette nuit ?", "options": ["Très bien 😴","Bien 🛌","Un peu 😪","Non pas du tout 😩"], "scores": [4,3,1,0] },
+    { "id": 8, "theme": "sommeil", "text": "Est-ce que tu as mangé ce matin ?", "options": ["Oui bien mangé 🍽️","Un peu 🥐","Presque rien 😞","Rien du tout 😔"], "scores": [4,3,1,0] },
+    { "id": 9, "theme": "sommeil", "text": "Est-ce que tu te sens fatigué(e) ?", "options": ["Non plein d'énergie ⚡","Un peu fatigué(e) 😐","Oui assez fatigué(e) 😴","Épuisé(e) 😩"], "scores": [4,3,1,0] },
+    { "id": 10, "theme": "sommeil", "text": "Est-ce que tu as mal quelque part ?", "options": ["Non rien 😊","Un tout petit peu 🤏","Oui un peu 😣","Oui beaucoup 😢"], "scores": [4,3,1,0] },
+    { "id": 11, "theme": "sommeil", "text": "Est-ce que tu as fait un mauvais rêve ?", "options": ["Non bien dormi 😊","Un peu bizarre 😶","Oui un cauchemar 😨"], "scores": [4,2,0] },
+    { "id": 12, "theme": "sommeil", "text": "Est-ce que tu as envie de bouger et courir ?", "options": ["Oui beaucoup 🏃","Un peu 🚶","Non pas du tout 😪"], "scores": [4,2,0] },
+
+    { "id": 13, "theme": "social", "text": "Est-ce que tu as envie de jouer avec tes amis ?", "options": ["Oui beaucoup 👫","Un peu 🙂","Non pas vraiment 😶","Non du tout 😞"], "scores": [4,3,1,0] },
+    { "id": 14, "theme": "social", "text": "Est-ce que tu te sens seul(e) ?", "options": ["Non j'ai des amis 👫","Un peu 😶","Oui souvent 💔","Oui tout le temps 😢"], "scores": [4,3,1,0] },
+    { "id": 15, "theme": "social", "text": "Est-ce que tu t'es disputé(e) avec quelqu'un ?", "options": ["Non tout va bien 😊","Une petite dispute 😤","Oui une grande dispute 😠"], "scores": [4,2,0] },
+    { "id": 16, "theme": "social", "text": "Est-ce que tu as aidé quelqu'un aujourd'hui ?", "options": ["Oui et j'étais content(e) 🤝","Oui un peu 🙂","Non pas eu l'occasion 😐"], "scores": [4,3,2] },
+    { "id": 17, "theme": "social", "text": "Est-ce que quelqu'un a été gentil avec toi ?", "options": ["Oui plein de gens 💛","Un peu 🙂","Non pas vraiment 😔","Non personne 😢"], "scores": [4,3,1,0] },
+    { "id": 18, "theme": "social", "text": "Est-ce que tu as envie de parler à quelqu'un ?", "options": ["Oui j'ai plein à dire 💬","Un peu 🙂","Non pas trop 😶","Non laissez-moi tranquille 😠"], "scores": [4,3,1,0] },
+
+    { "id": 19, "theme": "ecole", "text": "Comment était ta journée à l'école ?", "options": ["Super ! ⭐","Bien 📚","Normale 😐","Difficile 😤","Horrible 😭"], "scores": [4,3,2,1,0] },
+    { "id": 20, "theme": "ecole", "text": "Est-ce que tu as compris la leçon aujourd'hui ?", "options": ["Oui tout compris 🧠","La plupart 📖","Un peu 😐","Non rien compris 😕"], "scores": [4,3,1,0] },
+    { "id": 21, "theme": "ecole", "text": "Est-ce que la maîtresse/le maître a été gentil(le) ?", "options": ["Oui très gentil(le) 🌟","Normal(e) 😐","Un peu strict(e) 😤","Non pas du tout 😢"], "scores": [4,3,1,0] },
+    { "id": 22, "theme": "ecole", "text": "Est-ce que tu as réussi un exercice aujourd'hui ?", "options": ["Oui j'étais fier(e) 🏆","Oui un peu 👍","Pas vraiment 😐","Non j'ai tout raté 😞"], "scores": [4,3,1,0] },
+    { "id": 23, "theme": "ecole", "text": "Est-ce que tu as aimé une matière aujourd'hui ?", "options": ["Oui j'adorais 💙","Oui c'était bien 👍","Bof 😐","Non tout était ennuyeux 😴"], "scores": [4,3,2,0] },
+    { "id": 24, "theme": "ecole", "text": "Est-ce que tu as eu envie de partir de l'école ?", "options": ["Non j'aimais bien 😊","Un peu 🙂","Oui assez vite 😤","Oui tout de suite 😤"], "scores": [4,3,1,0] },
+
+    { "id": 25, "theme": "colere", "text": "Est-ce que tu as eu envie de crier aujourd'hui ?", "options": ["Non pas du tout 😊","Un tout petit peu 😅","Oui un peu 😤","Oui beaucoup 😠"], "scores": [4,3,1,0] },
+    { "id": 26, "theme": "colere", "text": "Est-ce que quelque chose t'a énervé(e) ?", "options": ["Non rien 😊","Oui un peu 😐","Oui beaucoup 😠","Oui énormément 🤬"], "scores": [4,3,1,0] },
+    { "id": 27, "theme": "colere", "text": "Est-ce que tu as eu envie de frapper quelque chose ?", "options": ["Non jamais 😊","Juste une pensée 😶","Oui presque 😠","Oui je n'ai pas pu m'en empêcher 😤"], "scores": [4,3,1,0] },
+    { "id": 28, "theme": "colere", "text": "Est-ce que tu as réussi à te calmer quand tu étais en colère ?", "options": ["Oui facilement 😌","Oui avec de l'aide 🤝","Difficilement 😤","Non pas du tout 😠"], "scores": [4,3,1,0] },
+    { "id": 29, "theme": "colere", "text": "Est-ce qu'on t'a dit non pour quelque chose ?", "options": ["Non on m'a tout donné 😄","Oui et j'ai accepté 👍","Oui c'était dur 😤","Oui et j'étais très en colère 😠"], "scores": [4,3,2,0] },
+    { "id": 30, "theme": "colere", "text": "Est-ce que tu as regretté quelque chose que tu as fait ?", "options": ["Non tout va bien 😊","Un peu 🙂","Oui j'aurais pas dû 😔","Oui beaucoup 😢"], "scores": [4,3,1,0] },
+
+    { "id": 31, "theme": "anxiete", "text": "Est-ce qu'il y a quelque chose qui te fait peur ?", "options": ["Non rien 💪","Un tout petit peu 😅","Oui un peu 😨","Oui beaucoup 😱"], "scores": [4,3,1,0] },
+    { "id": 32, "theme": "anxiete", "text": "Est-ce que tu t'inquiètes pour quelque chose ?", "options": ["Non tout va bien 😊","Un peu 🙂","Oui assez 😟","Oui beaucoup 😰"], "scores": [4,3,1,0] },
+    { "id": 33, "theme": "anxiete", "text": "Est-ce que tu as eu le ventre qui fait mal de stress ?", "options": ["Non rien 😊","Un peu 😐","Oui ça faisait mal 😣","Oui beaucoup 😢"], "scores": [4,3,1,0] },
+    { "id": 34, "theme": "anxiete", "text": "Est-ce que tu te sens en sécurité ici ?", "options": ["Oui complètement 🔒","Oui assez 😊","Pas toujours 😶","Non pas vraiment 😨"], "scores": [4,3,1,0] },
+    { "id": 35, "theme": "anxiete", "text": "Est-ce que tu as du mal à attendre quelque chose ?", "options": ["Non j'arrive à patienter 😌","Un peu dur 😐","Oui très dur ⏰","Non je n'arrive pas 😤"], "scores": [4,3,1,0] },
+    { "id": 36, "theme": "anxiete", "text": "Est-ce que tu as pensé à des choses tristes ?", "options": ["Non du tout 😊","Un peu 😶","Oui parfois 😔","Oui souvent 😢"], "scores": [4,3,1,0] },
+
+    { "id": 37, "theme": "concentration", "text": "Est-ce que tu as réussi à te concentrer aujourd'hui ?", "options": ["Oui facilement 🧠","Parfois 😐","Non c'était dur 😣","Non impossible 😩"], "scores": [4,3,1,0] },
+    { "id": 38, "theme": "concentration", "text": "Est-ce que tu te sens calme en ce moment ?", "options": ["Oui très calme 🌸","Un peu agité(e) 🌀","Non assez agité(e) ⚡","Non très agité(e) 🌪️"], "scores": [4,3,1,0] },
+    { "id": 39, "theme": "concentration", "text": "Est-ce que tes pensées vont très vite dans ta tête ?", "options": ["Non c'est calme 😌","Un peu 🙂","Oui beaucoup 🌀","Oui je n'arrive plus à les arrêter ⚡"], "scores": [4,3,1,0] },
+    { "id": 40, "theme": "concentration", "text": "Est-ce que tu as réussi à finir quelque chose jusqu'au bout ?", "options": ["Oui tout 🏆","La plupart 👍","Un peu 😐","Non j'arrête toujours 😞"], "scores": [4,3,1,0] },
+    { "id": 41, "theme": "concentration", "text": "Est-ce que tu avais du mal à rester assis(e) aujourd'hui ?", "options": ["Non j'arrivais bien 😊","Un peu 😐","Oui beaucoup 🌀","Je bougeais tout le temps ⚡"], "scores": [4,3,1,0] },
+    { "id": 42, "theme": "concentration", "text": "Est-ce que tu as oublié quelque chose d'important ?", "options": ["Non tout mémorisé 🧠","Peut-être un truc 😶","Oui j'ai oublié 😅","Oui beaucoup de choses 😩"], "scores": [4,3,1,0] },
+
+    { "id": 43, "theme": "estime", "text": "Est-ce que tu penses que tu es quelqu'un de bien ?", "options": ["Oui je suis génial(e) 🌟","Oui je crois 🙂","Je sais pas 😶","Non pas vraiment 😔"], "scores": [4,3,2,0] },
+    { "id": 44, "theme": "estime", "text": "Est-ce que quelqu'un t'a complimenté aujourd'hui ?", "options": ["Oui plein 🌟","Oui un peu 🙂","Non pas vraiment 😕","Non du tout 😢"], "scores": [4,3,1,0] },
+    { "id": 45, "theme": "estime", "text": "Est-ce que tu as eu honte de quelque chose ?", "options": ["Non du tout 😊","Un peu 😶","Oui un peu 😔","Oui beaucoup 😢"], "scores": [4,3,1,0] },
+    { "id": 46, "theme": "estime", "text": "Est-ce que tu penses que tu es aussi bien que les autres ?", "options": ["Oui même mieux 💪","Oui pareil 😊","Peut-être un peu moins 😶","Non je suis moins bien 😔"], "scores": [4,3,1,0] },
+    { "id": 47, "theme": "estime", "text": "Est-ce qu'on s'est moqué de toi aujourd'hui ?", "options": ["Non du tout 😊","Juste un peu 😶","Oui et ça m'a blessé(e) 😢","Oui beaucoup 💔"], "scores": [4,3,1,0] },
+    { "id": 48, "theme": "estime", "text": "Est-ce que tu aimes apprendre de nouvelles choses ?", "options": ["Oui j'adore 🎓","Oui c'est bien 🙂","Parfois 😐","Non c'est ennuyeux 😴"], "scores": [4,3,2,0] },
+    { "id": 49, "theme": "estime", "text": "Est-ce que tu as eu envie d'abandonner quelque chose ?", "options": ["Non j'ai tout fini 💪","Un peu mais j'ai tenu 🙂","Oui j'ai failli 😤","Oui j'ai abandonné 😞"], "scores": [4,3,1,0] },
+    { "id": 50, "theme": "estime", "text": "Est-ce que tu te sens prêt(e) pour demain ?", "options": ["Oui hâte d'y être 🌅","Oui ça ira 🙂","Un peu appréhension 😐","Non pas du tout 😟"], "scores": [4,3,2,0] }
+  ]
+}
