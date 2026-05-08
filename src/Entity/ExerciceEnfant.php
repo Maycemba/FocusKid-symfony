@@ -69,6 +69,52 @@ class ExerciceEnfant
         $this->date_attribution = $date_attribution;
         return $this;
     }
+    /**
+ * @ORM\Column(type="boolean", nullable=true)
+ */
+private $predictionReussite;
+
+/**
+ * @ORM\Column(type="float", nullable=true)
+ */
+private $predictionProbabilite;
+
+/**
+ * @ORM\Column(type="datetime", nullable=true)
+ */
+private $predictionDate;
+public function getPredictionReussite(): ?bool
+{
+    return $this->predictionReussite;
+}
+
+public function setPredictionReussite(?bool $predictionReussite): self
+{
+    $this->predictionReussite = $predictionReussite;
+    return $this;
+}
+
+public function getPredictionProbabilite(): ?float
+{
+    return $this->predictionProbabilite;
+}
+
+public function setPredictionProbabilite(?float $predictionProbabilite): self
+{
+    $this->predictionProbabilite = $predictionProbabilite;
+    return $this;
+}
+
+public function getPredictionDate(): ?\DateTimeInterface
+{
+    return $this->predictionDate;
+}
+
+public function setPredictionDate(?\DateTimeInterface $predictionDate): self
+{
+    $this->predictionDate = $predictionDate;
+    return $this;
+}
 
     // 🔥 AJOUTER CES PROPRIÉTÉS 🔥
     
