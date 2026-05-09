@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use App\Repository\EmotionRepository;
 use App\Repository\ScenarioRepository;
- 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -21,10 +20,26 @@ final class FrontController extends AbstractController
     #[Route('/index', name: 'app_index')]
     public function index(): Response
     {
-        return $this->render('index.html.twig');
+        return $this->render('public/base-front/index.html');
     }
 
-    // Version de test sans pagination complexe
+    #[Route('/', name: 'app_home')]
+    public function home(): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return $this->redirectToRoute('app_utilisateur_index');
+        }
+
+        return $this->redirectToRoute('app_index');
+    }
+
+    // Version complète avec pagination, recherche et filtres
     #[Route('/enfant', name: 'app_enfant_cours', methods: ['GET'])]
     public function listeCours(
         Request $request,
@@ -94,6 +109,7 @@ final class FrontController extends AbstractController
         }
     }
 
+    // Version complète avec traduction
     #[Route(
         '/enfant/cours/{id_cours}/{_locale}',
         name: 'app_enfant_lecons',
@@ -140,6 +156,7 @@ final class FrontController extends AbstractController
         ]);
     }
 
+    // Version PDF avec traduction
     #[Route(
         '/enfant/cours/{id_cours}/pdf/{_locale}',
         name: 'app_enfant_cours_pdf',
@@ -205,19 +222,27 @@ final class FrontController extends AbstractController
         );
     }
 
-    #[Route('/', name: 'app_home')]
-    public function home(): Response
+    // Gestion des émotions
+    #[Route('/enfant/emotions', name: 'app_enfant_emotions', methods: ['GET'])]
+    public function emotions(EmotionRepository $emotionRepository): Response
     {
-        $user = $this->getUser();
+        return $this->render('front/emotions.html.twig', [
+            'emotions' => $emotionRepository->findAll(),
+        ]);
+    }
 
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
+    // Scénarios par émotion
+    #[Route('/enfant/emotions/{emotionId}/scenarios', name: 'app_enfant_scenarios_emotion', methods: ['GET'])]
+    public function scenariosParEmotion(int $emotionId, ScenarioRepository $scenarioRepository): JsonResponse
+    {
+        $scenarios = $scenarioRepository->findBy(['emotion' => $emotionId]);
 
-        if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->redirectToRoute('app_utilisateur_index');
-        }
+        $data = array_map(fn($s) => [
+            'id'          => $s->getId(),
+            'description' => $s->getDescription(),
+            'animation'   => $s->getAnimation(),
+        ], $scenarios);
 
-        return $this->redirectToRoute('app_index');
+        return new JsonResponse(['scenarios' => $data]);
     }
 }

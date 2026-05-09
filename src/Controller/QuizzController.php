@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Utilisateur;
 use App\Service\EmotionApiService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,8 +20,14 @@ class QuizzController extends AbstractController
     {
         // Récupérer l'utilisateur connecté ou utiliser "Enfant" par défaut
         $user = $this->getUser();
-        $childName = $user ? ($user->getPrenom() ?? 'Enfant') : 'Enfant';
-        $childId = $user ? $user->getId() : uniqid('child_');
+        $childName = 'Enfant';
+        $childId = uniqid('child_');
+
+        if ($user instanceof Utilisateur) {
+            $fullName = $user->getFullName();
+            $childName = $fullName !== '' ? $fullName : ($user->getUsername() ?? 'Enfant');
+            $childId = (string) $user->getId();
+        }
         
         try {
             $questions = $this->emotionApi->generateQuiz();
