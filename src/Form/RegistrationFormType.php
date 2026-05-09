@@ -5,9 +5,12 @@ namespace App\Form;
 use App\Entity\Utilisateur;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -69,6 +72,48 @@ class RegistrationFormType extends AbstractType
                 'attr' => [
                     'placeholder' => 'Ton nom (optionnel)',
                     'class' => 'form-control'
+                ]
+            ])
+            ->add('phone', TelType::class, [
+                'label' => 'Téléphone',
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Ton numéro de téléphone (optionnel)',
+                    'class' => 'form-control'
+                ],
+                'constraints' => [
+                    new Length([
+                        'max' => 20,
+                        'maxMessage' => 'Le numéro de téléphone ne peut pas dépasser {{ limit }} caractères'
+                    ])
+                ]
+            ])
+            ->add('birthdate', DateType::class, [
+                'label' => 'Date de naissance',
+                'required' => false,
+                'widget' => 'single_text',
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'JJ/MM/AAAA'
+                ],
+                'html5' => true,
+            ])
+            // ⭐ NOUVEAU : Champ de sélection du rôle
+            ->add('role', ChoiceType::class, [
+                'label' => 'Je suis :',
+                'choices' => [
+                    '👦 Un enfant' => 2,
+                    '👨‍👩‍👧‍👦 Un parent ' => 0,
+                    
+                ],
+                'expanded' => true,  // Affiche sous forme de boutons radio
+                'multiple' => false,
+                'required' => true,
+                'attr' => [
+                    'class' => 'role-choice'
+                ],
+                'label_attr' => [
+                    'class' => 'fw-bold mb-2 d-block'
                 ]
             ])
             ->add('plainPassword', RepeatedType::class, [

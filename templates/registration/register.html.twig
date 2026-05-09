@@ -5,6 +5,41 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
+/* Styles pour les choix de rôle */
+.role-choice-group {
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.role-choice-group .form-check {
+    margin-bottom: 10px;
+    padding-left: 30px;
+}
+
+.role-choice-group .form-check:last-child {
+    margin-bottom: 0;
+}
+
+.role-choice-group .form-check-input {
+    margin-left: -25px;
+    margin-top: 8px;
+}
+
+.role-choice-group .form-check-label {
+    margin-left: 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+.role-choice-group .form-check-label small {
+    display: block;
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: normal;
+}
     .register-hero {
         min-height: 100vh;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -58,7 +93,8 @@
         z-index: 10;
     }
 
-    .input-group-modern input {
+    .input-group-modern input,
+    .input-group-modern select {
         width: 100%;
         padding: 12px 16px 12px 48px;
         border: 2px solid #e5e7eb;
@@ -68,7 +104,8 @@
         outline: none;
     }
 
-    .input-group-modern input:focus {
+    .input-group-modern input:focus,
+    .input-group-modern select:focus {
         border-color: var(--orange);
         box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
     }
@@ -154,54 +191,148 @@
                         </div>
                     {% endfor %}
 
-                    {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
+                    {% for flash_success in app.flashes('success') %}
+                        <div class="alert alert-success alert-custom mb-4">
+                            <i class="fas fa-check-circle me-2"></i> {{ flash_success }}
+                        </div>
+                    {% endfor %}
+
+                    {% if registrationForm.vars.errors|length > 0 %}
+                        <div class="alert alert-danger alert-custom mb-4">
+                            <strong>Erreurs du formulaire :</strong>
+                            <ul class="mb-0 mt-2">
+                                {% for error in registrationForm.vars.errors %}
+                                    <li>{{ error.message }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate', 'method': 'POST'}}) }}
                     
                     <div class="input-group-modern">
                         <i class="fas fa-user-astronaut"></i>
                         {{ form_widget(registrationForm.username, {'attr': {'placeholder': 'Choisis ton pseudo *'}}) }}
-                        {{ form_errors(registrationForm.username) }}
+                        {% if registrationForm.username.vars.errors|length > 0 %}
+                            <div class="text-danger small mt-1">
+                                {% for error in registrationForm.username.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
 
                     <div class="input-group-modern">
                         <i class="fas fa-envelope"></i>
                         {{ form_widget(registrationForm.email, {'attr': {'placeholder': 'Ton adresse email *'}}) }}
-                        {{ form_errors(registrationForm.email) }}
+                        {% if registrationForm.email.vars.errors|length > 0 %}
+                            <div class="text-danger small mt-1">
+                                {% for error in registrationForm.email.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
                             <div class="input-group-modern">
                                 <i class="fas fa-user"></i>
-                                {{ form_widget(registrationForm.firstname, {'attr': {'placeholder': 'Prénom'}}) }}
+                                {{ form_widget(registrationForm.firstname, {'attr': {'placeholder': 'Prénom'}})}}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="input-group-modern">
                                 <i class="fas fa-user"></i>
-                                {{ form_widget(registrationForm.lastname, {'attr': {'placeholder': 'Nom'}}) }}
+                                {{ form_widget(registrationForm.lastname, {'attr': {'placeholder': 'Nom'}})}}
                             </div>
                         </div>
                     </div>
 
+                    <!-- Champ Téléphone -->
+                    <div class="input-group-modern">
+                        <i class="fas fa-phone"></i>
+                        {{ form_widget(registrationForm.phone, {'attr': {'placeholder': 'Téléphone (optionnel)'}})}}
+                        {% if registrationForm.phone.vars.errors|length > 0 %}
+                            <div class="text-danger small mt-1">
+                                {% for error in registrationForm.phone.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Champ Date de naissance -->
+                    <div class="input-group-modern">
+                        <i class="fas fa-calendar-alt"></i>
+                        {{ form_widget(registrationForm.birthdate, {'attr': {'placeholder': 'Date de naissance'}})}}
+                        {% if registrationForm.birthdate.vars.errors|length > 0 %}
+                            <div class="text-danger small mt-1">
+                                {% for error in registrationForm.birthdate.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <!-- ⭐ NOUVEAU : Choix du rôle -->
+<div class="role-choice-group mb-4">
+    <label class="fw-bold mb-3 d-block">
+        <i class="fas fa-users me-2"></i> Quel type de compte souhaitez-vous créer ?
+    </label>
+    {{ form_widget(registrationForm.role) }}
+    {% if registrationForm.role.vars.errors|length > 0 %}
+        <div class="text-danger small mt-2">
+            {% for error in registrationForm.role.vars.errors %}
+                {{ error.message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+    <small class="text-muted d-block mt-2">
+        <i class="fas fa-info-circle me-1"></i> 
+        Les parents peuvent suivre les progrès de leurs enfants et créer plusieurs comptes enfants.
+    </small>
+</div>
+
+                    <!-- Mot de passe - UNE SEULE FOIS -->
                     <div class="input-group-modern">
                         <i class="fas fa-key"></i>
-                        {{ form_widget(registrationForm.plainPassword.first, {'attr': {'placeholder': 'Mot de passe *', 'id': 'password'}}) }}
-                        {{ form_errors(registrationForm.plainPassword.first) }}
+                        {{ form_widget(registrationForm.plainPassword.first, {'attr': {'placeholder': 'Mot de passe *', 'id': 'password'}})}}
+                        {% if registrationForm.plainPassword.first.vars.errors|length > 0 %}
+                            <div class="text-danger small mt-1">
+                                {% for error in registrationForm.plainPassword.first.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
 
                     <!-- Indicateur de force du mot de passe -->
                     <div class="password-strength mb-3" id="password-strength"></div>
 
+                    <!-- Confirmation mot de passe -->
                     <div class="input-group-modern">
                         <i class="fas fa-check-circle"></i>
-                        {{ form_widget(registrationForm.plainPassword.second, {'attr': {'placeholder': 'Confirme ton mot de passe *'}}) }}
-                        {{ form_errors(registrationForm.plainPassword.second) }}
+                        {{ form_widget(registrationForm.plainPassword.second, {'attr': {'placeholder': 'Confirme ton mot de passe *'}})}}
+                        {% if registrationForm.plainPassword.second.vars.errors|length > 0 %}
+                            <div class="text-danger small mt-1">
+                                {% for error in registrationForm.plainPassword.second.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
 
+                    <!-- Conditions -->
                     <div class="mb-4 form-check">
-                        {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
-                        {{ form_label(registrationForm.agreeTerms, null, {'label_attr': {'class': 'form-check-label'}}) }}
-                        {{ form_errors(registrationForm.agreeTerms) }}
+                        {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}})}}
+                        {{ form_label(registrationForm.agreeTerms, null, {'label_attr': {'class': 'form-check-label'}})}}
+                        {% if registrationForm.agreeTerms.vars.errors|length > 0 %}
+                            <div class="text-danger small mt-1">
+                                {% for error in registrationForm.agreeTerms.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
 
                     <button type="submit" class="btn-register">
@@ -294,10 +425,10 @@ if(passwordInput && strengthDiv) {
         
         if(password.length >= 4) strength++;
         if(password.length >= 8) strength++;
-        if(password.match(/[a-z]+/)) strength++;
-        if(password.match(/[A-Z]+/)) strength++;
-        if(password.match(/[0-9]+/)) strength++;
-        if(password.match(/[$@#&!]+/)) strength++;
+        if(/[a-z]/.test(password)) strength++;
+        if(/[A-Z]/.test(password)) strength++;
+        if(/[0-9]/.test(password)) strength++;
+        if(/[$@#&!]/.test(password)) strength++;
         
         strengthDiv.className = 'password-strength mb-3';
         if(password.length === 0) {
@@ -305,11 +436,11 @@ if(passwordInput && strengthDiv) {
         } else {
             strengthDiv.style.display = 'block';
             if(strength <= 2) {
-                strengthDiv.className += ' strength-weak';
+                strengthDiv.classList.add('strength-weak');
             } else if(strength <= 4) {
-                strengthDiv.className += ' strength-medium';
+                strengthDiv.classList.add('strength-medium');
             } else {
-                strengthDiv.className += ' strength-strong';
+                strengthDiv.classList.add('strength-strong');
             }
         }
     });

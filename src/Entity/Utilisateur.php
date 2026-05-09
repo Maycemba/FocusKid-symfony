@@ -45,15 +45,10 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private ?string $email = null;
 
-    #[ORM\Column(name: 'PasswordHash', type: 'string', length: 255, nullable: false)]
-    #[Assert\NotBlank(message: 'Le mot de passe est obligatoire.')]
-    #[Assert\Length(
-        min: 4,
-        max: 255,
-        minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le mot de passe ne peut pas dépasser {{ limit }} caractères.'
-    )]
-    private ?string $passwordHash = null;
+ 
+ 
+   #[ORM\Column(name: 'PasswordHash', type: 'string', length: 255, nullable: false)]
+private ?string $passwordHash = null;
 
     #[ORM\Column(name: 'Role', type: 'integer', nullable: false)]
     #[Assert\NotBlank(message: 'Le rôle est obligatoire.')]

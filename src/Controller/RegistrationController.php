@@ -14,14 +14,13 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class RegistrationController extends AbstractController
 {
-    #[Route('/register', name: 'app_register')]
+    #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
     #[IsGranted('PUBLIC_ACCESS')]
     public function register(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager
     ): Response {
-        // Si déjà connecté, rediriger vers l'accueil
         if ($this->getUser()) {
             return $this->redirectToRoute('app_index');
         }
@@ -31,29 +30,33 @@ class RegistrationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Hasher le mot de passe
-            $plainPassword = $form->get('plainPassword')->getData();
-            $hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
-            $user->setPasswordHash($hashedPassword);
-            
-            // Définir le rôle par défaut (0 = parent, 1 = admin, 2 = enfant)
-            $user->setRole(0); // Rôle parent par défaut
-            
-            // Définir la date de création
-            $user->setCreatedAt(new \DateTime());
-            
-            // Activer le compte par défaut
-            $user->setIsActive(true);
-            
-            // Sauvegarder l'utilisateur
-            $entityManager->persist($user);
-            $entityManager->flush();
+            try {
+                $plainPassword = $form->get('plainPassword')->getData();
+                $hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
+                $user->setPasswordHash($hashedPassword);
 
-            // Ajouter un message flash
-            $this->addFlash('success', 'Compte créé avec succès ! Tu peux maintenant te connecter.');
+                $user->setCreatedAt(new \DateTime());
+                $user->setIsActive(true);
 
-            // Rediriger vers la page de connexion
-            return $this->redirectToRoute('app_login');
+                $entityManager->persist($user);
+                $entityManager->flush();
+
+                $role = $user->getRole();
+                $message = $role == 0
+                    ? 'Compte parent créé avec succès !'
+                    : 'Compte enfant créé avec succès !';
+
+                $this->addFlash('success', $message);
+
+                return $this->redirectToRoute('app_login');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Une erreur est survenue : ' . $e->getMessage());
+                error_log('Registration error: ' . $e->getMessage());
+            }
+        } elseif ($form->isSubmitted()) {
+            foreach ($form->getErrors(true, true) as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
         }
 
         return $this->render('registration/register.html.twig', [
