@@ -1,0 +1,161 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Test - Quiz Émotionnel{% endblock %}
+
+{% block extra_styles %}
+<style>
+.test-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
+.status {
+    padding: 12px;
+    border-radius: 12px;
+    margin: 15px 0;
+}
+
+.status.ok {
+    background: #f0fdf4;
+    border-left: 4px solid #22c55e;
+    color: #166534;
+}
+
+.status.error {
+    background: #fef2f2;
+    border-left: 4px solid #ef4444;
+    color: #991b1b;
+}
+
+pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 16px;
+    border-radius: 12px;
+    overflow-x: auto;
+    font-size: 12px;
+}
+
+button {
+    padding: 12px 24px;
+    background: #534AB7;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 700;
+    margin: 8px;
+}
+
+button:hover {
+    background: #7F77DD;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="test-container">
+    <h1 style="text-align: center; margin-bottom: 30px;">🧪 Test de connexion à l'API IA</h1>
+    
+    <div class="card">
+        <h2>1. Vérifier la santé de l'API</h2>
+        <button onclick="checkHealth()">Tester la connexion</button>
+        <div id="health-status"></div>
+    </div>
+    
+    <div class="card">
+        <h2>2. Générer un quiz</h2>
+        <button onclick="generateQuiz()">Générer 5 questions</button>
+        <div id="quiz-result"></div>
+    </div>
+    
+    <div class="card">
+        <h2>3. Analyser des réponses (test)</h2>
+        <button onclick="analyzeAnswers()">Tester l'analyse</button>
+        <div id="analyze-result"></div>
+    </div>
+</div>
+
+<script>
+async function checkHealth() {
+    const div = document.getElementById('health-status');
+    div.innerHTML = '<div class="status">🔄 Vérification...</div>';
+    
+    try {
+        const response = await fetch('/quizz/health');
+        const data = await response.json();
+        
+        if (data.status === 'ok') {
+            div.innerHTML = '<div class="status ok">✅ API connectée !<br>Status: ' + data.status + '<br>Message: ' + data.message + '</div>';
+        } else {
+            div.innerHTML = '<div class="status error">❌ API non accessible<br>Message: ' + data.message + '</div>';
+        }
+    } catch (error) {
+        div.innerHTML = '<div class="status error">❌ Erreur: ' + error.message + '</div>';
+    }
+}
+
+async function generateQuiz() {
+    const div = document.getElementById('quiz-result');
+    div.innerHTML = '<div class="status">🔄 Génération en cours...</div>';
+    
+    try {
+        const response = await fetch('/quizz/api/generate');
+        const data = await response.json();
+        
+        if (data.success) {
+            div.innerHTML = '<div class="status ok">✅ Quiz généré avec succès !<br>Nombre de questions: ' + data.questions.length + '<br><pre>' + JSON.stringify(data.questions, null, 2) + '</pre></div>';
+        } else {
+            div.innerHTML = '<div class="status error">❌ Erreur: ' + data.error + '</div>';
+        }
+    } catch (error) {
+        div.innerHTML = '<div class="status error">❌ Erreur: ' + error.message + '</div>';
+    }
+}
+
+async function analyzeAnswers() {
+    const div = document.getElementById('analyze-result');
+    div.innerHTML = '<div class="status">🔄 Analyse en cours...</div>';
+    
+    const testAnswers = [
+        {"question_id": 1, "score": 4},
+        {"question_id": 2, "score": 4},
+        {"question_id": 3, "score": 4},
+        {"question_id": 4, "score": 3},
+        {"question_id": 5, "score": 4}
+    ];
+    
+    try {
+        const response = await fetch('/quizz/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                child_id: 'test_001',
+                child_name: 'Testeur',
+                answers: testAnswers
+            })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            div.innerHTML = '<div class="status ok">✅ Analyse réussie !<br>Émotion détectée: ' + (data.result.emotion || 'N/A') + '<br>Message enfant: ' + (data.result.bilan_enfant ? data.result.bilan_enfant.phrase : 'N/A') + '<br><pre>' + JSON.stringify(data.result, null, 2) + '</pre></div>';
+        } else {
+            div.innerHTML = '<div class="status error">❌ Erreur: ' + data.error + '</div>';
+        }
+    } catch (error) {
+        div.innerHTML = '<div class="status error">❌ Erreur: ' + error.message + '</div>';
+    }
+}
+
+// Auto-check au chargement
+checkHealth();
+</script>
+{% endblock %}
