@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FocusKid — Inscription</title>
+    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/favicon.png') }}"/>
+    <link rel="stylesheet" href="{{ asset('base-back/assets/css/styles.min.css') }}"/>
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 24px 0;
+        }
+        .register-wrapper {
+            width: 100%;
+            max-width: 480px;
+            padding: 16px;
+        }
+        .register-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 48px 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .register-logo {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .register-logo i { font-size: 32px; color: white; }
+        .register-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #2d3748;
+            text-align: center;
+            margin: 0 0 6px;
+        }
+        .register-subtitle {
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            margin: 0 0 32px;
+        }
+        .form-label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #4a5568;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .input-wrap {
+            position: relative;
+            margin-bottom: 6px;
+        }
+        .input-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+            font-size: 16px;
+            pointer-events: none;
+        }
+        .input-wrap input,
+        .input-wrap select {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #2d3748;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+            box-sizing: border-box;
+            background: white;
+        }
+        .input-wrap input:focus,
+        .input-wrap select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+        }
+        .input-wrap.has-error input,
+        .input-wrap.has-error select {
+            border-color: #e53e3e;
+        }
+        .field-error {
+            color: #e53e3e;
+            font-size: 12px;
+            margin: 4px 0 14px 2px;
+        }
+        .field-ok {
+            margin-bottom: 20px;
+        }
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .role-option input[type="radio"] { display: none; }
+        .role-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 14px 8px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #4a5568;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .role-option label span.role-icon { font-size: 24px; }
+        .role-option input[type="radio"]:checked + label {
+            border-color: #667eea;
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        .role-option label:hover {
+            border-color: #667eea;
+            background: #f7f9ff;
+        }
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding: 14px 16px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border: 1.5px solid #e2e8f0;
+        }
+        .toggle-wrap label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
+            cursor: pointer;
+            margin: 0;
+            flex: 1;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input { display: none; }
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: #cbd5e0;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .toggle-slider:before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        .toggle-switch input:checked + .toggle-slider { background: #667eea; }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
+        .btn-register {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-bottom: 20px;
+        }
+        .btn-register:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+        .login-link {
+            text-align: center;
+            font-size: 13px;
+            color: #718096;
+        }
+        .login-link a {
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .login-link a:hover { text-decoration: underline; }
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #a0aec0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 20px 0 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="register-wrapper">
+    <div class="register-card">
+
+        <div class="register-logo">
+            <i class="ti ti-user-plus"></i>
+        </div>
+        <h1 class="register-title">Créer un compte</h1>
+        <p class="register-subtitle">Rejoignez FocusKid dès maintenant</p>
+
+        <form method="POST" action="{{ path('app_register') }}" autocomplete="off" novalidate>
+
+            {# ── Username ── #}
+            <label class="form-label">Nom d'utilisateur</label>
+            <div class="input-wrap {{ errors.username is defined ? 'has-error' : '' }}">
+                <i class="ti ti-user"></i>
+                <input type="text"
+                       name="username"
+                       placeholder="Choisissez un nom d'utilisateur"
+                       value="{{ old.username ?? '' }}"
+                       autocomplete="off"
+                       required>
+            </div>
+            {% if errors.username is defined %}
+                <p class="field-error">⚠ {{ errors.username }}</p>
+            {% else %}
+                <div class="field-ok"></div>
+            {% endif %}
+
+            {# ── Email ── #}
+            <label class="form-label">Adresse email</label>
+            <div class="input-wrap {{ errors.email is defined ? 'has-error' : '' }}">
+                <i class="ti ti-mail"></i>
+                <input type="email"
+                       name="email"
+                       placeholder="votre@email.com"
+                       value="{{ old.email ?? '' }}"
+                       autocomplete="off"
+                       required>
+            </div>
+            {% if errors.email is defined %}
+                <p class="field-error">⚠ {{ errors.email }}</p>
+            {% else %}
+                <div class="field-ok"></div>
+            {% endif %}
+
+            {# ── Password ── #}
+            <label class="form-label">Mot de passe</label>
+            <div class="input-wrap {{ errors.password is defined ? 'has-error' : '' }}">
+                <i class="ti ti-lock"></i>
+                <input type="password"
+                       name="password"
+                       placeholder="Minimum 4 caractères"
+                       autocomplete="new-password"
+                       id="pwd"
+                       required>
+            </div>
+            {% if errors.password is defined %}
+                <p class="field-error">⚠ {{ errors.password }}</p>
+            {% else %}
+                <div class="field-ok"></div>
+            {% endif %}
+
+            {# ── Confirm Password ── #}
+            <label class="form-label">Confirmer le mot de passe</label>
+            <div class="input-wrap {{ errors.confirm_password is defined ? 'has-error' : '' }}">
+                <i class="ti ti-lock-check"></i>
+                <input type="password"
+                       name="confirm_password"
+                       placeholder="Répétez votre mot de passe"
+                       autocomplete="new-password"
+                       id="pwd2"
+                       required>
+            </div>
+            {% if errors.confirm_password is defined %}
+                <p class="field-error">⚠ {{ errors.confirm_password }}</p>
+            {% else %}
+                <div class="field-ok"></div>
+            {% endif %}
+
+            {# ── Role ── #}
+            <p class="section-label">Rôle</p>
+            <div class="role-grid">
+                <div class="role-option">
+                    <input type="radio" name="role" id="role_admin" value="ROLE_ADMIN"
+                           {{ (old.role ?? '') == 'ROLE_ADMIN' ? 'checked' : '' }}>
+                    <label for="role_admin">
+                        <span class="role-icon">👑</span>
+                        Admin
+                    </label>
+                </div>
+                <div class="role-option">
+                    <input type="radio" name="role" id="role_enfant" value="ROLE_ENFANT"
+                           {{ (old.role ?? '') == 'ROLE_ENFANT' ? 'checked' : 'checked' }}>
+                    <label for="role_enfant">
+                        <span class="role-icon">🎓</span>
+                        Enfant
+                    </label>
+                </div>
+                <div class="role-option">
+                    <input type="radio" name="role" id="role_parent" value="ROLE_PARENT"
+                           {{ (old.role ?? '') == 'ROLE_PARENT' ? 'checked' : '' }}>
+                    <label for="role_parent">
+                        <span class="role-icon">👨‍👩‍👧</span>
+                        Parent
+                    </label>
+                </div>
+            </div>
+            {% if errors.role is defined %}
+                <p class="field-error">⚠ {{ errors.role }}</p>
+            {% else %}
+                <div style="margin-bottom:20px"></div>
+            {% endif %}
+
+            {# ── Is Active ── #}
+            <div class="toggle-wrap">
+                <label for="is_active">✅ Compte actif</label>
+                <div class="toggle-switch">
+                    <input type="checkbox"
+                           name="is_active"
+                           id="is_active"
+                           value="1"
+                           {{ (old.isActive ?? true) ? 'checked' : '' }}>
+                    <span class="toggle-slider"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-register">
+                Créer mon compte →
+            </button>
+
+        </form>
+
+        <p class="login-link">
+            Déjà un compte ?
+            <a href="{{ path('app_login') }}">Se connecter</a>
+        </p>
+
+    </div>
+</div>
+</body>
+</html>
