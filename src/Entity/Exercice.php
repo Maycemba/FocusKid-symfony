@@ -2,10 +2,7 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 
 use App\Repository\ExerciceRepository;
 
@@ -26,23 +23,6 @@ class Exercice
     public function setId(int $id): self
     {
         $this->id = $id;
-        return $this;
-    }
-
-    // ============ JOINTURE AVEC UTILISATEUR ============
-    
-   #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'exercices')]
-#[ORM\JoinColumn(name: 'cree_par', referencedColumnName: 'id', nullable: true)]
-private ?Utilisateur $utilisateur = null;
-
-    public function getUtilisateur(): ?Utilisateur
-    {
-        return $this->utilisateur;
-    }
-
-    public function setUtilisateur(?Utilisateur $utilisateur): self
-    {
-        $this->utilisateur = $utilisateur;
         return $this;
     }
 
@@ -240,12 +220,12 @@ private ?Utilisateur $utilisateur = null;
         return $this;
     }
 
-    public function getDateCreation(): ?\DateTime
+    public function getDateCreation(): ?\DateTimeInterface
     {
         return $this->date_creation;
     }
 
-    public function setDateCreation(\DateTime $date_creation): static
+    public function setDateCreation(\DateTimeInterface $date_creation): static
     {
         $this->date_creation = $date_creation;
 

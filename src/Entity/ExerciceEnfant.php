@@ -3,9 +3,6 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
 use App\Repository\ExerciceEnfantRepository;
 
 #[ORM\Entity(repositoryClass: ExerciceEnfantRepository::class)]
@@ -69,20 +66,14 @@ class ExerciceEnfant
         $this->date_attribution = $date_attribution;
         return $this;
     }
-    /**
- * @ORM\Column(type="boolean", nullable=true)
- */
-private $predictionReussite;
+#[ORM\Column(type: 'boolean', nullable: true)]
+private ?bool $predictionReussite = null;
 
-/**
- * @ORM\Column(type="float", nullable=true)
- */
-private $predictionProbabilite;
+#[ORM\Column(type: 'float', nullable: true)]
+private ?float $predictionProbabilite = null;
 
-/**
- * @ORM\Column(type="datetime", nullable=true)
- */
-private $predictionDate;
+#[ORM\Column(type: 'datetime', nullable: true)]
+private ?\DateTimeInterface $predictionDate = null;
 public function getPredictionReussite(): ?bool
 {
     return $this->predictionReussite;
@@ -198,12 +189,12 @@ public function getJoursArray(): array
         return $this;
     }
 
-    public function getDateAttribution(): ?\DateTime
+    public function getDateAttribution(): ?\DateTimeInterface
     {
         return $this->date_attribution;
     }
 
-    public function setDateAttribution(\DateTime $date_attribution): static
+    public function setDateAttribution(\DateTimeInterface $date_attribution): static
     {
         $this->date_attribution = $date_attribution;
         return $this;

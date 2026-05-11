@@ -1,0 +1,70 @@
+{{ form_start(registrationForm, {'attr': {'id': 'register-form-ajax', 'novalidate': 'novalidate'}, 'action': path('app_register')}) }}
+
+<div class="input-modern">
+    <i class="fas fa-user-astronaut"></i>
+    {{ form_widget(registrationForm.username, {'attr': {'placeholder': 'Choisis ton pseudo *'}})}}
+    {{ form_errors(registrationForm.username) }}
+</div>
+
+<div class="input-modern">
+    <i class="fas fa-envelope"></i>
+    {{ form_widget(registrationForm.email, {'attr': {'placeholder': 'Ton adresse email *'}})}}
+    {{ form_errors(registrationForm.email) }}
+</div>
+
+<div style="display: flex; gap: 15px;">
+    <div class="input-modern" style="flex:1">
+        <i class="fas fa-user"></i>
+        {{ form_widget(registrationForm.firstname, {'attr': {'placeholder': 'Prénom'}})}}
+    </div>
+    <div class="input-modern" style="flex:1">
+        <i class="fas fa-user"></i>
+        {{ form_widget(registrationForm.lastname, {'attr': {'placeholder': 'Nom'}})}}
+    </div>
+</div>
+
+<div class="input-modern">
+    <i class="fas fa-phone"></i>
+    {{ form_widget(registrationForm.phone, {'attr': {'placeholder': 'Téléphone (optionnel)'}})}}
+</div>
+
+<div class="input-modern">
+    <i class="fas fa-calendar-alt"></i>
+    {{ form_widget(registrationForm.birthdate, {'attr': {'placeholder': 'Date de naissance'}})}}
+</div>
+
+<div class="role-choice-group mb-4">
+    <label class="fw-bold mb-3 d-block">
+        <i class="fas fa-users me-2"></i> Quel type de compte souhaitez-vous créer ?
+    </label>
+    {{ form_widget(registrationForm.role) }}
+    <small class="text-muted d-block mt-2">
+        <i class="fas fa-info-circle me-1"></i> 
+        Les parents peuvent suivre les progrès de leurs enfants et créer plusieurs comptes enfants.
+    </small>
+</div>
+
+<div class="input-modern">
+    <i class="fas fa-key"></i>
+    {{ form_widget(registrationForm.plainPassword.first, {'attr': {'placeholder': 'Mot de passe *', 'id': 'register_password'}})}}
+    {{ form_errors(registrationForm.plainPassword.first) }}
+</div>
+<div id="password-strength" class="password-strength mb-3"></div>
+
+<div class="input-modern">
+    <i class="fas fa-check-circle"></i>
+    {{ form_widget(registrationForm.plainPassword.second, {'attr': {'placeholder': 'Confirme ton mot de passe *'}})}}
+    {{ form_errors(registrationForm.plainPassword.second) }}
+</div>
+
+<div class="mb-4 form-check">
+    {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}})}}
+    {{ form_label(registrationForm.agreeTerms, null, {'label_attr': {'class': 'form-check-label'}})}}
+    {{ form_errors(registrationForm.agreeTerms) }}
+</div>
+
+<button type="submit" class="btn-register w-100">
+    <i class="fas fa-rocket me-2"></i> Créer mon compte gratuitement
+</button>
+
+{{ form_end(registrationForm) }}

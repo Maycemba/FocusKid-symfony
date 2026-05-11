@@ -79,7 +79,7 @@ class ExerciceType extends AbstractType
                 'query_builder' => function (EntityRepository $er) {
                     return $er->createQueryBuilder('u')
                         ->where('u.role = :role')
-                        ->setParameter('role', 'enfant')
+                        ->setParameter('role', 2)
                         ->orderBy('u.username', 'ASC');
                 },
                 'attr' => ['class' => 'form-select', 'size' => 5],

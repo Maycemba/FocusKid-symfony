@@ -8,7 +8,7 @@ use App\Service\SuspiciousLoginDetector;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -20,7 +20,9 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordC
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
-
+use Symfony\Component\HttpFoundation\Response;
+ 
+ 
 class LoginAuthenticator extends AbstractAuthenticator
 {
     public function __construct(
@@ -107,66 +109,69 @@ class LoginAuthenticator extends AbstractAuthenticator
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
-    {
-        $session = $request->getSession();
-        $session->set('login_attempts', 0);
-        $session->set('login_blocked_at', null);
+{
+    $session = $request->getSession();
+    $session->set('login_attempts', 0);
+    $session->set('login_blocked_at', null);
 
-        $ip = $request->getClientIp() ?? '0.0.0.0';
+    $ip = $request->getClientIp() ?? '0.0.0.0';
+    /** @var Utilisateur $user */
+    $user = $token->getUser();
+    $this->detector->handleSuccessfulLogin($ip, $user->getUsername());
 
-        /** @var Utilisateur $user */
-        $user = $token->getUser();
+    $url = in_array('ROLE_ADMIN', $user->getRoles())
+        ? $this->router->generate('app_utilisateur_index')
+        : $this->router->generate('app_index');
 
-        // 🟢 Check unusual-hour rule even on successful logins
-        $this->detector->handleSuccessfulLogin($ip, $user->getUsername());
+    $response = new RedirectResponse($url);
 
-        $url = in_array('ROLE_ADMIN', $user->getRoles())
-            ? $this->router->generate('app_utilisateur_index')
-            : $this->router->generate('app_index');
+    // Remember me cookie
+    if ($request->request->get('remember_me')) {
+        $cookie = Cookie::create('remember_username')
+            ->withValue($user->getUsername())
+            ->withExpires(new \DateTime('+30 days'))
+            ->withPath('/')
+            ->withHttpOnly(true)
+            ->withSameSite('lax');
+        $response->headers->setCookie($cookie);
+    } else {
+        $response->headers->clearCookie('remember_username', '/');
+    }
 
-        $response = new RedirectResponse($url);
+    // 🟢 Si requête AJAX, on retourne du JSON
+    if ($request->isXmlHttpRequest()) {
+        return new JsonResponse(['success' => true, 'redirect' => $url]);
+    }
 
-        // ── Remember Me cookie ─────────────────────────────────────────────
-        if ($request->request->get('remember_me')) {
-            $cookie = Cookie::create('remember_username')
-                ->withValue($user->getUsername())
-                ->withExpires(new \DateTime('+30 days'))
-                ->withPath('/')
-                ->withHttpOnly(true)
-                ->withSameSite('lax');
-            $response->headers->setCookie($cookie);
+    return $response;
+}
+
+public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
+{
+    $session = $request->getSession();
+    $msg = $exception->getMessage();
+
+    $isCaptchaOrLockout = str_contains($msg, 'CAPTCHA') || str_contains($msg, 'tentatives');
+
+    if (!$isCaptchaOrLockout) {
+        $attempts = $session->get('login_attempts', 0) + 1;
+        $session->set('login_attempts', $attempts);
+        if ($attempts >= 3) {
+            $session->set('login_blocked_at', time());
+            $msg = 'Trop de tentatives. Réessayez dans 60 seconde(s).';
         } else {
-            $response->headers->clearCookie('remember_username', '/');
+            $remaining = 3 - $attempts;
+            $msg = sprintf('%s (%d tentative(s) restante(s))', $msg, $remaining);
         }
-
-        return $response;
     }
 
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
-    {
-        $session = $request->getSession();
-        $msg     = $exception->getMessage();
+    $session->set(SecurityRequestAttributes::AUTHENTICATION_ERROR, new CustomUserMessageAuthenticationException($msg));
 
-        $isCaptchaOrLockout = str_contains($msg, 'CAPTCHA') || str_contains($msg, 'tentatives');
-
-        if (!$isCaptchaOrLockout) {
-            $attempts = $session->get('login_attempts', 0) + 1;
-            $session->set('login_attempts', $attempts);
-
-            if ($attempts >= 3) {
-                $session->set('login_blocked_at', time());
-                $msg = 'Trop de tentatives. Réessayez dans 60 seconde(s).';
-            } else {
-                $remaining = 3 - $attempts;
-                $msg = sprintf('%s (%d tentative(s) restante(s))', $msg, $remaining);
-            }
-        }
-
-        $session->set(
-            SecurityRequestAttributes::AUTHENTICATION_ERROR,
-            new CustomUserMessageAuthenticationException($msg)
-        );
-
-        return new RedirectResponse($this->router->generate('app_login'));
+    // 🟢 Si requête AJAX, retourner JSON d'erreur
+    if ($request->isXmlHttpRequest()) {
+        return new JsonResponse(['success' => false, 'error' => $msg], 400);
     }
+
+    return new RedirectResponse($this->router->generate('app_login'));
+}
 }

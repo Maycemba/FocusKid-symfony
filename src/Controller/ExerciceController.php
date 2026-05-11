@@ -83,7 +83,7 @@ final class ExerciceController extends AbstractController
             $tousLesStats = [];  // Pour stocker toutes les prédictions
             
             if ($exercice->isPourTousEnfants()) {
-                $tousLesEnfants = $entityManager->getRepository(Utilisateur::class)->findBy(['role' => 'enfant']);
+                $tousLesEnfants = $entityManager->getRepository(Utilisateur::class)->findBy(['role' => 2]);
                 $enfantsIds = [];
                 foreach ($tousLesEnfants as $enfant) {
                     $enfantsIds[] = $enfant->getId();
@@ -215,7 +215,7 @@ final class ExerciceController extends AbstractController
         $form = $this->createForm(ExerciceType::class, $exercice);
         
         // 🔥 Récupérer tous les enfants pour le formulaire
-        $enfants = $entityManager->getRepository(Utilisateur::class)->findBy(['role' => 'enfant']);
+        $enfants = $entityManager->getRepository(Utilisateur::class)->findBy(['role' => 2]);
         
         return $this->render('exercice/new.html.twig', [
             'exercice' => $exercice,
@@ -263,7 +263,7 @@ private function getStatsTousEnfants(EntityManagerInterface $em, array $enfantsI
     private function assignToAllChildren(Exercice $exercice, EntityManagerInterface $em): void
     {
         $enfantRepo = $em->getRepository(Utilisateur::class);
-        $enfants = $enfantRepo->findBy(['role' => 0]); // 0 = ROLE_PARENT? À ajuster selon votre logique
+        $enfants = $enfantRepo->findBy(['role' => 2]);
         
         foreach ($enfants as $enfant) {
             $exists = $em->getRepository(ExerciceEnfant::class)->findOneBy([
@@ -342,7 +342,11 @@ private function getStatsTousEnfants(EntityManagerInterface $em, array $enfantsI
             }
             
             // 🔥 Mettre à jour les jours pour les assignations existantes
-            $joursSelectionnes = $request->request->get('jours') ?? [];
+            $postData = $request->request->all();
+            $joursSelectionnes = $postData['jours'] ?? [];
+            if (!is_array($joursSelectionnes)) {
+                $joursSelectionnes = [$joursSelectionnes];
+            }
             $joursString = implode(',', $joursSelectionnes);
             
             $exercicesEnfant = $entityManager->getRepository(ExerciceEnfant::class)->findBy(['exercice_id' => $exercice->getId()]);
@@ -461,77 +465,77 @@ public function getEnfantStats(int $id, EntityManagerInterface $em): JsonRespons
 }
     // ========== FRONT OFFICE (ENFANT) ==========
 
-    #[Route('/front/exercices', name: 'app_front_exercice_index', methods: ['GET'])]
-    public function frontIndex(Request $request, ExerciceRepository $exerciceRepository, ExerciceEnfantRepository $exerciceEnfantRepository): Response
-    {
-        $user = $this->getUser();
-        $enfantId = $user instanceof Utilisateur ? $user->getId() : 1;
-        
-        $type = $request->query->get('type', 'non_complete');
-        $showPlanning = $request->query->get('showPlanning', 0);
-        $view = $request->query->get('view', 'day');
-        $date = $request->query->get('date', date('Y-m-d'));
-        $currentDate = new \DateTime($date);
-        
-        // Récupérer les exercices assignés à l'enfant
-        $exercicesEnfant = $exerciceEnfantRepository->findBy(['enfant_id' => $enfantId]);
-        $exercicesIds = [];
-        $completionStatus = [];
-        $joursParExercice = [];
-        
-        foreach ($exercicesEnfant as $ee) {
-            $exercicesIds[] = $ee->getExerciceId();
-            $completionStatus[$ee->getExerciceId()] = $ee->isComplete();
-            $joursParExercice[$ee->getExerciceId()] = $ee->getJoursArray();
-        }
-        
-        $allExercices = [];
-        if (count($exercicesIds) > 0) {
-            // 🔥 FILTRER UNIQUEMENT LES EXERCICES ACTIFS ET NON ARCHIVÉS
-            $allExercices = $exerciceRepository->findBy([
-                'id' => $exercicesIds, 
-                'actif' => true,
-                'archive' => false
-            ]);
-        }
-        
-        // Filtrer selon le type
-        $exercices = [];
-        foreach ($allExercices as $exo) {
-            $isComplete = $completionStatus[$exo->getId()] ?? false;
-            if ($type === 'complete' && $isComplete) {
-                $exercices[] = $exo;
-            } elseif ($type === 'non_complete' && !$isComplete) {
-                $exercices[] = $exo;
-            }
-        }
-        
-        // Compter pour les badges (sur les exercices actifs uniquement)
-        $nonCompleteCount = 0;
-        $completeCount = 0;
-        foreach ($allExercices as $exo) {
-            $isComplete = $completionStatus[$exo->getId()] ?? false;
-            if ($isComplete) {
-                $completeCount++;
-            } else {
-                $nonCompleteCount++;
-            }
-        }
-        
-        return $this->render('front/exercice/index.html.twig', [
-            'exercices' => $exercices,
-            'currentType' => $type,
-            'nonCompleteCount' => $nonCompleteCount,
-            'completeCount' => $completeCount,
-            'allExercices' => $allExercices,
-            'joursParExercice' => $joursParExercice,
-            'showPlanning' => $showPlanning,
-            'currentView' => $view,
-            'currentDate' => $currentDate,
-            'enfantId' => $enfantId,
+    // Dans ExerciceController.php, modifiez la méthode frontIndex :
+
+#[Route('/front/exercices', name: 'app_front_exercice_index', methods: ['GET'])]
+public function frontIndex(Request $request, ExerciceRepository $exerciceRepository, ExerciceEnfantRepository $exerciceEnfantRepository): Response
+{
+    $user = $this->getUser();
+    $enfantId = $user instanceof Utilisateur ? $user->getId() : 1;
+    
+    $type = $request->query->get('type', 'non_complete');
+    $showPlanning = $request->query->get('showPlanning', 0);
+    
+    // Récupérer les exercices assignés à l'enfant
+    $exercicesEnfant = $exerciceEnfantRepository->findBy(['enfant_id' => $enfantId]);
+    $exercicesIds = [];
+    $completionStatus = [];
+    $joursParExercice = [];
+    
+    foreach ($exercicesEnfant as $ee) {
+        $exercicesIds[] = $ee->getExerciceId();
+        $completionStatus[$ee->getExerciceId()] = $ee->isComplete();
+        $joursParExercice[$ee->getExerciceId()] = $ee->getJoursArray();
+    }
+    
+    // 🔥 IMPORTANT: Récupérer TOUS les exercices assignés (même complétés)
+    $allExercices = [];
+    if (count($exercicesIds) > 0) {
+        $allExercices = $exerciceRepository->findBy([
+            'id' => $exercicesIds, 
+            'actif' => true,
+            'archive' => false
         ]);
     }
     
+    // Filtrer selon le type (non_complete ou complete)
+    $exercices = [];
+    foreach ($allExercices as $exo) {
+        $isComplete = $completionStatus[$exo->getId()] ?? false;
+        if ($type === 'complete' && $isComplete) {
+            $exercices[] = $exo;
+        } elseif ($type === 'non_complete' && !$isComplete) {
+            $exercices[] = $exo;
+        }
+    }
+    
+    // Compter pour les badges
+    $nonCompleteCount = 0;
+    $completeCount = 0;
+    foreach ($allExercices as $exo) {
+        $isComplete = $completionStatus[$exo->getId()] ?? false;
+        if ($isComplete) {
+            $completeCount++;
+        } else {
+            $nonCompleteCount++;
+        }
+    }
+    
+    // 🔥 DEBUG: Ajoutez ces logs pour vérifier
+    $this->addFlash('debug', 'Exercices trouvés: ' . count($allExercices));
+    $this->addFlash('debug', 'Type actuel: ' . $type);
+    $this->addFlash('debug', 'À faire: ' . $nonCompleteCount . ', Faits: ' . $completeCount);
+    
+    return $this->render('front/exercice/index.html.twig', [
+        'exercices' => $exercices,
+        'currentType' => $type,
+        'nonCompleteCount' => $nonCompleteCount,
+        'completeCount' => $completeCount,
+        'allExercices' => $allExercices,
+        'joursParExercice' => $joursParExercice,
+        'showPlanning' => (int)$showPlanning,
+    ]);
+}
     #[Route('/front/jeu/memoire/{id}', name: 'app_front_jeu_memoire', methods: ['GET'])]
     public function jeuMemoire(int $id, ExerciceRepository $exerciceRepository): Response
     {
@@ -785,39 +789,42 @@ public function getEnfantStats(int $id, EntityManagerInterface $em): JsonRespons
     }
 
     #[Route('/api/planning/events', name: 'api_planning_events', methods: ['GET'])]
-    public function planningEvents(ExerciceEnfantRepository $repo, ExerciceRepository $exerciceRepo): JsonResponse
-    {
-        $user = $this->getUser();
-        $enfantId = $user instanceof Utilisateur ? $user->getId() : 1;
-        
-        $assignations = $repo->findBy(['enfant_id' => $enfantId, 'complete' => 0]);
-        $events = [];
-        
-        foreach ($assignations as $assignation) {
-            $exercice = $exerciceRepo->find($assignation->getExerciceId());
-            if (!$exercice) continue;
-            
-            $jours = $assignation->getJours() ? explode(',', $assignation->getJours()) : [];
-            
-            foreach ($jours as $jour) {
-                // Calculer la prochaine date pour ce jour
-                $date = $this->getNextDateForDay($jour);
-                
-                $events[] = [
-                    'title' => $exercice->getTitre(),
-                    'start' => $date->format('Y-m-d'),
-                    'url' => $this->generateUrl('app_front_jeu_' . strtolower($exercice->getType()), ['id' => $exercice->getId()]),
-                    'backgroundColor' => '#FF9800',
-                    'borderColor' => '#FF9800',
-                    'textColor' => '#ffffff',
-                ];
-            }
+public function planningEvents(ExerciceEnfantRepository $repo, ExerciceRepository $exerciceRepo): JsonResponse
+{
+    $user = $this->getUser();
+    if (!$user) {
+        return $this->json([]);
+    }
+    
+    $enfantId = $user instanceof Utilisateur ? $user->getId() : 1;
+    
+    $assignations = $repo->findBy(['enfant_id' => $enfantId, 'complete' => 0]);
+    $events = [];
+    
+    foreach ($assignations as $assignation) {
+        $exercice = $exerciceRepo->find($assignation->getExerciceId());
+        if (!$exercice || !$exercice->isActif() || $exercice->isArchive()) {
+            continue;
         }
         
-        return $this->json($events);
+        $jours = $assignation->getJoursArray();
+        
+        foreach ($jours as $jour) {
+            $date = $this->getNextDateForDay($jour);
+            
+            $events[] = [
+                'title' => $exercice->getTitre(),
+                'start' => $date->format('Y-m-d'),
+                'url' => $this->generateUrl('app_front_jeu_' . strtolower($exercice->getType()), ['id' => $exercice->getId()]),
+                'backgroundColor' => '#FF9800',
+                'borderColor' => '#FF9800',
+                'textColor' => '#ffffff',
+            ];
+        }
     }
-
-    private function getNextDateForDay(string $day): \DateTime
+    
+    return $this->json($events);
+}    private function getNextDateForDay(string $day): \DateTime
     {
         $days = [
             'Lundi' => 1, 'Mardi' => 2, 'Mercredi' => 3,

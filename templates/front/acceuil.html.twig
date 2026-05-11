@@ -1,0 +1,690 @@
+{% extends 'base-front1.html.twig' %}
+
+{% block title %}FocusKid - Apprentissage ludique pour enfants{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    :root {
+        --orange: #FF6B35;
+        --blue: #4A90E2;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        min-height: 85vh;
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="3" fill="white" opacity="0.2"/><circle cx="80" cy="40" r="2" fill="white" opacity="0.15"/><circle cx="50" cy="80" r="4" fill="white" opacity="0.2"/><circle cx="90" cy="70" r="2" fill="white" opacity="0.15"/></svg>');
+        background-size: 50px;
+        pointer-events: none;
+    }
+
+    .floating-emoji {
+        position: absolute;
+        animation: float 6s ease-in-out infinite;
+        font-size: 40px;
+        opacity: 0.3;
+        pointer-events: none;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+
+    /* Modal Overlay pour les formulaires */
+    .form-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .form-modal.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 28px;
+        max-width: 450px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        animation: slideUp 0.3s ease;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card-header {
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        padding: 25px;
+        text-align: center;
+        color: white;
+        border-radius: 28px 28px 0 0;
+    }
+
+    .close-modal {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        background: rgba(255,255,255,0.2);
+        border: none;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .close-modal:hover {
+        background: rgba(255,255,255,0.3);
+        transform: rotate(90deg);
+    }
+
+    .form-card-body {
+        padding: 30px;
+    }
+
+    /* Inputs modernes */
+    .input-modern {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .input-modern i {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--orange);
+        font-size: 18px;
+        z-index: 2;
+    }
+
+    .input-modern input {
+        width: 100%;
+        padding: 12px 16px 12px 48px;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        font-size: 15px;
+        transition: all 0.3s;
+        outline: none;
+    }
+
+    .input-modern input:focus {
+        border-color: var(--orange);
+        box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
+    }
+
+    .btn-gradient {
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        border: none;
+        padding: 14px;
+        border-radius: 16px;
+        font-weight: bold;
+        font-size: 16px;
+        transition: all 0.3s;
+        width: 100%;
+        color: white;
+    }
+
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(255,107,53,0.3);
+    }
+
+    .role-choice-group {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .role-choice-group .form-check {
+        margin-bottom: 10px;
+        padding-left: 30px;
+    }
+
+    .role-choice-group .form-check-input {
+        margin-left: -25px;
+        margin-top: 8px;
+    }
+
+    .role-choice-group .form-check-label {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .role-choice-group .form-check-label small {
+        display: block;
+        font-size: 12px;
+        color: #6c757d;
+        font-weight: normal;
+    }
+
+    /* Password strength */
+    .password-strength {
+        margin-top: 8px;
+        height: 4px;
+        border-radius: 2px;
+        transition: all 0.3s;
+    }
+
+    .strength-weak { width: 33%; background: #dc3545; }
+    .strength-medium { width: 66%; background: #ffc107; }
+    .strength-strong { width: 100%; background: #28a745; }
+
+    /* Features Cards */
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px 20px;
+        transition: all 0.4s ease;
+        cursor: pointer;
+        border: 1px solid rgba(0,0,0,0.05);
+        height: 100%;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .feature-icon i {
+        font-size: 30px;
+        color: white;
+    }
+
+    /* Stats */
+    .stat-number {
+        font-size: 48px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* CTA Banner */
+    .cta-banner {
+        background: linear-gradient(135deg, #FF6B35, #4A90E2);
+        border-radius: 30px;
+        padding: 60px 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-banner::before {
+        content: '🎓';
+        position: absolute;
+        font-size: 150px;
+        opacity: 0.1;
+        bottom: -30px;
+        right: -30px;
+        transform: rotate(-15deg);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- Hero Section -->
+<div class="hero-section text-white py-5">
+    <div class="floating-emoji" style="top: 10%; left: 5%; animation-delay: 0s;">🌟</div>
+    <div class="floating-emoji" style="bottom: 15%; right: 8%; animation-delay: 2s;">🎨</div>
+    <div class="floating-emoji" style="top: 30%; right: 15%; animation-delay: 4s;">📚</div>
+    
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-7 text-center text-lg-start">
+                <span class="badge bg-white text-dark px-4 py-2 rounded-pill mb-3">
+                    🎉 La nouvelle façon d'apprendre
+                </span>
+                <h1 class="display-4 fw-bold mb-4">
+                    Apprendre en s'amusant avec <span class="text-warning">FocusKid</span>
+                </h1>
+                <p class="lead mb-4 fs-4">
+                    Des exercices interactifs, des jeux éducatifs et un suivi personnalisé pour aider votre enfant à progresser.
+                </p>
+                <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
+                    <a href="{{ path('app_front_exercice_index') }}" class="btn btn-light btn-lg rounded-pill px-4">
+                        <i class="fas fa-play me-2"></i> Commencer l'aventure
+                    </a>
+                    <a href="#features" class="btn btn-outline-light btn-lg rounded-pill px-4">
+                        <i class="fas fa-info-circle me-2"></i> En savoir plus
+                    </a>
+                </div>
+                
+                <!-- Mini stats -->
+                <div class="row mt-5 g-3">
+                    <div class="col-4">
+                        <div>
+                            <h3 class="fw-bold mb-0">500+</h3>
+                            <small>Exercices</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div>
+                            <h3 class="fw-bold mb-0">50+</h3>
+                            <small>Jeux</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div>
+                            <h3 class="fw-bold mb-0">98%</h3>
+                            <small>Satisfaits</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-5 d-none d-lg-block text-center">
+                <div class="bg-white bg-opacity-20 rounded-4 p-4">
+                    <i class="fas fa-child fa-4x mb-3"></i>
+                    <h3 class="h4 fw-bold">Rejoins 1000+ enfants</h3>
+                    <p>qui apprennent déjà avec FocusKid</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container py-5" id="features">
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold">Pourquoi choisir <span style="background: linear-gradient(135deg, #FF6B35, #4A90E2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">FocusKid</span> ?</h2>
+        <p class="lead text-muted">Une plateforme complète pour l'épanouissement de votre enfant</p>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-puzzle-piece"></i>
+                </div>
+                <h4 class="fw-bold mb-3">Exercices interactifs</h4>
+                <p class="text-muted">Des exercices ludiques adaptés à chaque âge pour renforcer les acquis scolaires.</p>
+                <div class="mt-3">
+                    <span class="badge bg-light text-dark">🎯 200+ exercices</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <h4 class="fw-bold mb-3">Jeux éducatifs</h4>
+                <p class="text-muted">Apprendre en jouant avec des jeux qui développent la logique et la mémoire.</p>
+                <div class="mt-3">
+                    <span class="badge bg-light text-dark">🎮 50+ jeux</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h4 class="fw-bold mb-3">Suivi personnalisé</h4>
+                <p class="text-muted">Un tableau de bord pour suivre les progrès et les performances de votre enfant.</p>
+                <div class="mt-3">
+                    <span class="badge bg-light text-dark">📊 Rapports détaillés</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="container-fluid bg-light py-5">
+    <div class="container">
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">500+</div>
+                    <p class="text-muted">Exercices disponibles</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">50+</div>
+                    <p class="text-muted">Jeux éducatifs</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">1000+</div>
+                    <p class="text-muted">Enfants accompagnés</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">98%</div>
+                    <p class="text-muted">Parents satisfaits</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Témoignages -->
+<div class="container py-5">
+    <div class="row align-items-center">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <h2 class="display-5 fw-bold mb-4">
+                Ils nous <span style="color: var(--orange);">font confiance</span>
+            </h2>
+            <div class="mb-4">
+                <div class="d-flex gap-2 mb-3">
+                    <i class="fas fa-star text-warning"></i>
+                    <i class="fas fa-star text-warning"></i>
+                    <i class="fas fa-star text-warning"></i>
+                    <i class="fas fa-star text-warning"></i>
+                    <i class="fas fa-star text-warning"></i>
+                </div>
+                <p class="fs-5 fst-italic">"Mon fils adore faire ses exercices sur FocusKid. Il progresse vraiment et prend plaisir à apprendre !"</p>
+                <div class="d-flex align-items-center gap-3">
+                    <img src="https://randomuser.me/api/portraits/women/68.jpg" class="rounded-circle" width="50" height="50" alt="Parent">
+                    <div>
+                        <strong>Sophie Martin</strong><br>
+                        <small class="text-muted">Maman de Léo, 8 ans</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="row g-4">
+                <div class="col-6">
+                    <div class="bg-white p-4 rounded-4 text-center shadow-sm">
+                        <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                        <div class="stat-number">100+</div>
+                        <p class="mb-0 text-muted">Badges gagnés</p>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="bg-white p-4 rounded-4 text-center shadow-sm">
+                        <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                        <div class="stat-number">5k+</div>
+                        <p class="mb-0 text-muted">Heures d'apprentissage</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="container py-5">
+    <div class="cta-banner text-white text-center">
+        <h2 class="display-5 fw-bold mb-3">Prêt à commencer l'aventure ?</h2>
+        <p class="lead mb-4">Inscrivez votre enfant dès maintenant et découvrez une nouvelle façon d'apprendre.</p>
+        <button onclick="openRegisterModal()" class="btn btn-light btn-lg rounded-pill px-5 py-3 fw-bold">
+            <i class="fas fa-user-plus me-2"></i> Créer un compte gratuitement
+        </button>
+        <p class="mt-3 mb-0 small">✨ Aucune carte bancaire requise - Gratuit pour toujours</p>
+    </div>
+</div>
+
+<!-- Modal Inscription -->
+<div id="registerModal" class="form-modal">
+    <div class="form-card">
+        <button class="close-modal" onclick="closeRegisterModal()">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="form-card-header">
+            <div class="mx-auto mb-2" style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-user-plus fa-2x"></i>
+            </div>
+            <h3 class="h4 fw-bold mb-1">Rejoins l'aventure FocusKid</h3>
+            <p class="mb-0 opacity-75">Crée ton compte gratuitement</p>
+        </div>
+        <div class="form-card-body">
+            <div id="registerFormContainer">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Connexion -->
+<div id="loginModal" class="form-modal">
+    <div class="form-card">
+        <button class="close-modal" onclick="closeLoginModal()">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="form-card-header">
+            <div class="mx-auto mb-2" style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-sign-in-alt fa-2x"></i>
+            </div>
+            <h3 class="h4 fw-bold mb-1">Bienvenue sur FocusKid</h3>
+            <p class="mb-0 opacity-75">Connecte-toi à ton compte</p>
+        </div>
+        <div class="form-card-body">
+            <div id="loginFormContainer">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+.hover-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+}
+.stat-item {
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+.stat-item:hover {
+    transform: scale(1.05);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #FF6B35, #4A90E2);
+    border: none;
+}
+</style>
+
+<script>
+// Fonctions pour ouvrir/fermer les modals
+function openRegisterModal() {
+    document.getElementById('registerModal').classList.add('active');
+    loadRegisterForm();
+}
+
+function closeRegisterModal() {
+    document.getElementById('registerModal').classList.remove('active');
+}
+
+function openLoginModal() {
+    document.getElementById('loginModal').classList.add('active');
+    loadLoginForm();
+}
+
+function closeLoginModal() {
+    document.getElementById('loginModal').classList.remove('active');
+}
+
+// Charger le formulaire d'inscription via AJAX
+function loadRegisterForm() {
+    fetch('{{ path('app_register_form_ajax') }}')
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('registerFormContainer').innerHTML = html;
+            initRegisterForm();
+        })
+        .catch(error => console.error('Erreur:', error));
+}
+
+// Charger le formulaire de connexion via AJAX
+function loadLoginForm() {
+    fetch('{{ path('app_login_form_ajax') }}')
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('loginFormContainer').innerHTML = html;
+            initLoginForm();
+        })
+        .catch(error => console.error('Erreur:', error));
+}
+
+function initRegisterForm() {
+    // Force du mot de passe
+    const passwordInput = document.getElementById('password');
+    if(passwordInput) {
+        const strengthDiv = document.getElementById('password-strength') || document.createElement('div');
+        if(!strengthDiv.id) {
+            strengthDiv.className = 'password-strength mb-3';
+            strengthDiv.id = 'password-strength';
+            passwordInput.parentNode.insertAdjacentElement('afterend', strengthDiv);
+        }
+        
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            if(password.length >= 4) strength++;
+            if(password.length >= 8) strength++;
+            if(/[a-z]/.test(password)) strength++;
+            if(/[A-Z]/.test(password)) strength++;
+            if(/[0-9]/.test(password)) strength++;
+            if(/[$@#&!]/.test(password)) strength++;
+            
+            strengthDiv.className = 'password-strength mb-3';
+            if(password.length === 0) {
+                strengthDiv.style.display = 'none';
+            } else {
+                strengthDiv.style.display = 'block';
+                if(strength <= 2) strengthDiv.classList.add('strength-weak');
+                else if(strength <= 4) strengthDiv.classList.add('strength-medium');
+                else strengthDiv.classList.add('strength-strong');
+            }
+        });
+    }
+    
+    // Gestion de la soumission du formulaire d'inscription
+    const registerForm = document.querySelector('#registerFormContainer form');
+    if(registerForm) {
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    loadRegisterForm();
+                }
+            });
+        });
+    }
+}
+
+function initLoginForm() {
+    const loginForm = document.querySelector('#loginFormContainer form');
+    if(loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    loadLoginForm();
+                }
+            });
+        });
+    }
+}
+
+// Fermer avec Echap
+document.addEventListener('keydown', function(e) {
+    if(e.key === 'Escape') {
+        closeRegisterModal();
+        closeLoginModal();
+    }
+});
+
+// Fermer en cliquant sur le fond
+document.querySelectorAll('.form-modal').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if(e.target === this) {
+            this.classList.remove('active');
+        }
+    });
+});
+</script>
+{% endblock %}

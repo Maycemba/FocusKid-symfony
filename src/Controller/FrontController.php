@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Utilisateur;
 use App\Repository\CourRepository;
 use App\Service\TranslationService;
 use Dompdf\Dompdf;
@@ -14,30 +15,31 @@ use App\Repository\EmotionRepository;
 use App\Repository\ScenarioRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Form\RegistrationFormType;
 
 final class FrontController extends AbstractController
 {
     #[Route('/index', name: 'app_index')]
     public function index(): Response
     {
-        return $this->render('public/base-front/index.html');
+        return $this->render('/sessions_de_calme/front_index.html.twig');
     }
 
     #[Route('/', name: 'app_home')]
-    public function home(): Response
-    {
-        $user = $this->getUser();
+public function home(): Response
+{
+    // Affiche directement la nouvelle page d'accueil publique
+    return $this->render('/sessions_de_calme/front_index.html.twig');
+}
+    // Dans votre contrôleur (par exemple FrontController.php)
 
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
-
-        if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->redirectToRoute('app_utilisateur_index');
-        }
-
-        return $this->redirectToRoute('app_index');
-    }
+ 
+    #[Route('/accueil', name: 'app_nouvel_accueil')]
+public function nouvelAccueil(): Response
+{
+    return $this->render('/index.html.twig');
+}
+ 
 
     // Version complète avec pagination, recherche et filtres
     #[Route('/enfant', name: 'app_enfant_cours', methods: ['GET'])]
@@ -244,5 +246,30 @@ final class FrontController extends AbstractController
         ], $scenarios);
 
         return new JsonResponse(['scenarios' => $data]);
+    }
+#[Route('/register-form-ajax', name: 'app_register_form_ajax')]
+    public function registerFormAjax(Request $request): Response
+    {
+        $user = new Utilisateur();
+        $form = $this->createForm(RegistrationFormType::class, $user, [
+            'action' => $this->generateUrl('app_register'), // ← Action vers la route POST
+        ]);
+        return $this->render('registration/_register_form.html.twig', [
+            'registrationForm' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/login-form-ajax', name: 'app_login_form_ajax')]
+    public function loginFormAjax(Request $request): Response
+    {
+        // Générer un CAPTCHA frais pour le formulaire
+        $captchaUrl = $this->generateUrl('app_captcha_image');
+        return $this->render('security/_login_form.html.twig', [
+            'error' => null,
+            'savedUsername' => $request->cookies->get('remember_username', ''),
+            'rememberChecked' => $request->cookies->get('remember_username') !== null,
+            'captchaUrl' => $captchaUrl,
+            'lockoutSeconds' => 0, // On gère le lockout dans le template via session si besoin
+        ]);
     }
 }

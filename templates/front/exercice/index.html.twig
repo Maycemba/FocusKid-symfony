@@ -186,6 +186,23 @@
 {% endblock %}
 
 {% block body %}
+{# En haut de index.html.twig, ajoutez : #}
+{% if app.user and app.user.role == 'admin' %}
+<div class="alert alert-info">
+    <strong>Debug :</strong><br>
+    Exercices trouvés: {{ allExercices|length }}<br>
+    Type: {{ currentType }}<br>
+    Non complétés: {{ nonCompleteCount }}<br>
+    Complétés: {{ completeCount }}<br>
+    {% for exo in allExercices %}
+        - {{ exo.titre }} ({{ exo.type }}) - 
+        {% set isComplete = joursParExercice[exo.id] is defined ? 'assigné' : 'non assigné' %}
+        {{ isComplete }}<br>
+    {% else %}
+        Aucun exercice trouvé
+    {% endfor %}
+</div>
+{% endif %}
 <div class="container-xxl py-5">
     <div class="container">
         <!-- ========== ONGLETS ========== -->

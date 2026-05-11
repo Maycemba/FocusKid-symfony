@@ -450,8 +450,11 @@
                     >
                         <div class="emotion-photo-wrap">
                             {% if emotion.photo %}
-                                <img src="{{ emotion.photo }}" alt="{{ emotion.nom }}" draggable="false">
-                            {% else %}
+                               {# Remplacez votre balise <img> actuelle par celle-ci #}
+<img src="{{ emotion.photo }}" 
+     class="img-fluid rounded-circle" 
+     alt="{{ emotion.nom }}" 
+     style="width: 150px; height: 150px; object-fit: cover;">                         {% else %}
                                 <div class="emotion-photo-placeholder">😶</div>
                             {% endif %}
                             <span class="emotion-check">✓</span>
