@@ -22,14 +22,14 @@ final class FrontController extends AbstractController
     #[Route('/index', name: 'app_index')]
     public function index(): Response
     {
-        return $this->render('/sessions_de_calme/front_index.html.twig');
+        return $this->render('home.html.twig');
     }
 
     #[Route('/', name: 'app_home')]
 public function home(): Response
 {
     // Affiche directement la nouvelle page d'accueil publique
-    return $this->render('/sessions_de_calme/front_index.html.twig');
+    return $this->render('home.html.twig');
 }
     // Dans votre contrôleur (par exemple FrontController.php)
 

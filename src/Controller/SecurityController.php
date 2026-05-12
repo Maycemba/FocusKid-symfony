@@ -1,9 +1,7 @@
 <?php
-
 namespace App\Controller;
-
-use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Entity\Utilisateur;
+use App\Repository\UtilisateurRepository; // ← point-virgule ajouté
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,6 +16,7 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\String\ByteString;
 
+
 class SecurityController extends AbstractController
 {
     // ========================
@@ -27,7 +26,7 @@ class SecurityController extends AbstractController
     /**
      * @Route("/login", name="app_login", methods={"GET", "POST"})
      */
-    public function login(Request $request, AuthenticationUtils $authenticationUtils, UserRepository $userRepository, SessionInterface $session): Response
+    public function login(Request $request, AuthenticationUtils $authenticationUtils, UtilisateurRepository $UtilisateurRepository, SessionInterface $session): Response
     {
         // Si déjà connecté, rediriger
         if ($this->getUser()) {
@@ -47,7 +46,7 @@ class SecurityController extends AbstractController
             }
 
             // Recherche utilisateur
-            $user = $userRepository->findOneBy(['username' => $username]);
+            $user = $UtilisateurRepository->findOneBy(['username' => $username]);
             if (!$user) {
                 return $this->json(['success' => false, 'error' => 'Identifiant ou mot de passe invalide']);
             }
@@ -119,11 +118,11 @@ class SecurityController extends AbstractController
     /**
      * @Route("/mot-de-passe-oublie", name="app_forgot_password", methods={"GET", "POST"})
      */
-    public function forgotPassword(Request $request, UserRepository $userRepository, MailerInterface $mailer, SessionInterface $session): Response
+    public function forgotPassword(Request $request, UtilisateurRepository $UtilisateurRepository, MailerInterface $mailer, SessionInterface $session): Response
     {
         if ($request->isMethod('POST')) {
             $email = $request->request->get('email');
-            $user = $userRepository->findOneBy(['email' => $email]);
+            $user = $UtilisateurRepository->findOneBy(['email' => $email]);
 
             if (!$user) {
                 $this->addFlash('error', 'Aucun compte trouvé avec cet email.');
@@ -159,6 +158,7 @@ class SecurityController extends AbstractController
         }
         return $this->render('security/forgot_password.html.twig');
     }
+ 
 
     /**
      * @Route("/verify-code", name="app_verify_code", methods={"GET", "POST"})
@@ -196,7 +196,7 @@ class SecurityController extends AbstractController
     /**
      * @Route("/resend-code", name="app_resend_code", methods={"POST"})
      */
-    public function resendCode(Request $request, UserRepository $userRepository, MailerInterface $mailer, SessionInterface $session): JsonResponse
+    public function resendCode(Request $request, UtilisateurRepository $UtilisateurRepository, MailerInterface $mailer, SessionInterface $session): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $email = $data['email'] ?? null;
@@ -205,7 +205,7 @@ class SecurityController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Email requis'], 400);
         }
 
-        $user = $userRepository->findOneBy(['email' => $email]);
+        $user = $UtilisateurRepository->findOneBy(['email' => $email]);
         if (!$user) {
             return $this->json(['success' => false, 'error' => 'Utilisateur introuvable'], 404);
         }
@@ -232,7 +232,7 @@ class SecurityController extends AbstractController
     /**
      * @Route("/reset-password", name="app_reset_password", methods={"GET", "POST"})
      */
-    public function resetPassword(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher, SessionInterface $session): Response
+    public function resetPassword(Request $request, UtilisateurRepository $UtilisateurRepository, UserPasswordHasherInterface $passwordHasher, SessionInterface $session): Response
     {
         if (!$session->get('code_validated')) {
             $this->addFlash('error', 'Accès non autorisé. Veuillez refaire la procédure.');
@@ -242,7 +242,7 @@ class SecurityController extends AbstractController
         $email = $request->query->get('email') ?: $request->request->get('email');
         $code = $request->query->get('code') ?: $request->request->get('code');
 
-        $user = $userRepository->findOneBy(['email' => $email]);
+        $user = $UtilisateurRepository->findOneBy(['email' => $email]);
 
         if (!$user) {
             $this->addFlash('error', 'Utilisateur introuvable.');
@@ -264,8 +264,8 @@ class SecurityController extends AbstractController
             }
 
             $hashedPassword = $passwordHasher->hashPassword($user, $password);
-            $user->setPassword($hashedPassword);
-            $userRepository->save($user, true);
+            $user->setPasswordHash($hashedPassword);
+            $UtilisateurRepository->save($user, true);
 
             $session->remove('code_validated');
             $session->remove('reset_code');
@@ -319,4 +319,5 @@ class SecurityController extends AbstractController
 
         return new Response($imageData, 200, ['Content-Type' => 'image/png']);
     }
+  
 }

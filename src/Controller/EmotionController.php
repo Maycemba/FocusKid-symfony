@@ -48,9 +48,9 @@ final class EmotionController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $file = $form->get('photo')->getData();
             if ($file) {
-                $mimeType = $file->getMimeType();
+                 
                 $base64   = base64_encode(file_get_contents($file->getPathname()));
-                $emotion->setPhoto('data:' . $mimeType . ';base64,' . $base64);
+                $emotion->setPhoto( $base64);
             }
             $entityManager->persist($emotion);
             $entityManager->flush();

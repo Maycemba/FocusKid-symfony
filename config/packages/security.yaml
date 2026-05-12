@@ -35,7 +35,7 @@ security:
         - { path: ^/clear-cookies, roles: PUBLIC_ACCESS }
         - { path: ^/captcha, roles: PUBLIC_ACCESS }
         - { path: ^/logout, roles: PUBLIC_ACCESS }
-        - { path: ^/utilisateur, roles: ROLE_ADMIN }
+        - { path: ^/utilisateur, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: ROLE_USER }
 
 when@test:

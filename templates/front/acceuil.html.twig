@@ -526,6 +526,8 @@
     </div>
 </div>
 
+ 
+
 <style>
 .hover-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -567,8 +569,7 @@ function openLoginModal() {
 
 function closeLoginModal() {
     document.getElementById('loginModal').classList.remove('active');
-}
-
+} 
 // Charger le formulaire d'inscription via AJAX
 function loadRegisterForm() {
     fetch('{{ path('app_register_form_ajax') }}')
@@ -580,16 +581,7 @@ function loadRegisterForm() {
         .catch(error => console.error('Erreur:', error));
 }
 
-// Charger le formulaire de connexion via AJAX
-function loadLoginForm() {
-    fetch('{{ path('app_login_form_ajax') }}')
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('loginFormContainer').innerHTML = html;
-            initLoginForm();
-        })
-        .catch(error => console.error('Erreur:', error));
-}
+ 
 
 function initRegisterForm() {
     // Force du mot de passe
@@ -668,7 +660,7 @@ function initLoginForm() {
             });
         });
     }
-}
+} 
 
 // Fermer avec Echap
 document.addEventListener('keydown', function(e) {

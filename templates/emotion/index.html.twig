@@ -56,7 +56,7 @@
                             <td>{{ emotion.nom }}</td>
                             <td>
                                 {% if emotion.photo %}
-                                    <img src="data:image/png;base64,{{ emotion.photo }}"
+                                   <img src="{{ emotion.photoBase64 }}">
                                          alt="{{ emotion.nom }}"
                                          class="rounded"
                                          style="width:50px; height:50px; object-fit:cover;">

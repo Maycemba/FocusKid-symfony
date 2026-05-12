@@ -451,7 +451,7 @@
                         <div class="emotion-photo-wrap">
                             {% if emotion.photo %}
                                {# Remplacez votre balise <img> actuelle par celle-ci #}
-<img src="{{ emotion.photo }}" 
+<img src="{{ emotion.photoBase64 }}" 
      class="img-fluid rounded-circle" 
      alt="{{ emotion.nom }}" 
      style="width: 150px; height: 150px; object-fit: cover;">                         {% else %}

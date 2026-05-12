@@ -64,40 +64,24 @@ class Emotion
         return $this->photo;
     }
 
-    public function setPhoto($photo): self
-    {
-        if ($photo === null) {
-            $this->photo = null;
-            return $this;
-        }
+   public function setPhoto(?string $photo): self
+{
+    // Si on reçoit une chaîne vide ou null
+    if ($photo === null || $photo === '') {
+        $this->photo = null;
+        return $this;
+    }
 
-        // Si c'est un objet UploadedFile de Symfony
-        if (is_object($photo) && method_exists($photo, 'getPathname')) {
-            $photo = file_get_contents($photo->getPathname());
-        }
-        
-        // Si c'est un chemin de fichier
-        if (is_string($photo) && file_exists($photo)) {
-            $photo = file_get_contents($photo);
-        }
-        
-        // Si c'est une ressource (flux)
-        if (is_resource($photo)) {
-            $photo = stream_get_contents($photo);
-        }
-        
-        // Si c'est une chaîne binaire, convertir en base64
-        if (is_string($photo) && !empty($photo)) {
-            // Vérifier si ce n'est pas déjà du base64
-            if (!preg_match('/^[A-Za-z0-9+\/=]+$/', $photo) || strlen($photo) % 4 != 0) {
-                $photo = base64_encode($photo);
-            }
-        }
-        
+    // Si la donnée ressemble déjà à un data URI complet, on l'utilise telle quelle (optionnel)
+    if (str_starts_with($photo, 'data:image/')) {
         $this->photo = $photo;
         return $this;
     }
 
+    // Sinon, on suppose que c'est du base64 pur (pas de préfixe)
+    $this->photo = $photo;
+    return $this;
+}
     /**
      * Retourne la photo sous forme de base64 (prete pour l'affichage)
      */
