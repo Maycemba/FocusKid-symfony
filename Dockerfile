@@ -1,25 +1,53 @@
-# ==========================================
-# ÉTAPE 1 : Compilation des assets (Node.js)
-# ==========================================
+# ==============================================================================
+# ÉTAPE 1 : Installation des dépendances PHP (Composer)
+# ==============================================================================
+FROM php:8.2-cli AS composer-builder
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    unzip \
+    zip \
+    libicu-dev \
+    libzip-dev \
+    libpq-dev \
+    && docker-php-ext-install pdo_mysql pdo_pgsql intl zip \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Copier uniquement les fichiers composer
+COPY composer.json composer.lock ./
+
+# Installer les dépendances PHP de production (crée le dossier vendor/)
+RUN composer install --no-dev --no-scripts --optimize-autoloader
+
+# ==============================================================================
+# ÉTAPE 2 : Compilation des assets (Node.js)
+# ==============================================================================
 FROM node:18-alpine AS node-builder
 
 WORKDIR /app
 
-# Copier uniquement les fichiers nécessaires aux packages
+# Copier uniquement les configurations de packages Node
 COPY package*.json ./
 
 # Installer les dépendances Node
 RUN npm ci
 
-# Copier le reste du projet pour compiler
+# Copier l'intégralité du code source
 COPY . .
+
+# Copier le dossier vendor/ depuis l'étape composer-builder car Webpack Encore en a besoin pour résoudre Stimulus / Symfony UX
+COPY --from=composer-builder /app/vendor ./vendor
 
 # Compiler les assets de production (Webpack Encore)
 RUN npm run build
 
-# ==========================================
-# ÉTAPE 2 : Serveur de production (PHP / Apache)
-# ==========================================
+# ==============================================================================
+# ÉTAPE 3 : Serveur de production (PHP / Apache)
+# ==============================================================================
 FROM php:8.2-apache
 
 # Configurer Apache pour pointer vers le répertoire /public de Symfony
@@ -62,15 +90,15 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Copier l'intégralité du projet
 COPY . .
 
+# Copier le dossier vendor/ pré-installé et optimisé
+COPY --from=composer-builder /app/vendor ./vendor
+
 # Copier les assets compilés depuis l'étape Node.js
 COPY --from=node-builder /app/public/build ./public/build
 
 # Configurer les variables d'environnement pour la production
 ENV APP_ENV=prod
 ENV APP_DEBUG=0
-
-# Installer les dépendances PHP sans les dépendances de développement
-RUN composer install --no-dev --optimize-autoloader --classmap-authoritative
 
 # Créer les dossiers de cache, logs et uploads et donner les droits d'écriture à Apache
 RUN mkdir -p var/cache var/log public/uploads && \
