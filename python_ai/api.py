@@ -19,8 +19,8 @@ from tensorflow import keras
 MODEL_PATH   = "model/emotion_model.keras"
 LABELS_PATH  = "model/labels.json"
 CASCADE_PATH = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-HOST         = "127.0.0.1"
-PORT         = 5001
+HOST         = os.environ.get("HOST", "0.0.0.0")
+PORT         = int(os.environ.get("PORT", 5001))
 IMG_SIZE     = (48, 48)
 
 logging.basicConfig(level=logging.INFO,

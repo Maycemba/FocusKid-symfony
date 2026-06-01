@@ -1,0 +1,58 @@
+# ==============================================================================
+# FocusKid - Spécification Render Blueprint
+# Hébergement complet en un clic (Base de données + Web Symfony + API Python AI)
+# ==============================================================================
+services:
+  # ----------------------------------------------------------------------------
+  # 1. API Python AI (Service d'Inférence d'Émotions & Stress)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: focuskid-ai
+    env: docker
+    dockerfilePath: python_ai/Dockerfile
+    dockerContext: python_ai
+    plan: free
+    port: 5001
+    envVars:
+      - key: PORT
+        value: 5001
+      - key: HOST
+        value: 0.0.0.0
+
+  # ----------------------------------------------------------------------------
+  # 2. Application Web Symfony (Interface utilisateur & Contrôleurs)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: focuskid-web
+    env: docker
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    plan: free
+    port: 80
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_DEBUG
+        value: "0"
+      - key: APP_SECRET
+        generateValue: true
+      # Liaison automatique avec la base de données PostgreSQL ci-dessous
+      - key: DATABASE_URL
+        fromDatabase:
+          name: focuskid-db
+          property: connectionString
+      # Liaison réseau privée et sécurisée interne avec l'API d'IA
+      - key: PYTHON_API_URL
+        value: http://focuskid-ai:5001
+    # Disque persistant pour stocker de manière permanente les fichiers téléversés par l'utilisateur
+    disk:
+      name: focuskid-uploads
+      mountPath: /var/www/html/public/uploads
+      sizeGB: 1
+
+# ------------------------------------------------------------------------------
+# 3. Base de données PostgreSQL managée
+# ------------------------------------------------------------------------------
+databases:
+  - name: focuskid-db
+    plan: free
