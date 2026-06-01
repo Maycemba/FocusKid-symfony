@@ -12,7 +12,6 @@ services:
     dockerfilePath: python_ai/Dockerfile
     dockerContext: python_ai
     plan: free
-    port: 5001
     envVars:
       - key: PORT
         value: 5001
@@ -28,7 +27,6 @@ services:
     dockerfilePath: Dockerfile
     dockerContext: .
     plan: free
-    port: 80
     envVars:
       - key: APP_ENV
         value: prod
