@@ -30,8 +30,31 @@ log = logging.getLogger("focuskid-api")
 # ─────────────────────────────────────────────
 # CHARGEMENT GLOBAL (1 seule fois au démarrage)
 # ─────────────────────────────────────────────
-log.info("Chargement du modèle…")
-model = keras.models.load_model(MODEL_PATH, compile=False)
+def load_model_safe(model_path):
+    """Load model with compatibility handling for deprecated parameters."""
+    log.info("Chargement du modèle…")
+    try:
+        # Try loading normally first
+        return keras.models.load_model(model_path, compile=False)
+    except TypeError as e:
+        if "renorm" in str(e):
+            log.warning("Detected deprecated BatchNormalization parameters, attempting fix...")
+            # Try to load with custom objects that ignore deprecated parameters
+            from tensorflow.keras import layers
+            
+            @keras.saving.register_keras_serializable(package='Custom')
+            class CompatibleBatchNormalization(layers.BatchNormalization):
+                def __init__(self, *args, **kwargs):
+                    kwargs.pop('renorm', None)
+                    kwargs.pop('renorm_clipping', None)
+                    kwargs.pop('renorm_momentum', None)
+                    super().__init__(*args, **kwargs)
+            
+            custom_objects = {'BatchNormalization': CompatibleBatchNormalization}
+            return keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
+        raise
+
+model = load_model_safe(MODEL_PATH)
 
 # Warm-up avec la bonne forme
 model.predict(np.zeros((1, 48, 48, 1), dtype=np.float32), verbose=0)
