@@ -42,11 +42,6 @@ services:
       # Liaison réseau privée et sécurisée interne avec l'API d'IA
       - key: PYTHON_API_URL
         value: http://focuskid-ai:5001
-    # Disque persistant pour stocker de manière permanente les fichiers téléversés par l'utilisateur
-    disk:
-      name: focuskid-uploads
-      mountPath: /var/www/html/public/uploads
-      sizeGB: 1
 
 # ------------------------------------------------------------------------------
 # 3. Base de données PostgreSQL managée
