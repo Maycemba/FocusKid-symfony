@@ -1,0 +1,41 @@
+# ==============================================================================
+# FocusKid - Configuration Render GRATUIT (512MB RAM par service)
+# 
+# STRATEGY: Garder SEULEMENT Symfony + PostgreSQL
+# Utiliser une API ML cloud pour la détection d'émotions
+# ==============================================================================
+
+services:
+  # ============================================================================
+  # 1. Application Web Symfony (Interface + API REST)
+  # ============================================================================
+  - type: web
+    name: focuskid-web
+    env: docker
+    dockerfilePath: Dockerfile.render-free
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_DEBUG
+        value: "0"
+      - key: APP_SECRET
+        generateValue: true
+      # Connexion à PostgreSQL managée par Render
+      - key: DATABASE_URL
+        fromDatabase:
+          name: focuskid-db
+          property: connectionString
+      # API Hugging Face pour la détection d'émotions
+      - key: EMOTION_API_TYPE
+        value: huggingface
+      - key: HUGGINGFACE_API_KEY
+        sync: false
+
+# ==============================================================================
+# 2. Base de données PostgreSQL managée (Gratuit : 256 MB stockage)
+# ==============================================================================
+databases:
+  - name: focuskid-db
+    plan: free

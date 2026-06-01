@@ -33,25 +33,25 @@ log = logging.getLogger("focuskid-api")
 def load_model_safe(model_path):
     """Load model with compatibility handling for deprecated parameters."""
     log.info("Chargement du modèle…")
+    
+    # Custom BatchNormalization that ignores deprecated parameters
+    class CompatibleBatchNormalization(keras.layers.BatchNormalization):
+        def __init__(self, *args, **kwargs):
+            # Remove deprecated parameters if present
+            kwargs.pop('renorm', None)
+            kwargs.pop('renorm_clipping', None)
+            kwargs.pop('renorm_momentum', None)
+            super().__init__(*args, **kwargs)
+    
+    custom_objects = {
+        'BatchNormalization': CompatibleBatchNormalization,
+    }
+    
     try:
-        # Try loading normally first
-        return keras.models.load_model(model_path, compile=False)
-    except TypeError as e:
-        if "renorm" in str(e):
-            log.warning("Detected deprecated BatchNormalization parameters, attempting fix...")
-            # Try to load with custom objects that ignore deprecated parameters
-            from tensorflow.keras import layers
-            
-            @keras.saving.register_keras_serializable(package='Custom')
-            class CompatibleBatchNormalization(layers.BatchNormalization):
-                def __init__(self, *args, **kwargs):
-                    kwargs.pop('renorm', None)
-                    kwargs.pop('renorm_clipping', None)
-                    kwargs.pop('renorm_momentum', None)
-                    super().__init__(*args, **kwargs)
-            
-            custom_objects = {'BatchNormalization': CompatibleBatchNormalization}
-            return keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
+        # Try loading with custom objects
+        return keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
+    except Exception as e:
+        log.error(f"Failed to load model: {e}")
         raise
 
 model = load_model_safe(MODEL_PATH)

@@ -1,0 +1,91 @@
+# ==============================================================================
+# Dockerfile RENDER GRATUIT (Sans TensorFlow/Python - Léger)
+# Size optimisé: ~500MB au lieu de 2GB
+# ==============================================================================
+
+# ==============================================================================
+# ÉTAPE 1 : Installation des dépendances PHP (Composer)
+# ==============================================================================
+FROM php:8.2-cli AS composer-builder
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    unzip \
+    zip \
+    libicu-dev \
+    libzip-dev \
+    libpq-dev \
+    && docker-php-ext-install pdo_mysql pdo_pgsql intl zip \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+COPY composer.json composer.lock ./
+
+# Installation avec --no-dev pour réduire la taille
+RUN composer install --no-dev --no-scripts --optimize-autoloader
+
+# ==============================================================================
+# ÉTAPE 2 : Compilation des assets (Node.js) - LÉGER
+# ==============================================================================
+FROM node:18-alpine AS node-builder
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . .
+
+COPY --from=composer-builder /app/vendor ./vendor
+
+RUN npm run build
+
+# ==============================================================================
+# ÉTAPE 3 : Runtime Symfony (LÉGER - Sans Python/TensorFlow)
+# ==============================================================================
+FROM php:8.2-apache
+
+# Point d'entrée Document Root
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# Activer mod_rewrite
+RUN a2enmod rewrite
+
+# Dépendances système MINIMALISTES
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    unzip \
+    libicu-dev \
+    libzip-dev \
+    libpq-dev \
+    && docker-php-ext-install pdo_mysql pdo_pgsql intl zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# PHP optimisé pour production
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+# OPcache pour Symfony
+RUN echo "opcache.memory_consumption=128" >> "$PHP_INI_DIR/conf.d/docker-php-ext-opcache.ini" && \
+    echo "opcache.max_accelerated_files=20000" >> "$PHP_INI_DIR/conf.d/docker-php-ext-opcache.ini" && \
+    echo "opcache.validate_timestamps=0" >> "$PHP_INI_DIR/conf.d/docker-php-ext-opcache.ini" && \
+    echo "opcache.interned_strings_buffer=16" >> "$PHP_INI_DIR/conf.d/docker-php-ext-opcache.ini"
+
+WORKDIR /var/www/html
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+COPY . .
+
+COPY --from=composer-builder /app/vendor ./vendor
+
+COPY --from=node-builder /app/public/build ./public/build
+
+# Production
+ENV APP_ENV=prod
+ENV APP_DEBUG=0
