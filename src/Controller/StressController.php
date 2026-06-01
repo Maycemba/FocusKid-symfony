@@ -13,14 +13,12 @@ use Psr\Log\LoggerInterface;
 #[Route('/stress')]
 class StressController extends AbstractController
 {
-    private readonly string $pythonApiUrl;
+    private const PYTHON_API = 'http://127.0.0.1:5001';
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly LoggerInterface     $logger
-    ) {
-        $this->pythonApiUrl = $_ENV['PYTHON_API_URL'] ?? $_SERVER['PYTHON_API_URL'] ?? 'http://127.0.0.1:5001';
-    }
+    ) {}
 
     // ──────────────────────────────────────────────
     // Page principale (webcam + dashboard)
@@ -53,7 +51,7 @@ class StressController extends AbstractController
         try {
             $response = $this->httpClient->request(
                 'POST',
-                $this->pythonApiUrl . '/predict',
+                self::PYTHON_API . '/predict',
                 [
                     'json'    => ['image' => $frame],
                     'timeout' => 5.0,
@@ -97,7 +95,7 @@ class StressController extends AbstractController
         try {
             $response = $this->httpClient->request(
                 'GET',
-                $this->pythonApiUrl . '/health',
+                self::PYTHON_API . '/health',
                 ['timeout' => 2.0]
             );
             return $this->json(['online' => true] + $response->toArray());

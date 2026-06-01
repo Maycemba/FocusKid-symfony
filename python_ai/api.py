@@ -19,8 +19,8 @@ from tensorflow import keras
 MODEL_PATH   = "model/emotion_model.keras"
 LABELS_PATH  = "model/labels.json"
 CASCADE_PATH = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-HOST         = os.environ.get("HOST", "0.0.0.0")
-PORT         = int(os.environ.get("PORT", 5001))
+HOST         = "127.0.0.1"
+PORT         = 5001
 IMG_SIZE     = (48, 48)
 
 logging.basicConfig(level=logging.INFO,
@@ -30,31 +30,8 @@ log = logging.getLogger("focuskid-api")
 # ─────────────────────────────────────────────
 # CHARGEMENT GLOBAL (1 seule fois au démarrage)
 # ─────────────────────────────────────────────
-def load_model_safe(model_path):
-    """Load model with compatibility handling for deprecated parameters."""
-    log.info("Chargement du modèle…")
-    
-    # Custom BatchNormalization that ignores deprecated parameters
-    class CompatibleBatchNormalization(keras.layers.BatchNormalization):
-        def __init__(self, *args, **kwargs):
-            # Remove deprecated parameters if present
-            kwargs.pop('renorm', None)
-            kwargs.pop('renorm_clipping', None)
-            kwargs.pop('renorm_momentum', None)
-            super().__init__(*args, **kwargs)
-    
-    custom_objects = {
-        'BatchNormalization': CompatibleBatchNormalization,
-    }
-    
-    try:
-        # Try loading with custom objects
-        return keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
-    except Exception as e:
-        log.error(f"Failed to load model: {e}")
-        raise
-
-model = load_model_safe(MODEL_PATH)
+log.info("Chargement du modèle…")
+model = keras.models.load_model(MODEL_PATH, compile=False)
 
 # Warm-up avec la bonne forme
 model.predict(np.zeros((1, 48, 48, 1), dtype=np.float32), verbose=0)
